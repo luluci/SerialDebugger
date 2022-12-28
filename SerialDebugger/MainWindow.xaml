@@ -1,0 +1,32 @@
+﻿<Window x:Class="SerialDebugger.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SerialDebugger"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="738.281" Width="785.937">
+    <!--
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    -->
+    <Grid>
+        <Grid x:Name="BaseSerialData" Margin="0,82,0,98" Background="#FFDBF5FF">
+            <TabControl>
+                <TabItem Header="Tx">
+                    <Grid>
+                        <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
+                            <Grid x:Name="BaseSerialTx" Margin="15,0,15,0"/>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="TabItem">
+                    <Grid Background="#FFE5E5E5"/>
+                </TabItem>
+            </TabControl>
+        </Grid>
+        <Grid x:Name="BaseLog" Height="82" VerticalAlignment="Top" Background="#FFE6FFD4"/>
+        <Grid x:Name="BaseCtrl" Height="98" VerticalAlignment="Bottom" Background="#FFFFFFE1"/>
+    </Grid>
+</Window>

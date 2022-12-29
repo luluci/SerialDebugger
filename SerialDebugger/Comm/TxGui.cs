@@ -249,9 +249,9 @@ namespace SerialDebugger.Comm
                         {
                             var field = frame.Fields[field_pos];
                             // Bit列作成
-                            if (is_byte && (field.BitSize == 8))
+                            if (is_byte && (field.BitSize == 8) && (field.InnerFields.Count == 1))
                             {
-                                // バイト境界に配置、かつ、バイト単位データのとき
+                                // バイト境界に配置、かつ、バイト単位データのとき、かつ、フィールド内で名前分割しないとき、
                                 // バイト単位でまとめて表示
                                 grid.Children.Add(MakeTextBlockStyle1($"-", bit, 1, field.BitSize));
                             }
@@ -266,7 +266,13 @@ namespace SerialDebugger.Comm
                             // Value列作成
                             grid.Children.Add(MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, 2, field.BitSize));
                             // Name列作成
-                            grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
+                            int inner_idx = 0;
+                            foreach (var inner in field.InnerFields)
+                            {
+                                grid.Children.Add(MakeTextBlockStyle3(inner.Name, bit+inner_idx, 3, inner.BitSize));
+                                inner_idx += inner.BitSize;
+                            }
+                            //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Select列作成
                             grid.Children.Add(MakeSelectGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, 4, field.BitSize));
 

@@ -35,6 +35,19 @@ namespace SerialDebugger.Comm
         public UInt64 Min { get; }
         public UInt64 Mask { get; }
 
+        public class InnerField
+        {
+            public string Name { get; set; }
+            public int BitSize { get; set; }
+
+            public InnerField(string name, int bitsize)
+            {
+                Name = name;
+                BitSize = bitsize;
+            }
+        }
+        internal List<InnerField> InnerFields { get; }
+
         //
         public enum SelectModeType
         {
@@ -44,10 +57,22 @@ namespace SerialDebugger.Comm
         public SelectModeType SelectType { get; }
 
         public TxField(string name, int bitsize, UInt64 value = 0, SelectModeType type = SelectModeType.Fix)
+            : this(new InnerField[]{ new InnerField(name, bitsize) }, value, type)
         {
-            Name = name;
-            BitSize = bitsize;
-            Max = (UInt64)1 << bitsize;
+        }
+
+        public TxField(InnerField[] innerFields, UInt64 value = 0, SelectModeType type = SelectModeType.Fix)
+        {
+            Name = innerFields[0].Name;
+            BitSize = 0;
+            foreach (var inner in innerFields)
+            {
+                BitSize += inner.BitSize;
+            }
+            //
+            InnerFields = new List<InnerField>(innerFields);
+            //
+            Max = (UInt64)1 << BitSize;
             Min = 0;
             Mask = Max - 1;
             //
@@ -58,6 +83,7 @@ namespace SerialDebugger.Comm
             SelectType = type;
             MakeSelectMode();
         }
+
 
         private void MakeSelectMode()
         {

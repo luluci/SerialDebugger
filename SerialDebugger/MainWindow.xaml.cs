@@ -34,7 +34,12 @@ namespace SerialDebugger
             {
                 var f = new Comm.TxFrame("Frame_A", 2);
                 f.Add(new Comm.TxField("field1_1", 8, 0x01));
-                f.Add(new Comm.TxField("field1_2", 8, 0x55, Comm.TxField.SelectModeType.Edit));
+                f.Add(new Comm.TxField(
+                    new Comm.TxField.InnerField[] {
+                        new Comm.TxField.InnerField("field1_2_status", 5),
+                        new Comm.TxField.InnerField("field1_2_error", 3),
+                    },
+                    0x55, Comm.TxField.SelectModeType.Edit));
                 f.Add(new Comm.TxField("field2", 4, 0x02, Comm.TxField.SelectModeType.Edit));
                 f.Add(new Comm.TxField("field3", 7, 0x04));
                 f.Add(new Comm.TxField("field4", 9, 0x0F));

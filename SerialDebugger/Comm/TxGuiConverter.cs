@@ -38,6 +38,24 @@ namespace SerialDebugger.Comm
     }
 
     /// <summary>
+    /// 送信バイトシーケンス列に表示する文字列を作成する
+    /// </summary>
+    internal class TxGuiTxBufferColConverter : IValueConverter
+    {
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var temp = (byte)value;
+            // 16進数表示
+            return $"{temp:X2}h";
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
     /// Bit列背景色を決定する
     /// </summary>
     internal class TxGuiBitColBgConverter : IValueConverter

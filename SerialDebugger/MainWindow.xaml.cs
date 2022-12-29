@@ -49,7 +49,7 @@ namespace SerialDebugger
                 vm.TxFrames.Add(f);
             }
             {
-                var f = new Comm.TxFrame("Frame_B", 3);
+                var f = new Comm.TxFrame("Frame_B", 0);
                 f.Add(new Comm.TxField("field1", 1, 0));
                 f.Add(new Comm.TxField("field2", 2, 0));
                 f.Add(new Comm.TxField("field3", 3, 0));

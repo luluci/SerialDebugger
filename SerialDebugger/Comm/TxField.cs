@@ -36,6 +36,7 @@ namespace SerialDebugger.Comm
             Name = name;
             BitSize = bitsize;
             //
+            value = value & (((UInt64)1 << bitsize) - 1);
             Value = new ReactivePropertySlim<UInt64>(value);
             Value.AddTo(Disposables);
         }

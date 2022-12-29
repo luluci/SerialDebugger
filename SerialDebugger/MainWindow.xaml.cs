@@ -43,7 +43,17 @@ namespace SerialDebugger
                 f.Add(new Comm.TxField("field2", 4, 0x02, Comm.TxField.SelectModeType.Edit));
                 f.Add(new Comm.TxField("field3", 7, 0x04));
                 f.Add(new Comm.TxField("field4", 9, 0x0F));
-                f.Add(new Comm.TxField("field5", 1, 0xFF));
+                f.Add(new Comm.TxField(
+                    "field5", 1, 0xFF,
+                    Comm.TxField.SelectModeType.Dict,
+                    new Comm.TxField.Selecter( new (UInt64,string)[]
+                        {
+                            (0, "OFF"),
+                            (1, "ON"),
+                            (2, "Err"),
+                            (0xFF, "Err"),
+                        })
+                    ));
                 f.Add(new Comm.TxField("field6", 11, 0xAA));
                 f.Build();
                 vm.TxFrames.Add(f);

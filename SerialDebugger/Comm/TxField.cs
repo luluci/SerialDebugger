@@ -51,17 +51,62 @@ namespace SerialDebugger.Comm
         //
         public enum SelectModeType
         {
-            Fix,
-            Edit,
+            Fix,        // 固定値:変更不可
+            Edit,       // 直接入力
+            Unit,       // 単位指定
+            Dict,       // 辞書指定
         };
         public SelectModeType SelectType { get; }
 
-        public TxField(string name, int bitsize, UInt64 value = 0, SelectModeType type = SelectModeType.Fix)
-            : this(new InnerField[]{ new InnerField(name, bitsize) }, value, type)
+        public class Selecter
+        {
+            public SelectModeType Type { get; }
+            // Dict表現要素
+            public (UInt64, string)[] Dict { get; }
+            // Unit表現要素
+            public string Unit { get; }
+            public double Lsb { get; }
+            public double DispMax { get; }
+            public double DispMin { get; }
+            public UInt64 ValueMin { get; }
+            public string Format { get; }
+
+            public Selecter((UInt64, string)[] dict)
+            {
+                Type = SelectModeType.Dict;
+                Dict = dict;
+            }
+
+            public Selecter(string unit, double lsb, double disp_max, double disp_min, UInt64 value_min, string format)
+            {
+                Type = SelectModeType.Unit;
+                Lsb = lsb;
+                DispMax = disp_max;
+                DispMin = disp_min;
+                ValueMin = value_min;
+                Format = format;
+            }
+        }
+
+        public class Select
+        {
+            public UInt64 Value { get; private set; }
+            public string Disp { get; private set; }
+
+            public Select(UInt64 value, string disp)
+            {
+                Disp = disp;
+                Value = value;
+            }
+        }
+        public ReactiveCollection<Select> Selects { get; private set; }
+
+        public TxField(string name, int bitsize, UInt64 value = 0, SelectModeType type = SelectModeType.Fix, Selecter selecter = null)
+            : this(new InnerField[]{ new InnerField(name, bitsize) }, value, type, selecter)
         {
         }
 
-        public TxField(InnerField[] innerFields, UInt64 value = 0, SelectModeType type = SelectModeType.Fix)
+        public TxField(InnerField[] innerFields, UInt64 value = 0, SelectModeType type = SelectModeType.Fix, Selecter selecter = null)
         {
             Name = innerFields[0].Name;
             BitSize = 0;
@@ -71,7 +116,7 @@ namespace SerialDebugger.Comm
             }
             //
             InnerFields = new List<InnerField>(innerFields);
-            //
+            // (Min,Max]
             Max = (UInt64)1 << BitSize;
             Min = 0;
             Mask = Max - 1;
@@ -81,18 +126,57 @@ namespace SerialDebugger.Comm
             Value.AddTo(Disposables);
             //
             SelectType = type;
-            MakeSelectMode();
+            MakeSelectMode(selecter);
         }
 
 
-        private void MakeSelectMode()
+        private void MakeSelectMode(Selecter selecter)
         {
             switch (SelectType)
             {
+                case SelectModeType.Unit:
+                    Selects = new ReactiveCollection<Select>();
+                    MakeSelectModeUnit(selecter);
+                    break;
+                case SelectModeType.Dict:
+                    Selects = new ReactiveCollection<Select>();
+                    MakeSelectModeDict(selecter);
+                    break;
                 case SelectModeType.Edit:
                 case SelectModeType.Fix:
                 default:
                     break;
+            }
+        }
+
+        private void MakeSelectModeUnit(Selecter selecter)
+        {
+            double temp = selecter.DispMin;
+            UInt64 value = selecter.ValueMin;
+            while (temp <= selecter.DispMax)
+            {
+                string disp = temp.ToString(selecter.Format) + selecter.Unit;
+                Selects.Add(new Select(value, disp));
+                //
+                temp += selecter.Lsb;
+                value++;
+                // BitSize定義の上限到達で終了
+                if (value >= Max)
+                {
+                    break;
+                }
+            }
+        }
+
+        private void MakeSelectModeDict(Selecter selecter)
+        {
+            foreach (var item in selecter.Dict)
+            {
+                // BitSize定義の範囲チェック
+                if (item.Item1 < Max)
+                {
+                    Selects.Add(new Select(item.Item1, item.Item2));
+                }
             }
         }
 

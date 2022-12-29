@@ -685,6 +685,9 @@ namespace SerialDebugger.Comm
         {
             switch (field.SelectType)
             {
+                case TxField.SelectModeType.Dict:
+                case TxField.SelectModeType.Unit:
+                    return MakeSelectGuiComboBox(field, path, row, col, rowspan, colspan);
                 case TxField.SelectModeType.Edit:
                     return MakeSelectGuiTextBox(field, path, row, col, rowspan, colspan);
                 case TxField.SelectModeType.Fix:
@@ -712,6 +715,38 @@ namespace SerialDebugger.Comm
             //
             var border = MakeBorder1();
             border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+        /// <summary>
+        /// Binding設定付きComboBox
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        private static UIElement MakeSelectGuiComboBox(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            // binding作成
+            var bind = new Binding(path + ".Selects");
+            //
+            var cb = new ComboBox();
+            cb.SetBinding(ComboBox.ItemsSourceProperty, bind);
+            cb.DisplayMemberPath = "Disp";
+            cb.SelectedValuePath = "Value";
+            //cb.Background = SystemColors.ControlLightLightBrush;
+            //
+            var border = MakeBorder1();
+            border.Child = cb;
             Grid.SetRow(border, row);
             Grid.SetColumn(border, col);
             if (rowspan != -1)

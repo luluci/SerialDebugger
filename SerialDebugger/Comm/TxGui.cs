@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace SerialDebugger.Serial
+namespace SerialDebugger.Comm
 {
     /// <summary>
     /// TxFrameからGUIを動的に生成する
@@ -16,19 +17,44 @@ namespace SerialDebugger.Serial
     class TxGui
     {
         // Frame 列幅 (Byte, Bit, Value, Name, Select, Buffer)
-        public static int[] FrameColWidth = { 25, 25, 25, 80, 80, 50 };
+        public static int[] FrameColWidth = { 25, 25, 40, 80, 80, 80 };
+        public static int[] Button3Width = { 15, 35, 15 };
+
+        // Converter
+        private static TxGuiValueColConverter ColConverter = new TxGuiValueColConverter();
+        private static TxGuiBitColBgConverter[] BitColBgConverter = new TxGuiBitColBgConverter[]
+        {
+            new TxGuiBitColBgConverter(0x0001),
+            new TxGuiBitColBgConverter(0x0002),
+            new TxGuiBitColBgConverter(0x0004),
+            new TxGuiBitColBgConverter(0x0008),
+            new TxGuiBitColBgConverter(0x0010),
+            new TxGuiBitColBgConverter(0x0020),
+            new TxGuiBitColBgConverter(0x0040),
+            new TxGuiBitColBgConverter(0x0080),
+            new TxGuiBitColBgConverter(0x0100),
+            new TxGuiBitColBgConverter(0x0200),
+            new TxGuiBitColBgConverter(0x0400),
+            new TxGuiBitColBgConverter(0x0800),
+            new TxGuiBitColBgConverter(0x1000),
+            new TxGuiBitColBgConverter(0x2000),
+            new TxGuiBitColBgConverter(0x4000),
+            new TxGuiBitColBgConverter(0x8000),
+        };
 
         public static void Make(UIElement parent, ICollection<TxFrame> frames)
         {
+            int frame_no = 0;
             double margin_l = 0;
             foreach (var frame in frames)
             {
                 var (grid1, grid2, grid3) = MakeBase((IAddChild)parent, margin_l);
                 var w = MakeHeader(grid2, frame);
-                w = MakeBody(grid3, frame);
+                w = MakeBody(grid3, frame, frame_no);
 
                 //margin_l += (grid1.Width + 50);
                 margin_l += (w + 50);
+                frame_no++;
             }
         }
 
@@ -137,10 +163,16 @@ namespace SerialDebugger.Serial
             grid.Children.Add(MakeTextBlockStyle1("Select", 1, 4));
             // Buffer列作成
             {
-                for (int i = 0; i < frame.BufferLength; i++)
+                // 送信ボタン作成
+                // Buffer[0]は各fieldと連動
+                grid.Children.Add(MakeButtonStyle1("Send", 0, 5));
+                grid.Children.Add(MakeTextBlockStyle1(frame.Buffer[0].Name, 1, 5));
+                // Buffer[1～]は[0]の保存/展開により値を決定
+                for (int i = 1; i < frame.BufferLength; i++)
                 {
                     // 送信ボタン作成
-                    grid.Children.Add(MakeButtonStyle1("Send", 0, 5+i));
+                    //grid.Children.Add(MakeButtonStyle1("Send", 0, 5+i));
+                    grid.Children.Add(MakeButtonLoadStore("Send", 0, 5 + i));
                     // 表示ラベル
                     grid.Children.Add(MakeTextBlockStyle1(frame.Buffer[i].Name, 1, 5 + i));
                 }
@@ -149,7 +181,7 @@ namespace SerialDebugger.Serial
             return width;
         }
 
-        private static int MakeBody(Grid grid, TxFrame frame)
+        private static int MakeBody(Grid grid, TxFrame frame, int frame_no)
         {
             int bitlength = frame.Length * 8;
             int width = 0;
@@ -212,14 +244,14 @@ namespace SerialDebugger.Serial
                     // field情報作成
                     if (bit_rest == 0)
                     {
-                        if (field_pos < frame.Frame.Count)
+                        if (field_pos < frame.Fields.Count)
                         {
-                            var field = frame.Frame[field_pos];
+                            var field = frame.Fields[field_pos];
                             // Bit列作成
                             if (is_byte && (field.BitSize == 8))
                             {
-                                // バイト境界に配置、かつ、1バイトデータのとき
-                                // 1バイト単位でまとめて表示
+                                // バイト境界に配置、かつ、バイト単位データのとき
+                                // バイト単位でまとめて表示
                                 grid.Children.Add(MakeTextBlockStyle1($"-", bit, 1, field.BitSize));
                             }
                             else
@@ -227,19 +259,13 @@ namespace SerialDebugger.Serial
                                 // その他は各ビット情報を出力
                                 for (int i=0; i<field.BitSize; i++)
                                 {
-                                    grid.Children.Add(MakeTextBlockStyle1($"{bit + i}", bit+i, 1));
+                                    grid.Children.Add(MakeTextBlockBindStyle2($"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}]", i, bit+i, 1));
                                 }
                             }
                             // Value列作成
+                            grid.Children.Add(MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}]", bit, 2, field.BitSize));
                             // Name列作成
-                            {
-                                var tb = new TextBlock();
-                                tb.Text = field.Name;
-                                Grid.SetRowSpan(tb, field.BitSize);
-                                Grid.SetRow(tb, bit);
-                                Grid.SetColumn(tb, 3);
-                                grid.Children.Add(tb);
-                            }
+                            grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Select列作成
 
                             // 次周回設定処理
@@ -263,10 +289,10 @@ namespace SerialDebugger.Serial
                             {
                                 grid.Children.Add(MakeTextBlockStyle1($"{bit + i}", bit+i, 1));
                             }
+                            // Value列作成
+                            grid.Children.Add(MakeTextBlockStyle1("-", bit, 2, bit_rest));
                             // Name列作成
-                            {
-                                grid.Children.Add(MakeTextBlockStyle1("", bit, 3, bit_rest));
-                            }
+                            grid.Children.Add(MakeTextBlockStyle1("-", bit, 3, bit_rest));
                         }
                     }
                     //
@@ -285,12 +311,14 @@ namespace SerialDebugger.Serial
         /// <returns></returns>
         private static UIElement MakeButtonStyle1(string text, int row, int col, int rowspan = -1, int colspan = -1)
         {
+            /*
             var btn = new Button();
             btn.Content = text;
             //
             var border = MakeBorder1();
             border.Child = btn;
             border.CornerRadius = new CornerRadius(4);
+            border.Margin = new Thickness(2, 1, 2, 1);
             Grid.SetRow(border, row);
             Grid.SetColumn(border, col);
             if (rowspan != -1)
@@ -303,6 +331,64 @@ namespace SerialDebugger.Serial
             }
 
             return border;
+            */
+            var btn = new Button();
+            btn.Content = text;
+            btn.Margin = new Thickness(10, 2, 10, 2);
+            Grid.SetRow(btn, row);
+            Grid.SetColumn(btn, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(btn, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(btn, colspan);
+            }
+
+            return btn;
+        }
+
+        /// <summary>
+        /// キャプション的な部分の部品
+        /// 3連ボタン
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        private static UIElement MakeButtonLoadStore(string text, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            var btn_store = new Button();
+            btn_store.Content = "←";
+            btn_store.Margin = new Thickness(2, 1, 2, 1);
+            btn_store.Width = Button3Width[0];
+
+            var btn = new Button();
+            btn.Content = text;
+            btn.Margin = new Thickness(2, 1, 2, 1);
+            btn.Width = Button3Width[1];
+
+            var btn_save = new Button();
+            btn_save.Content = "↓";
+            btn_save.Margin = new Thickness(2, 1, 1, 1);
+            btn_save.Width = Button3Width[2];
+
+            var sp = new StackPanel();
+            sp.Orientation = Orientation.Horizontal;
+            Grid.SetRow(sp, row);
+            Grid.SetColumn(sp, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(sp, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(sp, colspan);
+            }
+            sp.Children.Add(btn_store);
+            sp.Children.Add(btn);
+            sp.Children.Add(btn_save);
+
+            return sp;
         }
 
         /// <summary>
@@ -336,6 +422,7 @@ namespace SerialDebugger.Serial
 
         /// <summary>
         /// 強調キャプション的な部分の部品
+        /// Frame名称
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
@@ -347,6 +434,114 @@ namespace SerialDebugger.Serial
             tb.Background = SystemColors.ControlLightLightBrush;
             tb.FontSize += 2;
             tb.Padding = new Thickness(5, 2, 2, 2);
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+        /// <summary>
+        /// 強調キャプション的な部分の部品
+        /// Field名称
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        private static UIElement MakeTextBlockStyle3(string text, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            //
+            var tb = new TextBlock();
+            tb.Text = text;
+            tb.Background = SystemColors.ControlLightLightBrush;
+            tb.FontSize += 3;
+            tb.TextWrapping = TextWrapping.Wrap;
+            tb.Padding = new Thickness(5, 2, 2, 2);
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+        /// <summary>
+        /// Binding設定付きテキストブロック
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        private static UIElement MakeTextBlockBindStyle1(string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            // binding作成
+            var bind = new Binding(path);
+            bind.Converter = ColConverter;
+            //
+            var tb = new TextBlock();
+            tb.SetBinding(TextBlock.TextProperty, bind);
+            tb.Background = SystemColors.ControlLightLightBrush;
+            tb.TextAlignment = TextAlignment.Center;
+            /*
+            Matrix matrix = (tb.RenderTransform as MatrixTransform).Matrix;
+            matrix.Rotate(-90);
+            tb.RenderTransform = new MatrixTransform(matrix);
+            tb.Height = 20;
+            //tb.Width = 200;
+            var tfg = new TransformGroup();
+            tfg.Children.Add(new RotateTransform(-90));
+            tb.RenderTransformOrigin = new Point(0,-1);
+            tb.RenderTransform = tfg;
+            */
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+        /// <summary>
+        /// Binding設定付きBit表示テキストブロック
+        /// 該当ビットが立っていたら値を変える
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        private static UIElement MakeTextBlockBindStyle2(string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            // binding作成
+            var bind = new Binding(path);
+            bind.Converter = BitColBgConverter[bit];
+            //
+            var tb = new TextBlock();
+            tb.Text = name;
+            tb.TextAlignment = TextAlignment.Center;
+            tb.SetBinding(TextBlock.BackgroundProperty, bind);
             //
             var border = MakeBorder1();
             border.Child = tb;

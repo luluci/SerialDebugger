@@ -9,7 +9,7 @@ using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
-namespace SerialDebugger.Serial
+namespace SerialDebugger.Comm
 {
     class TxBuffer : BindableBase, IDisposable
     {

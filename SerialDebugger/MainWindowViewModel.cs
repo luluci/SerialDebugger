@@ -13,11 +13,11 @@ namespace SerialDebugger
 {
     class MainWindowViewModel : BindableBase, IDisposable
     {
-        public ReactiveCollection<Serial.TxFrame> TxFrames { get; set; }
+        public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
 
         public MainWindowViewModel()
         {
-            TxFrames = new ReactiveCollection<Serial.TxFrame>();
+            TxFrames = new ReactiveCollection<Comm.TxFrame>();
         }
 
 

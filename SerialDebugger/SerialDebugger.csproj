@@ -87,6 +87,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Comm\TxGuiConverter.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Comm\TxBuffer.cs" />
     <Compile Include="Comm\TxField.cs" />

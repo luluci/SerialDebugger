@@ -32,40 +32,40 @@ namespace SerialDebugger
 
             //
             {
-                var f = new Serial.TxFrame("Frame_A", 2);
-                f.Add(new Serial.TxField("field1", 8, 0));
-                f.Add(new Serial.TxField("field2", 4, 0));
-                f.Add(new Serial.TxField("field3", 7, 0));
-                f.Add(new Serial.TxField("field4", 9, 0));
-                f.Add(new Serial.TxField("field5", 1, 0));
-                f.Add(new Serial.TxField("field6", 11, 0));
+                var f = new Comm.TxFrame("Frame_A", 2);
+                f.Add(new Comm.TxField("field1", 8, 0x01));
+                f.Add(new Comm.TxField("field2", 4, 0x02));
+                f.Add(new Comm.TxField("field3", 7, 0x04));
+                f.Add(new Comm.TxField("field4", 9, 0x0F));
+                f.Add(new Comm.TxField("field5", 1, 0xFF));
+                f.Add(new Comm.TxField("field6", 11, 0xAA));
                 f.Build();
                 vm.TxFrames.Add(f);
             }
             {
-                var f = new Serial.TxFrame("Frame_B", 3);
-                f.Add(new Serial.TxField("field1", 1, 0));
-                f.Add(new Serial.TxField("field2", 2, 0));
-                f.Add(new Serial.TxField("field3", 3, 0));
-                f.Add(new Serial.TxField("field4", 4, 0));
-                f.Add(new Serial.TxField("field5", 5, 0));
-                f.Add(new Serial.TxField("field6", 6, 0));
+                var f = new Comm.TxFrame("Frame_B", 3);
+                f.Add(new Comm.TxField("field1", 1, 0));
+                f.Add(new Comm.TxField("field2", 2, 0));
+                f.Add(new Comm.TxField("field3", 3, 0));
+                f.Add(new Comm.TxField("field4", 4, 0));
+                f.Add(new Comm.TxField("field5", 5, 0));
+                f.Add(new Comm.TxField("field6", 6, 0));
                 f.Build();
                 vm.TxFrames.Add(f);
             }
             {
-                var f = new Serial.TxFrame("Frame_C", 4);
-                f.Add(new Serial.TxField("field1", 1, 0));
-                f.Add(new Serial.TxField("field2", 2, 0));
-                f.Add(new Serial.TxField("field3", 3, 0));
-                f.Add(new Serial.TxField("field4", 4, 0));
-                f.Add(new Serial.TxField("field5", 5, 0));
-                f.Add(new Serial.TxField("field6", 6, 0));
+                var f = new Comm.TxFrame("Frame_C", 4);
+                f.Add(new Comm.TxField("field1", 1, 0));
+                f.Add(new Comm.TxField("field2", 2, 0));
+                f.Add(new Comm.TxField("field3", 3, 0));
+                f.Add(new Comm.TxField("field4", 4, 0));
+                f.Add(new Comm.TxField("field5", 5, 0));
+                f.Add(new Comm.TxField("field6", 6, 0));
                 f.Build();
                 vm.TxFrames.Add(f);
             }
             // GUI構築する
-            Serial.TxGui.Make(BaseSerialTx, vm.TxFrames);
+            Comm.TxGui.Make(BaseSerialTx, vm.TxFrames);
         }
     }
 }

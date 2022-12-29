@@ -9,7 +9,7 @@ using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
-namespace SerialDebugger.Serial
+namespace SerialDebugger.Comm
 {
     class TxFrame : BindableBase, IDisposable
     {
@@ -18,7 +18,7 @@ namespace SerialDebugger.Serial
         /// <summary>
         /// 送信フレーム: TxField集合体
         /// </summary>
-        public ReactiveCollection<TxField> Frame { get; set; }
+        public ReactiveCollection<TxField> Fields { get; set; }
         /// <summary>
         /// 送信バッファ
         /// </summary>
@@ -38,15 +38,15 @@ namespace SerialDebugger.Serial
             Name = name;
             BufferLength = buff_len;
 
-            Frame = new ReactiveCollection<TxField>();
-            Frame.AddTo(Disposables);
+            Fields = new ReactiveCollection<TxField>();
+            Fields.AddTo(Disposables);
             Buffer = new ReactiveCollection<TxBuffer>();
             Buffer.AddTo(Disposables);
         }
 
         public void Add(TxField field)
         {
-            Frame.Add(field);
+            Fields.Add(field);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace SerialDebugger.Serial
             // Fieldから情報収集
             int bit_pos = 0;
             int byte_pos = 0;
-            foreach (var f in Frame)
+            foreach (var f in Fields)
             {
                 // Field位置セット
                 f.BitPos = bit_pos;
@@ -72,6 +72,11 @@ namespace SerialDebugger.Serial
                 {
                     byte_pos += bit_pos / 8;
                     bit_pos %= 8;
+                }
+                //
+                if ((f.BitSize % 8) == 0 && f.BitPos == 0)
+                {
+                    f.IsByteDisp = true;
                 }
             }
             // バイトサイズ計算

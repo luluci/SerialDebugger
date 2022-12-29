@@ -9,7 +9,7 @@ using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
-namespace SerialDebugger.Serial
+namespace SerialDebugger.Comm
 {
     class TxField : BindableBase, IDisposable
     {
@@ -17,7 +17,7 @@ namespace SerialDebugger.Serial
         public string Name { get; }
         public int BitSize { get; }
         //
-        public ReactivePropertySlim<int> Value { get; set; }
+        public ReactivePropertySlim<UInt64> Value { get; set; }
         /// <summary>
         /// 1バイト境界からのビット位置.
         /// Nバイト目のMビット目を示す.
@@ -29,12 +29,14 @@ namespace SerialDebugger.Serial
         /// </summary>
         internal int BytePos { get; set; }
 
-        public TxField(string name, int bitsize, int value = 0)
+        internal bool IsByteDisp { get; set; } = false;
+
+        public TxField(string name, int bitsize, UInt64 value = 0)
         {
             Name = name;
             BitSize = bitsize;
             //
-            Value = new ReactivePropertySlim<int>(value);
+            Value = new ReactivePropertySlim<UInt64>(value);
             Value.AddTo(Disposables);
         }
 

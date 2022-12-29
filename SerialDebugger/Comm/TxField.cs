@@ -31,14 +31,43 @@ namespace SerialDebugger.Comm
 
         internal bool IsByteDisp { get; set; } = false;
 
-        public TxField(string name, int bitsize, UInt64 value = 0)
+        public UInt64 Max { get; }
+        public UInt64 Min { get; }
+        public UInt64 Mask { get; }
+
+        //
+        public enum SelectModeType
+        {
+            Fix,
+            Edit,
+        };
+        public SelectModeType SelectType { get; }
+
+        public TxField(string name, int bitsize, UInt64 value = 0, SelectModeType type = SelectModeType.Fix)
         {
             Name = name;
             BitSize = bitsize;
+            Max = (UInt64)1 << bitsize;
+            Min = 0;
+            Mask = Max - 1;
             //
-            value = value & (((UInt64)1 << bitsize) - 1);
+            value = value & Mask;
             Value = new ReactivePropertySlim<UInt64>(value);
             Value.AddTo(Disposables);
+            //
+            SelectType = type;
+            MakeSelectMode();
+        }
+
+        private void MakeSelectMode()
+        {
+            switch (SelectType)
+            {
+                case SelectModeType.Edit:
+                case SelectModeType.Fix:
+                default:
+                    break;
+            }
         }
 
 

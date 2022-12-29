@@ -21,9 +21,14 @@ namespace SerialDebugger.Comm
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            var temp = (UInt64)value;
+            // 16進数表示
+            return $"{temp:X2}h";
+            /*
             var field = (TxField)value;
             // 16進数表示
             return $"{field.Value.Value:X}h";
+            */
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -46,8 +51,9 @@ namespace SerialDebugger.Comm
 
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var field = (TxField)value;
-            if ((field.Value.Value & mask) != 0)
+            var val = (UInt64)value;
+            var field = (TxField)parameter;
+            if ((val & mask) != 0)
             {
                 return Brushes.Salmon;
             }
@@ -62,4 +68,33 @@ namespace SerialDebugger.Comm
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Select列:テキストボックスに表示する文字列を作成する
+    /// </summary>
+    internal class TxGuiEditConverter : IValueConverter
+    {
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var temp = (UInt64)value;
+            // 16進数表示
+            return $"{temp:X}";
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            UInt64 temp = Convert.ToUInt64((string)value, 16);
+            var field = (TxField)parameter;
+            if ((field.Min <= temp) && (temp < field.Max))
+            {
+                return temp;
+            }
+            else
+            {
+                // 範囲外は読み捨て
+                return DependencyProperty.UnsetValue;
+            }
+        }
+    }
+
 }

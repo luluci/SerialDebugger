@@ -22,6 +22,7 @@ namespace SerialDebugger.Comm
 
         // Converter
         private static TxGuiValueColConverter ColConverter = new TxGuiValueColConverter();
+        private static TxGuiEditConverter EditConverter = new TxGuiEditConverter();
         private static TxGuiBitColBgConverter[] BitColBgConverter = new TxGuiBitColBgConverter[]
         {
             new TxGuiBitColBgConverter(0x0001),
@@ -237,7 +238,7 @@ namespace SerialDebugger.Comm
                 {
                     // Byte列作成
                     is_byte = ((bit % 8) == 0);
-                    if (is_byte)
+                    if (bit_pos == 0)
                     {
                         grid.Children.Add(MakeTextBlockStyle1($"{byte_pos}", bit, 0, 8));
                     }
@@ -259,24 +260,19 @@ namespace SerialDebugger.Comm
                                 // その他は各ビット情報を出力
                                 for (int i=0; i<field.BitSize; i++)
                                 {
-                                    grid.Children.Add(MakeTextBlockBindStyle2($"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}]", i, bit+i, 1));
+                                    grid.Children.Add(MakeTextBlockBindStyle2(field, $"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit+i, 1));
                                 }
                             }
                             // Value列作成
-                            grid.Children.Add(MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}]", bit, 2, field.BitSize));
+                            grid.Children.Add(MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, 2, field.BitSize));
                             // Name列作成
                             grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Select列作成
+                            grid.Children.Add(MakeSelectGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, 4, field.BitSize));
 
                             // 次周回設定処理
                             field_pos++;
                             bit_rest = field.BitSize;
-                            bit_pos += field.BitSize;
-                            if (bit_pos >= 8)
-                            {
-                                byte_pos += (bit_pos-1) / 8;
-                                bit_pos = (bit_pos-1) % 8;
-                            }
                         }
                         else
                         {
@@ -293,10 +289,19 @@ namespace SerialDebugger.Comm
                             grid.Children.Add(MakeTextBlockStyle1("-", bit, 2, bit_rest));
                             // Name列作成
                             grid.Children.Add(MakeTextBlockStyle1("-", bit, 3, bit_rest));
+                            // Select列作成
+                            grid.Children.Add(MakeTextBlockStyle1("-", bit, 4, bit_rest));
                         }
                     }
                     //
                     bit_rest--;
+                    //
+                    bit_pos++;
+                    if (bit_pos >= 8)
+                    {
+                        bit_pos = 0;
+                        byte_pos++;
+                    }
                 }
 
             }
@@ -528,11 +533,11 @@ namespace SerialDebugger.Comm
 
         /// <summary>
         /// Binding設定付きBit表示テキストブロック
-        /// 該当ビットが立っていたら値を変える
+        /// 該当ビットが立っていたら背景色を変える
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeTextBlockBindStyle2(string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeTextBlockBindStyle2(TxField field, string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
             var bind = new Binding(path);
@@ -575,5 +580,60 @@ namespace SerialDebugger.Comm
             border.BorderBrush = Brushes.DarkSlateGray;
             return border;
         }
+
+        /// <summary>
+        /// Select GUI作成
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="rowspan"></param>
+        /// <param name="colspan"></param>
+        /// <returns></returns>
+        private static UIElement MakeSelectGui(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            switch (field.SelectType)
+            {
+                case TxField.SelectModeType.Edit:
+                    return MakeSelectGuiTextBox(field, path, row, col, rowspan, colspan);
+                case TxField.SelectModeType.Fix:
+                default:
+                    return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
+            }
+        }
+
+        /// <summary>
+        /// Binding設定付きTextBox
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        private static UIElement MakeSelectGuiTextBox(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            // binding作成
+            var bind = new Binding(path + ".Value.Value");
+            bind.Converter = EditConverter;
+            bind.ConverterParameter = field;
+            //
+            var tb = new TextBox();
+            tb.SetBinding(TextBox.TextProperty, bind);
+            tb.Background = SystemColors.ControlLightLightBrush;
+            tb.TextAlignment = TextAlignment.Center;
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
     }
 }

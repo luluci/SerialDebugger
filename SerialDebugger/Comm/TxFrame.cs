@@ -170,10 +170,11 @@ namespace SerialDebugger.Comm
             {
                 var cs = Fields[ChecksumIndex];
                 // チェックサム計算範囲がChecksumノードをまたがる、または、要素数を上回るときNG
-                if ((cs.ChecksumEnd > ChecksumIndex) || (cs.ChecksumEnd > Length))
+                if ((cs.ChecksumEnd >= cs.BytePos) || (cs.ChecksumEnd >= Length))
                 {
-                    cs.ChecksumEnd = ChecksumIndex > Length ? Length : ChecksumIndex;
-                    Logger.Add($"Checksum Range is invalid: Fix to ({cs.ChecksumBegin}-{cs.ChecksumEnd}]");
+                    cs.ChecksumEnd = cs.BytePos > Length ? Length : cs.BytePos;
+                    cs.ChecksumEnd--;
+                    Logger.Add($"Checksum Range is invalid: Fix to {cs.ChecksumBegin}-{cs.ChecksumEnd}");
                 }
                 //
                 UpdateChecksum();
@@ -223,7 +224,10 @@ namespace SerialDebugger.Comm
                 inv_mask_shift_fill = 0;
             }
             //
-            UpdateChecksum();
+            if (!field.IsChecksum)
+            {
+                UpdateChecksum();
+            }
         }
 
         private void UpdateChecksum()
@@ -231,7 +235,7 @@ namespace SerialDebugger.Comm
             var cs = Fields[ChecksumIndex];
             // 合計算出
             UInt64 sum = 0;
-            for (int i = cs.ChecksumBegin; i<cs.ChecksumEnd; i++)
+            for (int i = cs.ChecksumBegin; i<=cs.ChecksumEnd; i++)
             {
                 sum += TxBuffer[i];
             }

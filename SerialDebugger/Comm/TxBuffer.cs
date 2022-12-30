@@ -17,18 +17,31 @@ namespace SerialDebugger.Comm
         public string Name { get; }
 
         /// <summary>
+        /// 表示データ
+        /// </summary>
+        public ReactiveCollection<string> Disp { get; set; }
+        /// <summary>
         /// 送信データバイトシーケンス
         /// </summary>
-        public ReactiveCollection<byte> Buffer { get; set; }
+        public List<byte> Buffer { get; set; }
 
+        public ReactiveCommand OnClickSave { get; set; }
 
-        public TxBuffer(string name, int size)
+        public TxBuffer(string name, int disp_size, int size)
         {
             Name = name;
 
-            Buffer = new ReactiveCollection<byte>();
-            Buffer.AddTo(Disposables);
-            
+            Disp = new ReactiveCollection<string>();
+            Disp.AddTo(Disposables);
+            Buffer = new List<byte>(size);
+
+            OnClickSave = new ReactiveCommand();
+            OnClickSave.AddTo(Disposables);
+
+            for (int i = 0; i < disp_size; i++)
+            {
+                Disp.Add("<None>");
+            }
             for (int i=0; i<size; i++)
             {
                 Buffer.Add(0);

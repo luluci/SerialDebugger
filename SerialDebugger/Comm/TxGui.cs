@@ -51,7 +51,7 @@ namespace SerialDebugger.Comm
             foreach (var frame in frames)
             {
                 var (grid1, grid2, grid3) = MakeBase((IAddChild)parent, margin_l);
-                var w = MakeHeader(grid2, frame);
+                var w = MakeHeader(grid2, frame, frame_no);
                 w = MakeBody(grid3, frame, frame_no);
 
                 //margin_l += (grid1.Width + 50);
@@ -109,7 +109,7 @@ namespace SerialDebugger.Comm
             return (grid, grid_header, grid_body);
         }
 
-        private static int MakeHeader(Grid grid, TxFrame frame)
+        private static int MakeHeader(Grid grid, TxFrame frame, int frame_no)
         {
             int width = 0;
             {
@@ -193,7 +193,7 @@ namespace SerialDebugger.Comm
                 for (int i = 0; i < frame.BackupBufferLength; i++)
                 {
                     // 送信ボタン作成
-                    grid.Children.Add(MakeButtonLoadStore("Send", 0, 7 + i));
+                    grid.Children.Add(MakeButtonLoadStore(frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}]", "Send", 0, 7 + i));
                     // 表示ラベル
                     grid.Children.Add(MakeTextBlockStyle1(frame.BackupBuffer[i].Name, 1, 7 + i));
                 }
@@ -310,6 +310,11 @@ namespace SerialDebugger.Comm
                             //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Select列作成
                             grid.Children.Add(MakeSelectGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, 4, field.BitSize));
+                            // BackupBuffer列作成
+                            for (int i = 0; i < frame.BackupBufferLength; i++)
+                            {
+                                grid.Children.Add(MakeBackupBufferGui(field, frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}].Disp[{field_pos}]", bit, 7+i, field.BitSize));
+                            }
 
                             // 次周回設定処理
                             field_pos++;
@@ -332,6 +337,11 @@ namespace SerialDebugger.Comm
                             grid.Children.Add(MakeTextBlockStyle1("-", bit, 3, bit_rest));
                             // Select列作成
                             grid.Children.Add(MakeTextBlockStyle1("-", bit, 4, bit_rest));
+                            // BackupBuffer列作成
+                            for (int i = 0; i < frame.BackupBufferLength; i++)
+                            {
+                                grid.Children.Add(MakeTextBlockStyle1("-", bit, 7+i, bit_rest));
+                            }
                         }
                     }
                     // 送信バイトシーケンス
@@ -406,22 +416,25 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeButtonLoadStore(string text, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeButtonLoadStore(TxBuffer buffer, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            var btn_store = new Button();
-            btn_store.Content = "←";
-            btn_store.Margin = new Thickness(2, 1, 2, 1);
-            btn_store.Width = Button3Width[0];
+
+            //var btn_store = new Button();
+            //btn_store.Content = "←";
+            //btn_store.Margin = new Thickness(2, 1, 2, 1);
+            //btn_store.Width = Button3Width[0];
 
             var btn = new Button();
             btn.Content = text;
             btn.Margin = new Thickness(2, 1, 2, 1);
             btn.Width = Button3Width[1];
 
+            var bind_save = new Binding(path + ".OnClickSave");
             var btn_save = new Button();
             btn_save.Content = "↓";
             btn_save.Margin = new Thickness(2, 1, 1, 1);
             btn_save.Width = Button3Width[2];
+            btn_save.SetBinding(Button.CommandProperty, bind_save);
 
             var sp = new StackPanel();
             sp.Orientation = Orientation.Horizontal;
@@ -435,7 +448,7 @@ namespace SerialDebugger.Comm
             {
                 Grid.SetColumnSpan(sp, colspan);
             }
-            sp.Children.Add(btn_store);
+            //sp.Children.Add(btn_store);
             sp.Children.Add(btn);
             sp.Children.Add(btn_save);
 
@@ -756,6 +769,42 @@ namespace SerialDebugger.Comm
                 //Grid.SetRowSpan(border, rowspan);
                 // コンボボックスは1行だけ使えばいい
                 Grid.SetRowSpan(border, 1);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+        /// <summary>
+        /// Select GUI作成
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <param name="rowspan"></param>
+        /// <param name="colspan"></param>
+        /// <returns></returns>
+        private static UIElement MakeBackupBufferGui(TxField field, TxBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            // binding作成
+            var bind = new Binding(path);
+            //
+            var tb = new TextBlock();
+            tb.SetBinding(TextBlock.TextProperty, bind);
+            tb.Background = SystemColors.ControlBrush;
+            tb.TextAlignment = TextAlignment.Center;
+            tb.TextWrapping = TextWrapping.Wrap;
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
             }
             if (colspan != -1)
             {

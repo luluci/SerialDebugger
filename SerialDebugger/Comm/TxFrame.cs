@@ -57,6 +57,32 @@ namespace SerialDebugger.Comm
             TxBuffer = new ReactiveCollection<byte>();
             TxBuffer.AddTo(Disposables);
             BackupBuffer = new ReactiveCollection<TxBuffer>();
+            BackupBuffer.ObserveElementObservableProperty(x => x.OnClickSave).Subscribe(x =>
+            {
+                var buffer = x.Instance;
+                // 送信バイトシーケンスコピー
+                for (int i=0; i<TxBuffer.Count; i++)
+                {
+                    buffer.Buffer[i] = TxBuffer[i];
+                }
+                // 表示文字列コピー
+                for (int i=0; i<Fields.Count; i++)
+                {
+                    var field = Fields[i];
+                    switch (field.SelectType)
+                    {
+                        case TxField.SelectModeType.Dict:
+                        case TxField.SelectModeType.Unit:
+                            buffer.Disp[i] = $"{field.Selects[field.SelectIndexSelects.Value].Disp} ({field.Value.Value:X}h)";
+                            break;
+                        case TxField.SelectModeType.Edit:
+                        case TxField.SelectModeType.Fix:
+                        default:
+                            buffer.Disp[i] = $"{field.Value.Value:X}h";
+                            break;
+                    }
+                }
+            });
             BackupBuffer.AddTo(Disposables);
         }
 
@@ -76,6 +102,7 @@ namespace SerialDebugger.Comm
             UInt64 buff = 0;
             int bit_pos = 0;
             int byte_pos = 0;
+            int disp_len = 0;
             foreach (var f in Fields)
             {
                 // Field位置セット
@@ -103,6 +130,8 @@ namespace SerialDebugger.Comm
                 {
                     f.IsByteDisp = true;
                 }
+                // 表示データ数
+                disp_len += f.InnerFields.Count;
             }
             // 定義がバイト単位でなくビットに残りがあった場合
             if (bit_pos > 0)
@@ -124,7 +153,7 @@ namespace SerialDebugger.Comm
             // 送信データバックアップバッファ作成
             for (int i=0; i<BackupBufferLength; i++)
             {
-                BackupBuffer.Add(new TxBuffer($"buffer_{i}", Length));
+                BackupBuffer.Add(new TxBuffer($"buffer_{i}", disp_len, Length));
             }
         }
 

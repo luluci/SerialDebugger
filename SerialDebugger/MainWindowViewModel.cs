@@ -8,16 +8,72 @@ using System.Reactive.Disposables;
 using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using System.Windows.Controls.Primitives;
 
 namespace SerialDebugger
 {
+    using Logger = SerialDebugger.Log.Log;
+
     class MainWindowViewModel : BindableBase, IDisposable
     {
+        // MainWindow
+        public ReactiveCommand OnClickSerialSetting { get; set; }
+        Popup popup;
+        // Comm
+        public ReactiveCollection<Comm.Settings.CommInfo> CommSettings { get; set; }
+        public ReactivePropertySlim<int> CommSettingsSelectIndex { get; set; }
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
+        // Log
+        public ReactiveCollection<string> Log { get; set; }
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(MainWindow window)
         {
-            TxFrames = new ReactiveCollection<Comm.TxFrame>();
+            // MainWindow
+            OnClickSerialSetting = new ReactiveCommand();
+            OnClickSerialSetting
+                .Subscribe(x =>
+                {
+                    popup.PlacementTarget = window.BtnSettings;
+                    popup.IsOpen = !popup.IsOpen;
+                })
+                .AddTo(Disposables);
+            popup = new Popup();
+            popup.Child = new Serial.Settings();
+            // Comm
+            // Comm設定取得
+            CommSettings = Comm.Settings.GetComm();
+            CommSettings.AddTo(Disposables);
+            CommSettingsSelectIndex = new ReactivePropertySlim<int>(mode:ReactivePropertyMode.DistinctUntilChanged);
+            CommSettingsSelectIndex
+                .Subscribe((int idx) =>
+                {
+                    window.BaseSerialTx.Children.Clear();
+                    TxFrames = CommSettings[idx].Tx;
+                    // GUI構築する
+                    Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
+                })
+                .AddTo(Disposables);
+            // GUI構築
+            if (CommSettings.Count > 0)
+            {
+                foreach (var comm in CommSettings)
+                {
+                    comm.Tx.AddTo(Disposables);
+                }
+
+                // 先頭要素を選択
+                TxFrames = CommSettings[0].Tx;
+                CommSettingsSelectIndex.Value = 0;
+                // GUI構築する
+                Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
+            }
+            else
+            {
+                TxFrames = new ReactiveCollection<Comm.TxFrame>();
+                TxFrames.AddTo(Disposables);
+            }
+            // Log
+            Log = Logger.GetLogData();
         }
 
 

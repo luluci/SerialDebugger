@@ -12,7 +12,7 @@
     </Window.DataContext>
     -->
     <Grid>
-        <Grid x:Name="BaseSerialData" Margin="0,82,0,98" Background="#FFDBF5FF">
+        <Grid x:Name="BaseSerialData" Margin="0,34,0,98" Background="#FFDBF5FF">
             <TabControl>
                 <TabItem Header="Tx">
                     <Grid>
@@ -26,7 +26,33 @@
                 </TabItem>
             </TabControl>
         </Grid>
-        <Grid x:Name="BaseLog" Height="82" VerticalAlignment="Top" Background="#FFE6FFD4"/>
-        <Grid x:Name="BaseCtrl" Height="98" VerticalAlignment="Bottom" Background="#FFFFFFE1"/>
+        <Grid x:Name="BaseLog" Height="34" VerticalAlignment="Top" Background="#FFE6FFD4">
+            <Button x:Name="BtnSettings" Content="Button" Command="{Binding OnClickSerialSetting}" HorizontalAlignment="Left" Height="22" Margin="5,5,0,0" VerticalAlignment="Top" Width="55"/>
+            <ComboBox ItemsSource="{Binding CommSettings}" DisplayMemberPath="Name" SelectedIndex="{Binding CommSettingsSelectIndex.Value}" HorizontalAlignment="Left" Margin="148,5,0,0" VerticalAlignment="Top" Width="235"/>
+            <TextBlock HorizontalAlignment="Left" Margin="80,8,0,0" TextWrapping="Wrap" Text="設定ファイル:" VerticalAlignment="Top" FontFamily="Meiryo UI"/>
+        </Grid>
+        <Grid x:Name="BaseCtrl" Height="98" VerticalAlignment="Bottom" Background="#FFFFFFE1">
+
+
+            <GroupBox Grid.Column="1" Header="log">
+                <DockPanel>
+                    <ItemsControl x:Name="log" ItemsSource="{Binding Log}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                    </ItemsControl>
+                </DockPanel>
+            </GroupBox>
+
+        </Grid>
     </Grid>
 </Window>

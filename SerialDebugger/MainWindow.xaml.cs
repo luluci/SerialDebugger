@@ -27,9 +27,10 @@ namespace SerialDebugger
             InitializeComponent();
 
             // vmを参照するので明示的に持っておく.
-            vm = new MainWindowViewModel();
+            vm = new MainWindowViewModel(this);
             this.DataContext = vm;
 
+            /*
             //
             {
                 var f = new Comm.TxFrame("Frame_A", 2);
@@ -55,6 +56,7 @@ namespace SerialDebugger
                         })
                     ));
                 f.Add(new Comm.TxField("field6", 11, 0xAA));
+                f.Add(new Comm.TxField("Checksum", 8, 1, 6, type:Comm.TxField.SelectModeType.Checksum));
                 f.Build();
                 vm.TxFrames.Add(f);
             }
@@ -80,8 +82,11 @@ namespace SerialDebugger
                 f.Build();
                 vm.TxFrames.Add(f);
             }
+            var i = Comm.Settings.ok();
+            var setting = new Comm.SettingsImpl();
             // GUI構築する
             Comm.TxGui.Make(BaseSerialTx, vm.TxFrames);
+            */
         }
     }
 }

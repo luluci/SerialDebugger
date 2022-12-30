@@ -11,6 +11,8 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Comm
 {
+    using Logger = SerialDebugger.Log.Log;
+
     class TxFrame : BindableBase, IDisposable
     {
         // 
@@ -36,6 +38,10 @@ namespace SerialDebugger.Comm
         /// 送信バッファ数
         /// </summary>
         public int BackupBufferLength { get; }
+
+        // checksum
+        public bool HasChecksum { get; set; } = false;
+        private int ChecksumIndex { get; set; }
 
         public TxFrame(string name, int buff_len)
         {
@@ -99,6 +105,7 @@ namespace SerialDebugger.Comm
         public void Build()
         {
             // Fieldから情報収集
+            int field_no = 0;
             UInt64 buff = 0;
             int bit_pos = 0;
             int byte_pos = 0;
@@ -132,6 +139,14 @@ namespace SerialDebugger.Comm
                 }
                 // 表示データ数
                 disp_len += f.InnerFields.Count;
+                // checksum
+                if (f.IsChecksum)
+                {
+                    HasChecksum = true;
+                    ChecksumIndex = field_no;
+                }
+                //
+                field_no++;
             }
             // 定義がバイト単位でなくビットに残りがあった場合
             if (bit_pos > 0)
@@ -149,6 +164,19 @@ namespace SerialDebugger.Comm
             if ((BitLength % 8) != 0)
             {
                 Length++;
+            }
+            // チェックサム整合性チェック
+            if (HasChecksum)
+            {
+                var cs = Fields[ChecksumIndex];
+                // チェックサム計算範囲がChecksumノードをまたがる、または、要素数を上回るときNG
+                if ((cs.ChecksumEnd > ChecksumIndex) || (cs.ChecksumEnd > Length))
+                {
+                    cs.ChecksumEnd = ChecksumIndex > Length ? Length : ChecksumIndex;
+                    Logger.Add($"Checksum Range is invalid: Fix to ({cs.ChecksumBegin}-{cs.ChecksumEnd}]");
+                }
+                //
+                UpdateChecksum();
             }
             // 送信データバックアップバッファ作成
             for (int i=0; i<BackupBufferLength; i++)
@@ -194,8 +222,24 @@ namespace SerialDebugger.Comm
                 shift = 8;
                 inv_mask_shift_fill = 0;
             }
+            //
+            UpdateChecksum();
         }
 
+        private void UpdateChecksum()
+        {
+            var cs = Fields[ChecksumIndex];
+            // 合計算出
+            UInt64 sum = 0;
+            for (int i = cs.ChecksumBegin; i<cs.ChecksumEnd; i++)
+            {
+                sum += TxBuffer[i];
+            }
+            //
+            sum = ~sum + 1;
+            sum &= cs.Mask;
+            cs.Value.Value = sum;
+        }
 
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();

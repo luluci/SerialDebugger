@@ -39,6 +39,10 @@ namespace SerialDebugger.Comm
         public UInt64 Min { get; }
         public UInt64 Mask { get; }
         public UInt64 InvMask { get; }
+        // チェックサム用プロパティ
+        public int ChecksumBegin { get; set; }
+        public int ChecksumEnd { get; set; }
+        public bool IsChecksum { get; set; } = false;
 
         public class InnerField
         {
@@ -60,6 +64,7 @@ namespace SerialDebugger.Comm
             Edit,       // 直接入力
             Unit,       // 単位指定
             Dict,       // 辞書指定
+            Checksum,   // チェックサム
         };
         public SelectModeType SelectType { get; }
 
@@ -108,6 +113,23 @@ namespace SerialDebugger.Comm
         public ReactiveCollection<Select> Selects { get; private set; }
         public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
 
+        /// <summary>
+        /// チェックサムノード用コンストラクタ
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="bitsize"></param>
+        /// <param name="value"></param>
+        /// <param name="type"></param>
+        /// <param name="selecter"></param>
+        public TxField(string name, int bitsize, int begin, int end, UInt64 value = 0, SelectModeType type = SelectModeType.Checksum)
+            : this(new InnerField[] { new InnerField(name, bitsize) }, value, type, null)
+        {
+            ChecksumBegin = begin;
+            ChecksumEnd = end;
+            SelectType = SelectModeType.Checksum;
+            IsChecksum = true;
+        }
+
         public TxField(string name, int bitsize, UInt64 value = 0, SelectModeType type = SelectModeType.Fix, Selecter selecter = null)
             : this(new InnerField[]{ new InnerField(name, bitsize) }, value, type, selecter)
         {
@@ -134,8 +156,8 @@ namespace SerialDebugger.Comm
             Value
                 .Subscribe(x =>
                 {
-                    int i;
-                    i = 0;
+                    //int i;
+                    //i = 0;
                 })
                 .AddTo(Disposables);
             //

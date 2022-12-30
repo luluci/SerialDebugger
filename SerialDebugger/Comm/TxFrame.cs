@@ -43,7 +43,17 @@ namespace SerialDebugger.Comm
             BackupBufferLength = buff_len;
 
             Fields = new ReactiveCollection<TxField>();
-            Fields.AddTo(Disposables);
+            Fields
+                .ObserveElementObservableProperty(x => x.Value).Subscribe(x =>
+                {
+                    Update(x.Instance);
+                });
+            Fields
+                .ObserveElementObservableProperty(x => x.SelectIndexSelects).Subscribe(x =>
+                {
+                    Update(x.Instance);
+                })
+                .AddTo(Disposables);
             TxBuffer = new ReactiveCollection<byte>();
             TxBuffer.AddTo(Disposables);
             BackupBuffer = new ReactiveCollection<TxBuffer>();
@@ -71,6 +81,7 @@ namespace SerialDebugger.Comm
                 // Field位置セット
                 f.BitPos = bit_pos;
                 f.BytePos = byte_pos;
+                f.ByteSize = (bit_pos + f.BitSize + 7) / 8;
                 // Frame情報更新
                 BitLength += f.BitSize;
                 // 送信生データ作成
@@ -79,7 +90,7 @@ namespace SerialDebugger.Comm
                 bit_pos += f.BitSize;
                 while (bit_pos >= 8)
                 {
-                    // 送信生データに1バイトたまったら送信バッファに登録
+                    // 送信生データに1バイトたまったら送信バイトシーケンスに登録
                     TxBuffer.Add((byte)(buff & 0xFF));
                     // 登録分を生データから削除
                     buff >>= 8;
@@ -96,7 +107,7 @@ namespace SerialDebugger.Comm
             // 定義がバイト単位でなくビットに残りがあった場合
             if (bit_pos > 0)
             {
-                // 送信生データに1バイトたまったら送信バッファに登録
+                // 送信生データに1バイトたまったら送信バイトシーケンスに登録
                 TxBuffer.Add((byte)(buff & 0xFF));
                 // 登録分を生データから削除
                 buff >>= 8;
@@ -116,7 +127,45 @@ namespace SerialDebugger.Comm
                 BackupBuffer.Add(new TxBuffer($"buffer_{i}", Length));
             }
         }
-        
+
+        /// <summary>
+        /// Fieldsが更新されたとき、送信バイトシーケンスに反映する
+        /// </summary>
+        /// <param name="field"></param>
+        private void Update(TxField field)
+        {
+            UInt64 value = field.Value.Value;
+            UInt64 mask = field.Mask;
+            UInt64 inv_mask = field.InvMask;
+            // 1回目はvalueのビット位置がbit_pos分右にあるが、
+            // このタイミングで左シフトすると有効データを捨てる可能性があるのでループ内で計算していく
+            int shift = 8 - field.BitPos;
+            int bit_pos = field.BitPos;
+            int byte_pos = field.BytePos;
+            UInt64 inv_mask_shift_fill = ((UInt64)1 << bit_pos) - 1;
+            for (int i = 0; i < field.ByteSize; i++, byte_pos++)
+            {
+                // 対象バイトを抽出
+                byte temp_mask = (byte)((mask << bit_pos) & 0xFF);
+                byte temp_value = (byte)((value << bit_pos) & temp_mask);
+                byte temp_inv_mask = (byte)((inv_mask << bit_pos) | inv_mask_shift_fill & 0xFF);
+                // 送信バイトシーケンスに適用
+                // 該当ビットをクリア
+                TxBuffer[byte_pos] &= temp_inv_mask;
+                // 該当ビットにセット
+                TxBuffer[byte_pos] |= temp_value;
+
+                // 使ったデータを削除
+                value >>= shift;
+                mask >>= shift;
+                inv_mask >>= shift;
+                // 次の計算に合わせて設定更新
+                // 2回目以降は0ビット目の位置が合っている
+                bit_pos = 0;
+                shift = 8;
+                inv_mask_shift_fill = 0;
+            }
+        }
 
 
         #region IDisposable Support

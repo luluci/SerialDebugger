@@ -737,10 +737,12 @@ namespace SerialDebugger.Comm
         private static UIElement MakeSelectGuiComboBox(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
-            var bind = new Binding(path + ".Selects");
+            var bind_itemsrc = new Binding(path + ".Selects");
+            var bind_selectidx = new Binding(path + ".SelectIndexSelects.Value");
             //
             var cb = new ComboBox();
-            cb.SetBinding(ComboBox.ItemsSourceProperty, bind);
+            cb.SetBinding(ComboBox.ItemsSourceProperty, bind_itemsrc);
+            cb.SetBinding(ComboBox.SelectedIndexProperty, bind_selectidx);
             cb.DisplayMemberPath = "Disp";
             cb.SelectedValuePath = "Value";
             //cb.Background = SystemColors.ControlLightLightBrush;
@@ -751,7 +753,9 @@ namespace SerialDebugger.Comm
             Grid.SetColumn(border, col);
             if (rowspan != -1)
             {
-                Grid.SetRowSpan(border, rowspan);
+                //Grid.SetRowSpan(border, rowspan);
+                // コンボボックスは1行だけ使えばいい
+                Grid.SetRowSpan(border, 1);
             }
             if (colspan != -1)
             {

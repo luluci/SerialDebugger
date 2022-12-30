@@ -13,6 +13,11 @@ namespace SerialDebugger
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            Reactive.Bindings.ReactivePropertyScheduler.SetDefault(new Reactive.Bindings.Schedulers.ReactivePropertyWpfScheduler(Dispatcher));
+        }
+
         public App()
         {
             var font = new System.Windows.Media.FontFamily("Meiryo UI");
@@ -22,5 +27,6 @@ namespace SerialDebugger
 
             FrameworkElement.StyleProperty.OverrideMetadata(typeof(Window), new FrameworkPropertyMetadata(style));
         }
+        
     }
 }

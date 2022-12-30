@@ -41,7 +41,7 @@ namespace SerialDebugger
                     },
                     0x55, Comm.TxField.SelectModeType.Edit));
                 f.Add(new Comm.TxField("field2", 4, 0x02, Comm.TxField.SelectModeType.Edit));
-                f.Add(new Comm.TxField("field3", 7, 0x04));
+                f.Add(new Comm.TxField("field3", 7, 0x04, Comm.TxField.SelectModeType.Unit, new Comm.TxField.Selecter("hPa", 10, 1100, 850, 0, "F1")));
                 f.Add(new Comm.TxField("field4", 9, 0x0F));
                 f.Add(new Comm.TxField(
                     "field5", 1, 0xFF,

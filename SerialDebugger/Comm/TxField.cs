@@ -27,13 +27,18 @@ namespace SerialDebugger.Comm
         /// TxFrame内の先頭からのバイト位置
         /// Nバイト目を示す.
         /// </summary>
-        internal int BytePos { get; set; }
+        internal int BytePos { get; set; } = 0;
+        /// <summary>
+        /// BytePosからBytePos+Nバイト目まで使うことを示す
+        /// </summary>
+        internal int ByteSize { get; set; } = 0;
 
         internal bool IsByteDisp { get; set; } = false;
 
         public UInt64 Max { get; }
         public UInt64 Min { get; }
         public UInt64 Mask { get; }
+        public UInt64 InvMask { get; }
 
         public class InnerField
         {
@@ -80,6 +85,7 @@ namespace SerialDebugger.Comm
             public Selecter(string unit, double lsb, double disp_max, double disp_min, UInt64 value_min, string format)
             {
                 Type = SelectModeType.Unit;
+                Unit = unit;
                 Lsb = lsb;
                 DispMax = disp_max;
                 DispMin = disp_min;
@@ -100,6 +106,7 @@ namespace SerialDebugger.Comm
             }
         }
         public ReactiveCollection<Select> Selects { get; private set; }
+        public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
 
         public TxField(string name, int bitsize, UInt64 value = 0, SelectModeType type = SelectModeType.Fix, Selecter selecter = null)
             : this(new InnerField[]{ new InnerField(name, bitsize) }, value, type, selecter)
@@ -120,10 +127,28 @@ namespace SerialDebugger.Comm
             Max = (UInt64)1 << BitSize;
             Min = 0;
             Mask = Max - 1;
+            InvMask = ~Mask;
             //
             value = value & Mask;
-            Value = new ReactivePropertySlim<UInt64>(value);
-            Value.AddTo(Disposables);
+            Value = new ReactivePropertySlim<UInt64>(value, mode: ReactivePropertyMode.DistinctUntilChanged);
+            Value
+                .Subscribe(x =>
+                {
+                    int i;
+                    i = 0;
+                })
+                .AddTo(Disposables);
+            //
+            Selects = new ReactiveCollection<Select>();
+            Selects.AddTo(Disposables);
+            SelectIndexSelects = new ReactivePropertySlim<int>(0, mode:ReactivePropertyMode.DistinctUntilChanged);
+            SelectIndexSelects
+                .Subscribe((int index) =>
+                {
+                    var select = Selects[index];
+                    Value.Value = select.Value;
+                })
+                .AddTo(Disposables);
             //
             SelectType = type;
             MakeSelectMode(selecter);
@@ -132,15 +157,16 @@ namespace SerialDebugger.Comm
 
         private void MakeSelectMode(Selecter selecter)
         {
+            int index;
             switch (SelectType)
             {
                 case SelectModeType.Unit:
-                    Selects = new ReactiveCollection<Select>();
-                    MakeSelectModeUnit(selecter);
+                    index = MakeSelectModeUnit(selecter);
+                    SelectIndexSelects.Value = index;
                     break;
                 case SelectModeType.Dict:
-                    Selects = new ReactiveCollection<Select>();
-                    MakeSelectModeDict(selecter);
+                    index = MakeSelectModeDict(selecter);
+                    SelectIndexSelects.Value = index;
                     break;
                 case SelectModeType.Edit:
                 case SelectModeType.Fix:
@@ -149,16 +175,24 @@ namespace SerialDebugger.Comm
             }
         }
 
-        private void MakeSelectModeUnit(Selecter selecter)
+        private int MakeSelectModeUnit(Selecter selecter)
         {
+            int selectIndex = 0;
+            int index = 0;
             double temp = selecter.DispMin;
             UInt64 value = selecter.ValueMin;
             while (temp <= selecter.DispMax)
             {
                 string disp = temp.ToString(selecter.Format) + selecter.Unit;
                 Selects.Add(new Select(value, disp));
+                // SelectIndex
+                if (value == Value.Value)
+                {
+                    selectIndex = index;
+                }
                 //
                 temp += selecter.Lsb;
+                index++;
                 value++;
                 // BitSize定義の上限到達で終了
                 if (value >= Max)
@@ -166,10 +200,14 @@ namespace SerialDebugger.Comm
                     break;
                 }
             }
+
+            return selectIndex;
         }
 
-        private void MakeSelectModeDict(Selecter selecter)
+        private int MakeSelectModeDict(Selecter selecter)
         {
+            int selectIndex = 0;
+            int index = 0;
             foreach (var item in selecter.Dict)
             {
                 // BitSize定義の範囲チェック
@@ -177,7 +215,16 @@ namespace SerialDebugger.Comm
                 {
                     Selects.Add(new Select(item.Item1, item.Item2));
                 }
+                //
+                if (item.Item1 == Value.Value)
+                {
+                    selectIndex = index;
+                }
+                //
+                index++;
             }
+
+            return selectIndex;
         }
 
 

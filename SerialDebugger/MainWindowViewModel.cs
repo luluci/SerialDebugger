@@ -30,6 +30,8 @@ namespace SerialDebugger
         public ReactiveCollection<Comm.Settings.CommInfo> CommSettings { get; set; }
         public ReactivePropertySlim<int> CommSettingsSelectIndex { get; set; }
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
+        public ReactiveCommand OnClickTxDataSend { get; set; }
+        public ReactiveCommand OnClickTxBufferSend { get; set; }
         // Log
         public ReactiveCollection<string> Log { get; set; }
 
@@ -120,6 +122,16 @@ namespace SerialDebugger
                 TxFrames = new ReactiveCollection<Comm.TxFrame>();
                 TxFrames.AddTo(Disposables);
             }
+            OnClickTxDataSend = new ReactiveCommand();
+            OnClickTxDataSend
+                .Subscribe(x => {
+                    var bytes = (ReactiveCollection<byte>)x;
+                    SerialWrite(bytes);
+                })
+                .AddTo(Disposables);
+            OnClickTxBufferSend = new ReactiveCommand();
+            OnClickTxBufferSend.AddTo(Disposables);
+
             // Log
             Log = Logger.GetLogData();
 
@@ -127,34 +139,56 @@ namespace SerialDebugger
             OnClickTestSend = new ReactiveCommand();
             OnClickTestSend.Subscribe(x =>
                 {
-                    if (IsSerialOpen.Value)
-                    {
-                        try
-                        {
-                            {
-                                var buff = TxFrames[0].TxBuffer;
-                                serialPort.Write(buff.ToArray(), 0, buff.Count);
-                            }
-                            System.Threading.Thread.Sleep(1000);
-                            {
-                                var buff = TxFrames[1].TxBuffer;
-                                serialPort.Write(buff.ToArray(), 0, buff.Count);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Add($"送信エラー: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Logger.Add("error: COMポート未接続");
-                    }
+                    SerialWrite_test();
                 })
                 .AddTo(Disposables);
         }
 
+        private void SerialWrite(ReactiveCollection<byte> buff)
+        {
+            if (IsSerialOpen.Value)
+            {
+                try
+                {
+                    serialPort.Write(buff.ToArray(), 0, buff.Count);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Add($"送信エラー: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.Add("error: COMポート未接続");
+            }
+        }
 
+        private void SerialWrite_test()
+        {
+            if (IsSerialOpen.Value)
+            {
+                try
+                {
+                    {
+                        var buff = TxFrames[0].TxBuffer;
+                        serialPort.Write(buff.ToArray(), 0, buff.Count);
+                    }
+                    System.Threading.Thread.Sleep(1000);
+                    {
+                        var buff = TxFrames[1].TxBuffer;
+                        serialPort.Write(buff.ToArray(), 0, buff.Count);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Add($"送信エラー: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.Add("error: COMポート未接続");
+            }
+        }
 
 
         #region IDisposable Support

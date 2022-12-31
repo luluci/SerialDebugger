@@ -182,7 +182,7 @@ namespace SerialDebugger.Comm
             {
                 // 送信ボタン作成
                 // Bufferは各fieldと連動
-                grid.Children.Add(MakeButtonStyle1("Send", 0, 5));
+                grid.Children.Add(MakeButtonStyle1($"TxFrames[{frame_no}].TxBuffer", "Send", 0, 5));
                 grid.Children.Add(MakeTextBlockStyle1("TxData", 1, 5));
             }
             // BackupBufferを持つ場合はスペースを少し開けてGUI作成
@@ -370,7 +370,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeButtonStyle1(string text, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeButtonStyle1(string buff_path, string text, int row, int col, int rowspan = -1, int colspan = -1)
         {
             /*
             var btn = new Button();
@@ -393,6 +393,7 @@ namespace SerialDebugger.Comm
 
             return border;
             */
+
             var btn = new Button();
             btn.Content = text;
             btn.Margin = new Thickness(5, 2, 5, 2);
@@ -406,6 +407,12 @@ namespace SerialDebugger.Comm
             {
                 Grid.SetColumnSpan(btn, colspan);
             }
+
+            // binding
+            var bind_cmnd = new Binding("OnClickTxDataSend");
+            var bind_param = new Binding(buff_path);
+            btn.SetBinding(Button.CommandProperty, bind_cmnd);
+            btn.SetBinding(Button.CommandParameterProperty, bind_param);
 
             return btn;
         }

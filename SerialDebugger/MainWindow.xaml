@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SerialDebugger"
         mc:Ignorable="d"
-        Title="MainWindow" Height="738.281" Width="785.937">
+        Title="SerialDebugger" Height="738.281" Width="785.937">
     <!--
     <Window.DataContext>
         <local:MainWindowViewModel />

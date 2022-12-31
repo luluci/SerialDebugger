@@ -39,9 +39,23 @@ namespace SerialDebugger.Comm
         public UInt64 Min { get; }
         public UInt64 Mask { get; }
         public UInt64 InvMask { get; }
+
         // チェックサム用プロパティ
-        public int ChecksumBegin { get; set; }
-        public int ChecksumEnd { get; set; }
+        public enum ChecksumMethod
+        {
+            None,       // 総和
+            cmpl_2,     // 2の補数
+            cmpl_1,     // 1の補数
+        }
+        public class ChecksumNode
+        {
+            public string Name { get; set; }
+            public int BitSize { get; set; }
+            public int Begin { get; set; }
+            public int End { get; set; }
+            public ChecksumMethod Method { get; set; }
+        }
+        public ChecksumNode Checksum { get; set; }
         public bool IsChecksum { get; set; } = false;
 
         public class InnerField
@@ -113,6 +127,7 @@ namespace SerialDebugger.Comm
         public ReactiveCollection<Select> Selects { get; private set; }
         public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
 
+
         /// <summary>
         /// チェックサムノード用コンストラクタ
         /// </summary>
@@ -121,12 +136,10 @@ namespace SerialDebugger.Comm
         /// <param name="value"></param>
         /// <param name="type"></param>
         /// <param name="selecter"></param>
-        public TxField(string name, int bitsize, int begin, int end, UInt64 value = 0, SelectModeType type = SelectModeType.Checksum)
-            : this(new InnerField[] { new InnerField(name, bitsize) }, value, type, null)
+        public TxField(ChecksumNode node)
+            : this(new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, SelectModeType.Checksum, null)
         {
-            ChecksumBegin = begin;
-            ChecksumEnd = end;
-            SelectType = SelectModeType.Checksum;
+            Checksum = node;
             IsChecksum = true;
         }
 

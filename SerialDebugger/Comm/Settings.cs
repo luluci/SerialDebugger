@@ -176,8 +176,32 @@ namespace SerialDebugger.Comm
             {
                 throw new Exception("Checksumノードはname,bit_sizeを指定してください。");
             }
+            // Checksum計算方法
+            var method = new TxField.ChecksumMethod();
+            switch (field.Checksum.Method)
+            {
+                case "2compl":
+                    // 2の補数
+                    method = TxField.ChecksumMethod.cmpl_2;
+                    break;
+                case "1compl":
+                    // 1の補数
+                    method = TxField.ChecksumMethod.cmpl_1;
+                    break;
+                case "Sum":
+                default:
+                    // 総和
+                    method = TxField.ChecksumMethod.None;
+                    break;
+            }
             // TxField生成
-            return new TxField(field.Name, field.BitSize, field.Checksum.Begin, field.Checksum.End);
+            return new TxField(new TxField.ChecksumNode{
+                Name = field.Name,
+                BitSize = field.BitSize,
+                Begin = field.Checksum.Begin,
+                End = field.Checksum.End,
+                Method = method,
+            });
         }
 
         static private TxField MakeTxFieldDict(JsonTxField field)
@@ -346,5 +370,8 @@ namespace SerialDebugger.Comm
 
         [JsonPropertyName("end")]
         public int End { get; set; } = 0;
+
+        [JsonPropertyName("method")]
+        public string Method { get; set; } = string.Empty;
     }
 }

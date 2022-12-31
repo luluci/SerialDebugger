@@ -20,9 +20,17 @@ namespace SerialDebugger.Serial
     /// </summary>
     public partial class Settings : UserControl
     {
+        public SettingsViewModel vm;
+
         public Settings()
         {
             InitializeComponent();
+
+            // ViewModel
+            vm = new SettingsViewModel();
+            DataContext = vm;
+
+            //
         }
     }
 }

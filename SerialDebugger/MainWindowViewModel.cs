@@ -28,7 +28,8 @@ namespace SerialDebugger
 
         public MainWindowViewModel(MainWindow window)
         {
-            // MainWindow
+            // Serial
+            // 設定ボタン
             OnClickSerialSetting = new ReactiveCommand();
             OnClickSerialSetting
                 .Subscribe(x =>
@@ -38,6 +39,7 @@ namespace SerialDebugger
                 })
                 .AddTo(Disposables);
             popup = new Popup();
+            popup.StaysOpen = false;
             popup.Child = new Serial.Settings();
             // Comm
             // Comm設定取得
@@ -53,7 +55,7 @@ namespace SerialDebugger
                     Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
                 })
                 .AddTo(Disposables);
-            // GUI構築
+            // 有効な通信フォーマットがあればツールに取り込む
             if (CommSettings.Count > 0)
             {
                 foreach (var comm in CommSettings)

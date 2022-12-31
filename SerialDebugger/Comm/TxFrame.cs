@@ -224,7 +224,7 @@ namespace SerialDebugger.Comm
                 inv_mask_shift_fill = 0;
             }
             //
-            if (!field.IsChecksum)
+            if (HasChecksum && !field.IsChecksum)
             {
                 UpdateChecksum();
             }

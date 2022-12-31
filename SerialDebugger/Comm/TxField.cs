@@ -126,7 +126,9 @@ namespace SerialDebugger.Comm
         }
         public ReactiveCollection<Select> Selects { get; private set; }
         public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
-
+        private UInt64 SelectsValueMax = 0;
+        private UInt64 SelectsValueMin = 0;
+        private Dictionary<UInt64, int> SelectsValueCheckTable;
 
         /// <summary>
         /// チェックサムノード用コンストラクタ
@@ -169,8 +171,20 @@ namespace SerialDebugger.Comm
             Value
                 .Subscribe(x =>
                 {
-                    //int i;
-                    //i = 0;
+                    if (SelectType == SelectModeType.Dict)
+                    {
+                        if (SelectsValueCheckTable.TryGetValue(x, out int index))
+                        {
+                            SelectIndexSelects.Value = index;
+                        }
+                    }
+                    else if(SelectType == SelectModeType.Unit)
+                    {
+                        if (SelectsValueMin <= x && x <= SelectsValueMax)
+                        {
+                            SelectIndexSelects.Value = (int)x;
+                        }
+                    }
                 })
                 .AddTo(Disposables);
             //
@@ -216,6 +230,7 @@ namespace SerialDebugger.Comm
             int index = 0;
             double temp = selecter.DispMin;
             UInt64 value = selecter.ValueMin;
+            SelectsValueMin = selecter.ValueMin;
             while (temp <= selecter.DispMax)
             {
                 string disp = temp.ToString(selecter.Format) + selecter.Unit;
@@ -235,12 +250,14 @@ namespace SerialDebugger.Comm
                     break;
                 }
             }
+            SelectsValueMax = value - 1;
 
             return selectIndex;
         }
 
         private int MakeSelectModeDict(Selecter selecter)
         {
+            SelectsValueCheckTable = new Dictionary<ulong, int>();
             int selectIndex = 0;
             int index = 0;
             foreach (var item in selecter.Dict)
@@ -249,14 +266,16 @@ namespace SerialDebugger.Comm
                 if (item.Item1 < Max)
                 {
                     Selects.Add(new Select(item.Item1, item.Item2));
+                    //
+                    if (item.Item1 == Value.Value)
+                    {
+                        selectIndex = index;
+                    }
+                    //
+                    SelectsValueCheckTable.Add(item.Item1, index);
+                    //
+                    index++;
                 }
-                //
-                if (item.Item1 == Value.Value)
-                {
-                    selectIndex = index;
-                }
-                //
-                index++;
             }
 
             return selectIndex;

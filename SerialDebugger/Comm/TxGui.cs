@@ -700,9 +700,9 @@ namespace SerialDebugger.Comm
             {
                 case TxField.SelectModeType.Dict:
                 case TxField.SelectModeType.Unit:
-                    return MakeSelectGuiComboBox(field, path, row, col, rowspan, colspan);
+                    return MakeSelectGuiSelecter(field, path, row, col, rowspan, colspan);
                 case TxField.SelectModeType.Edit:
-                    return MakeSelectGuiTextBox(field, path, row, col, rowspan, colspan);
+                    return MakeSelectGuiEdit(field, path, row, col, rowspan, colspan);
                 case TxField.SelectModeType.Fix:
                 default:
                     return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
@@ -714,8 +714,37 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
+        private static UIElement MakeSelectGuiEdit(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            var tb = MakeSelectGuiTextBox(field, path, row, col, rowspan, colspan);
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+        /// <summary>
+        /// Binding設定付きTextBox
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
         private static UIElement MakeSelectGuiTextBox(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
+            // ベース作成
+            var sp = new StackPanel();
+            sp.Orientation = Orientation.Horizontal;
+
             // binding作成
             var bind = new Binding(path + ".Value.Value");
             bind.Converter = EditConverter;
@@ -725,9 +754,53 @@ namespace SerialDebugger.Comm
             tb.SetBinding(TextBox.TextProperty, bind);
             tb.Background = SystemColors.ControlLightLightBrush;
             tb.TextAlignment = TextAlignment.Center;
+            tb.Width = FrameColWidth[4] - 15;
+            //
+            sp.Children.Add(tb);
+
+            // h表示
+            var text = new TextBlock();
+            text.Text = "h";
+            //
+            sp.Children.Add(text);
+
+            return sp;
+        }
+
+        /// <summary>
+        /// Binding設定付き選択コンボボックスGUI作成
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        private static UIElement MakeSelectGuiSelecter(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            UIElement gui_ptr;
+            // 2行(2bit)以上の領域があれば直接編集GUI追加
+            if (field.BitSize > 1)
+            {
+                // ベース作成
+                var sp = new StackPanel();
+                // TextBox作成
+                var tb = MakeSelectGuiTextBox(field, path, row, col, rowspan, colspan);
+                //
+                sp.Children.Add(tb);
+
+                // ComboBox作成
+                var cb = MakeSelectGuiComboBox(field, path, row, col, rowspan, colspan);
+                sp.Children.Add(cb);
+
+                gui_ptr = sp;
+            }
+            else
+            {
+                // ComboBox作成
+                var cb = MakeSelectGuiComboBox(field, path, row, col, rowspan, colspan);
+
+                gui_ptr = cb;
+            }
             //
             var border = MakeBorder1();
-            border.Child = tb;
+            border.Child = gui_ptr;
             Grid.SetRow(border, row);
             Grid.SetColumn(border, col);
             if (rowspan != -1)
@@ -759,23 +832,8 @@ namespace SerialDebugger.Comm
             cb.DisplayMemberPath = "Disp";
             cb.SelectedValuePath = "Value";
             //cb.Background = SystemColors.ControlLightLightBrush;
-            //
-            var border = MakeBorder1();
-            border.Child = cb;
-            Grid.SetRow(border, row);
-            Grid.SetColumn(border, col);
-            if (rowspan != -1)
-            {
-                //Grid.SetRowSpan(border, rowspan);
-                // コンボボックスは1行だけ使えばいい
-                Grid.SetRowSpan(border, 1);
-            }
-            if (colspan != -1)
-            {
-                Grid.SetColumnSpan(border, colspan);
-            }
-
-            return border;
+            
+            return cb;
         }
 
         /// <summary>

@@ -88,5 +88,11 @@ namespace SerialDebugger
             Comm.TxGui.Make(BaseSerialTx, vm.TxFrames);
             */
         }
+
+        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var scrl = (ScrollViewer)sender;
+            scrl.ScrollToEnd();
+        }
     }
 }

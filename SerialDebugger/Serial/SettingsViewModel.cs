@@ -38,6 +38,7 @@ namespace SerialDebugger.Serial
         public ReactivePropertySlim<int> ParityListSelectIndex { get; set; }
         public ReactiveCollection<StopBitsNode> StopBitsList { get; set; }
         public ReactivePropertySlim<int> StopBitsListSelectIndex { get; set; }
+        public ReactivePropertySlim<int> TxTimeout { get; set; }
         public ReactiveCommand OnClickReload { get; set; }
 
         public SettingsViewModel()
@@ -89,7 +90,10 @@ namespace SerialDebugger.Serial
             StopBitsList.Add(new StopBitsNode { StopBits = StopBits.Two, Disp = "2bit" });
             StopBitsListSelectIndex = new ReactivePropertySlim<int>(1);
             StopBitsListSelectIndex.AddTo(Disposables);
-            
+            // 送信タイムアウト
+            TxTimeout = new ReactivePropertySlim<int>(1000);
+            TxTimeout.AddTo(Disposables);
+
             // COMポート再読み込み
             OnClickReload = new ReactiveCommand();
             OnClickReload.Subscribe(x =>
@@ -97,16 +101,7 @@ namespace SerialDebugger.Serial
                     InitComPort();
                 })
                 .AddTo(Disposables);
-
-            /*
-            var serial = new SerialPort
-            {
-                PortName = "",
-                BaudRate = 0,
-                Parity = Parity.None,
-                StopBits = StopBits.None,
-            };
-            */
+            
         }
 
         public void InitComPort()
@@ -130,6 +125,7 @@ namespace SerialDebugger.Serial
                 DataBits = DataBitsList[DataBitsListSelectIndex.Value],
                 Parity = ParityList[ParityListSelectIndex.Value].Parity,
                 StopBits = StopBitsList[StopBitsListSelectIndex.Value].StopBits,
+                WriteTimeout = TxTimeout.Value,
             };
         }
 

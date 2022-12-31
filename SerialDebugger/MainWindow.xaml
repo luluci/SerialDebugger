@@ -31,11 +31,13 @@
             <ComboBox ItemsSource="{Binding CommSettings}" DisplayMemberPath="Name" SelectedIndex="{Binding CommSettingsSelectIndex.Value}" HorizontalAlignment="Left" Margin="158,5,0,0" VerticalAlignment="Top" Width="235"/>
             <TextBlock HorizontalAlignment="Left" Margin="101,8,0,0" TextWrapping="Wrap" Text="通信設定:" VerticalAlignment="Top" FontFamily="Meiryo UI"/>
             <Button Content="{Binding TextSerialOpen.Value}" Command="{Binding OnClickSerialOpen}" HorizontalAlignment="Left" Height="22" Margin="430,5,0,0" VerticalAlignment="Top" Width="74" FontFamily="Meiryo UI"/>
+            <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}" HorizontalAlignment="Left" Margin="578,6,0,0" VerticalAlignment="Top" Width="98"/>
         </Grid>
         <Grid x:Name="BaseCtrl" Height="98" VerticalAlignment="Bottom" Background="#FFFFFFE1">
 
 
             <GroupBox Grid.Column="1" Header="log">
+                <!--
                 <DockPanel>
                     <ItemsControl x:Name="log" ItemsSource="{Binding Log}">
                         <ItemsControl.ItemsPanel>
@@ -45,13 +47,28 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.Template>
                             <ControlTemplate>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
                                     <ItemsPresenter />
                                 </ScrollViewer>
                             </ControlTemplate>
                         </ItemsControl.Template>
                     </ItemsControl>
                 </DockPanel>
+                -->
+                <ListBox x:Name="log" ItemsSource="{Binding Log}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.Template>
+                        <ControlTemplate>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True" ScrollChanged="ScrollViewer_ScrollChanged">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </ListBox.Template>
+                </ListBox>
             </GroupBox>
 
         </Grid>

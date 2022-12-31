@@ -33,6 +33,9 @@ namespace SerialDebugger
         // Log
         public ReactiveCollection<string> Log { get; set; }
 
+        // Debug
+        public ReactiveCommand OnClickTestSend { get; set; }
+
         public MainWindowViewModel(MainWindow window)
         {
             // Serial
@@ -65,7 +68,7 @@ namespace SerialDebugger
                     }
                     catch (Exception e)
                     {
-                        Logger.Add($"COM Open Error: {e.Message}\n");
+                        Logger.Add($"COM Open Error: {e.Message}");
                     }
                 })
                 .AddTo(Disposables);
@@ -119,6 +122,36 @@ namespace SerialDebugger
             }
             // Log
             Log = Logger.GetLogData();
+
+            // test
+            OnClickTestSend = new ReactiveCommand();
+            OnClickTestSend.Subscribe(x =>
+                {
+                    if (IsSerialOpen.Value)
+                    {
+                        try
+                        {
+                            {
+                                var buff = TxFrames[0].TxBuffer;
+                                serialPort.Write(buff.ToArray(), 0, buff.Count);
+                            }
+                            System.Threading.Thread.Sleep(1000);
+                            {
+                                var buff = TxFrames[1].TxBuffer;
+                                serialPort.Write(buff.ToArray(), 0, buff.Count);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Add($"送信エラー: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Logger.Add("error: COMポート未接続");
+                    }
+                })
+                .AddTo(Disposables);
         }
 
 

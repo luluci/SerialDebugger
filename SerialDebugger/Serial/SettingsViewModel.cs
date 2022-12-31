@@ -60,6 +60,7 @@ namespace SerialDebugger.Serial
             }
             BaudrateListSelectIndex = new ReactivePropertySlim<int>(1);
             BaudrateListSelectIndex.AddTo(Disposables);
+            BaudrateListSelectItem.Value = BaudrateList[BaudrateListSelectIndex.Value];
             // データサイズ
             DataBitsList = new ReactiveCollection<int>();
             DataBitsList.AddTo(Disposables);
@@ -77,7 +78,7 @@ namespace SerialDebugger.Serial
             ParityList.Add(new ParityNode { Parity = Parity.Odd, Disp = "奇数" });
             ParityList.Add(new ParityNode { Parity = Parity.Space, Disp = "常に0" });
             ParityList.Add(new ParityNode { Parity = Parity.Mark, Disp = "常に1" });
-            ParityListSelectIndex = new ReactivePropertySlim<int>(0);
+            ParityListSelectIndex = new ReactivePropertySlim<int>(1);
             ParityListSelectIndex.AddTo(Disposables);
             // Stop bit
             StopBitsList = new ReactiveCollection<StopBitsNode>();
@@ -86,7 +87,7 @@ namespace SerialDebugger.Serial
             StopBitsList.Add(new StopBitsNode { StopBits = StopBits.One, Disp = "1bit" });
             StopBitsList.Add(new StopBitsNode { StopBits = StopBits.OnePointFive, Disp = "1.5bit" });
             StopBitsList.Add(new StopBitsNode { StopBits = StopBits.Two, Disp = "2bit" });
-            StopBitsListSelectIndex = new ReactivePropertySlim<int>(0);
+            StopBitsListSelectIndex = new ReactivePropertySlim<int>(1);
             StopBitsListSelectIndex.AddTo(Disposables);
             
             // COMポート再読み込み

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO.Ports;
 using System.Reactive.Disposables;
 using Prism.Mvvm;
 using Reactive.Bindings;
@@ -16,8 +17,14 @@ namespace SerialDebugger
 
     class MainWindowViewModel : BindableBase, IDisposable
     {
-        // MainWindow
+        // Serial
+        Serial.Settings serialSetting;
+        SerialPort serialPort = null;
+        public ReactivePropertySlim<bool> IsSerialOpen { get; set; }
+        public ReactivePropertySlim<string> TextSerialOpen { get; set; }
+        public ReactiveCommand OnClickSerialOpen { get; set; }
         public ReactiveCommand OnClickSerialSetting { get; set; }
+        public ReadOnlyReactivePropertySlim<bool> IsEnableSerialSetting { get; set; }
         Popup popup;
         // Comm
         public ReactiveCollection<Comm.Settings.CommInfo> CommSettings { get; set; }
@@ -29,7 +36,43 @@ namespace SerialDebugger
         public MainWindowViewModel(MainWindow window)
         {
             // Serial
+            serialSetting = new Serial.Settings();
+            // Serial Open
+            IsSerialOpen = new ReactivePropertySlim<bool>(false);
+            IsSerialOpen.AddTo(Disposables);
+            TextSerialOpen = new ReactivePropertySlim<string>("COM接続");
+            TextSerialOpen.AddTo(Disposables);
+            OnClickSerialOpen = new ReactiveCommand();
+            OnClickSerialOpen.Subscribe(x => 
+                {
+                    try
+                    {
+                        if (!IsSerialOpen.Value)
+                        {
+                            serialPort = serialSetting.vm.GetSerialPort();
+                            serialPort.Open();
+
+                            IsSerialOpen.Value = true;
+                            TextSerialOpen.Value = "COM切断";
+                        }
+                        else
+                        {
+                            serialPort.Close();
+                            serialPort = null;
+                            IsSerialOpen.Value = false;
+                            TextSerialOpen.Value = "COM接続";
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Add($"COM Open Error: {e.Message}\n");
+                    }
+                })
+                .AddTo(Disposables);
             // 設定ボタン
+            IsEnableSerialSetting = IsSerialOpen
+                .Inverse()
+                .ToReadOnlyReactivePropertySlim<bool>();
             OnClickSerialSetting = new ReactiveCommand();
             OnClickSerialSetting
                 .Subscribe(x =>
@@ -40,7 +83,7 @@ namespace SerialDebugger
                 .AddTo(Disposables);
             popup = new Popup();
             popup.StaysOpen = false;
-            popup.Child = new Serial.Settings();
+            popup.Child = serialSetting;
             // Comm
             // Comm設定取得
             CommSettings = Comm.Settings.GetComm();

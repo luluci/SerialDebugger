@@ -95,11 +95,11 @@ namespace SerialDebugger.Settings
                     {
                         if (e.InnerException is null)
                         {
-                            Logger.Add($"json解析エラー: {e.Message} : in file {file}\n");
+                            Logger.Add($"json解析エラー: {e.Message} : in file {file}");
                         }
                         else
                         {
-                            Logger.Add($"json解析エラー: {e.InnerException.Message} : in file {file}\n");
+                            Logger.Add($"json解析エラー: {e.InnerException.Message} : in file {file}");
                         }
                     }
                 }

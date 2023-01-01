@@ -23,11 +23,11 @@ namespace SerialDebugger.Settings
 
         public void AnalyzeJson(Json.Serial json)
         {
-            if (json.Baudrate != -1)
+            if (json.Baudrate > 0)
             {
                 Baudrate = json.Baudrate;
             }
-            if (json.DataBits != -1)
+            if (json.DataBits > 0)
             {
                 DataBits = json.DataBits;
             }
@@ -75,7 +75,7 @@ namespace SerialDebugger.Settings
                     break;
             }
             // TxTimeout
-            if (json.TxTimeout != -1)
+            if (json.TxTimeout >= 0)
             {
                 TxTimeout = json.TxTimeout;
             }

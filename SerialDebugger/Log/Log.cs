@@ -14,6 +14,7 @@ namespace SerialDebugger.Log
     static class Log
     {
         static private LogImpl Impl = new LogImpl();
+        static private MainWindow MainWindow;
 
         static public ReactiveCollection<string> GetLogData()
         {
@@ -27,6 +28,12 @@ namespace SerialDebugger.Log
                 Impl.Log.RemoveAt(0);
             }
             Impl.Log.Add(log);
+            MainWindow.log_scrl.ScrollToBottom();
+        }
+
+        static public void Init(MainWindow window)
+        {
+            MainWindow = window;
         }
 
         static public string Last()

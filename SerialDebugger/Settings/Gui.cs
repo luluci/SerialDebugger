@@ -9,6 +9,13 @@ namespace SerialDebugger.Settings
 {
     class Gui
     {
+        public class WindowInfo
+        {
+            public int Width { get; set; }
+            public int Height { get; set; }
+        }
+        public WindowInfo Window { get; set; }
+
         public enum Col
         {
             ByteIndex,      // Byteインデックス表示列
@@ -30,12 +37,24 @@ namespace SerialDebugger.Settings
         public Gui()
         {
             // 初期値を入れておく
+            Window = new WindowInfo { Width = 900, Height = 700 };
             ColOrder = new int[(int)Col.Size] { 0, 1, 2, 3, 4, 5, 6, 7, };
             ColWidth = new int[(int)Col.Size] { 25, 25, 40, 80, 80, 50, 10, 80 };
         }
         
         public void AnalyzeJson(Json.Gui json)
         {
+            if (!(json.Window is null))
+            {
+                if (json.Window.Width > 0)
+                {
+                    Window.Width = json.Window.Width;
+                }
+                if (json.Window.Height > 0)
+                {
+                    Window.Height = json.Window.Height;
+                }
+            }
             if (!(json.ColOrder is null))
             {
                 ColOrder[(int)Col.ByteIndex] = json.ColOrder.ByteIndex;
@@ -66,6 +85,10 @@ namespace SerialDebugger.Settings
     {
         public class Gui
         {
+            // Window設定
+            [JsonPropertyName("window")]
+            public GuiWindow Window { get; set; }
+
             // 列並び
             [JsonPropertyName("column_order")]
             public GuiCol ColOrder { get; set; }
@@ -73,6 +96,15 @@ namespace SerialDebugger.Settings
             // 列並び
             [JsonPropertyName("column_width")]
             public GuiCol ColWidth { get; set; }
+        }
+
+        public class GuiWindow
+        {
+            [JsonPropertyName("width")]
+            public int Width { get; set; } = 0;
+
+            [JsonPropertyName("height")]
+            public int Height { get; set; } = 0;
         }
 
         public class GuiCol

@@ -47,14 +47,13 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.Template>
                             <ControlTemplate>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True" ScrollChanged="ScrollViewer_ScrollChanged">
                                     <ItemsPresenter />
                                 </ScrollViewer>
                             </ControlTemplate>
                         </ItemsControl.Template>
                     </ItemsControl>
                 </DockPanel>
-                -->
                 <ListBox x:Name="log" ItemsSource="{Binding Log}">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -69,6 +68,21 @@
                         </ControlTemplate>
                     </ListBox.Template>
                 </ListBox>
+                -->
+                <ScrollViewer x:Name="log_scrl" HorizontalScrollBarVisibility="Auto">
+                <ListBox x:Name="log" ItemsSource="{Binding Log}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.Template>
+                        <ControlTemplate>
+                            <ItemsPresenter />
+                        </ControlTemplate>
+                    </ListBox.Template>
+                </ListBox>
+                </ScrollViewer>
             </GroupBox>
 
         </Grid>

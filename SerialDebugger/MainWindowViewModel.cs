@@ -36,14 +36,22 @@ namespace SerialDebugger
         public ReactiveCommand OnClickTxBufferSend { get; set; }
         // Log
         public ReactiveCollection<string> Log { get; set; }
+        //
+        MainWindow window;
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
 
         public MainWindowViewModel(MainWindow window)
         {
+            // Logger設定
+            Logger.Init(window);
+            this.window = window;
             // 設定ファイル読み込み
             Setting.Init(0);
+            //
+            window.Width = Setting.Data.Gui.Window.Width;
+            window.Height = Setting.Data.Gui.Window.Height;
 
             // Serial
             serialSetting = new Serial.Settings();
@@ -104,6 +112,8 @@ namespace SerialDebugger
                     Setting.Select(idx);
                     TxFrames = Setting.Data.Comm.Tx;
                     // GUI構築する
+                    window.Width = Setting.Data.Gui.Window.Width;
+                    window.Height = Setting.Data.Gui.Window.Height;
                     Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
                     // COMポート設定更新
                     serialSetting.vm.SetSerialSetting(Setting.Data.Serial);

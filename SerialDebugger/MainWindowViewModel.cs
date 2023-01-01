@@ -14,6 +14,7 @@ using System.Windows.Controls.Primitives;
 namespace SerialDebugger
 {
     using Logger = SerialDebugger.Log.Log;
+    using Setting = Settings.Settings;
 
     class MainWindowViewModel : BindableBase, IDisposable
     {
@@ -40,6 +41,10 @@ namespace SerialDebugger
 
         public MainWindowViewModel(MainWindow window)
         {
+            // 設定ファイル読み込み
+            Setting.Init();
+            var data = Setting.Data;
+
             // Serial
             serialSetting = new Serial.Settings();
             // Serial Open

@@ -112,6 +112,10 @@
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Serial\SettingsViewModel.cs" />
+    <Compile Include="Settings\Comm.cs" />
+    <Compile Include="Settings\Gui.cs" />
+    <Compile Include="Settings\Serial.cs" />
+    <Compile Include="Settings\Settings.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

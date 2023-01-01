@@ -2,6 +2,11 @@
 	"name": "XXプロトコル用設定",
 	
 	"gui": {
+		"window":
+			{
+				"width": 900,
+				"height": 700
+			},
 		"column_order":
 			{
 				"byte_index": 0,

@@ -32,22 +32,39 @@ namespace SerialDebugger.Settings
     static class Settings
     {
         static public SettingsImpl Impl = new SettingsImpl();
-        static public ReactiveCollection<SettingInfo> Data { get; set; }
+        static public ReactiveCollection<SettingInfo> DataList { get; set; }
+        static public SettingInfo Data { get; set; }
+        static public ReactivePropertySlim<int> DataIndex { get; set; }
 
-        static public void Init()
+        static public void Init(int idx)
         {
-            Data = Impl.Data;
+            DataList = Impl.DataList;
+            DataIndex = Impl.DataIndex;
+            Select(idx);
+        }
+
+        static public void Select(int idx)
+        {
+            if (DataList.Count > idx)
+            {
+                DataIndex.Value = idx;
+                Data = DataList[idx];
+            }
         }
     }
 
     class SettingsImpl : BindableBase, IDisposable
     {
-        public ReactiveCollection<SettingInfo> Data { get; set; }
+        public ReactiveCollection<SettingInfo> DataList { get; set; }
+        public ReactivePropertySlim<int> DataIndex { get; set; }
 
         public SettingsImpl()
         {
-            Data = new ReactiveCollection<SettingInfo>();
-            Data.AddTo(Disposables);
+            DataList = new ReactiveCollection<SettingInfo>();
+            DataList.AddTo(Disposables);
+            DataIndex = new ReactivePropertySlim<int>(0);
+            DataIndex.AddTo(Disposables);
+
             Load();
         }
 
@@ -72,7 +89,7 @@ namespace SerialDebugger.Settings
                             FilePath = file
                         };
                         LoadSettingFile(file, info);
-                        Data.Add(info);
+                        DataList.Add(info);
                     }
                     catch (Exception e)
                     {

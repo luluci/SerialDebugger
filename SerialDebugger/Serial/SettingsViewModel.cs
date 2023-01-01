@@ -12,6 +12,8 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Serial
 {
+    using Setting = SerialDebugger.Settings.Settings;
+
     public class SettingsViewModel : BindableBase, IDisposable
     {
         public class ParityNode
@@ -61,6 +63,7 @@ namespace SerialDebugger.Serial
             }
             BaudrateListSelectIndex = new ReactivePropertySlim<int>(1);
             BaudrateListSelectIndex.AddTo(Disposables);
+            // 最後に値設定
             BaudrateListSelectItem.Value = BaudrateList[BaudrateListSelectIndex.Value];
             // データサイズ
             DataBitsList = new ReactiveCollection<int>();
@@ -114,6 +117,57 @@ namespace SerialDebugger.Serial
                 ComList.Add(port);
             }
             ComListSelectIndex.Value = 0;
+        }
+
+        public void SetSerialSetting(SerialDebugger.Settings.Serial serial)
+        {
+            // Baudrate
+            BaudrateListSelectItem.Value = serial.Baudrate;
+            // DataBits
+            var idx = DataBitsList.IndexOf(serial.DataBits);
+            if (idx != -1)
+            {
+                DataBitsListSelectIndex.Value = idx;
+            }
+            // Parity
+            switch (serial.Parity)
+            {
+                case Parity.Even:
+                    ParityListSelectIndex.Value = 1;
+                    break;
+                case Parity.Odd:
+                    ParityListSelectIndex.Value = 2;
+                    break;
+                case Parity.Space:
+                    ParityListSelectIndex.Value = 3;
+                    break;
+                case Parity.Mark:
+                    ParityListSelectIndex.Value = 4;
+                    break;
+                case Parity.None:
+                default:
+                    ParityListSelectIndex.Value = 0;
+                    break;
+            }
+            // StopBit
+            switch (serial.StopBits)
+            {
+                case StopBits.One:
+                    StopBitsListSelectIndex.Value = 1;
+                    break;
+                case StopBits.OnePointFive:
+                    StopBitsListSelectIndex.Value = 2;
+                    break;
+                case StopBits.Two:
+                    StopBitsListSelectIndex.Value = 3;
+                    break;
+                case StopBits.None:
+                default:
+                    StopBitsListSelectIndex.Value = 0;
+                    break;
+            }
+            // TxTimeout
+            TxTimeout.Value = serial.TxTimeout;
         }
 
         public SerialPort GetSerialPort()

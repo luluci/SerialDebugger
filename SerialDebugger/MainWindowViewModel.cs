@@ -13,11 +13,14 @@ using System.Windows.Controls.Primitives;
 
 namespace SerialDebugger
 {
-    using Logger = SerialDebugger.Log.Log;
+    using Logger = Log.Log;
     using Setting = Settings.Settings;
 
     class MainWindowViewModel : BindableBase, IDisposable
     {
+        // Settings
+        public ReactiveCollection<Settings.SettingInfo> Settings { get; set; }
+        public ReactivePropertySlim<int> SettingsSelectIndex { get; set; }
         // Serial
         Serial.Settings serialSetting;
         SerialPort serialPort = null;
@@ -28,8 +31,6 @@ namespace SerialDebugger
         public ReadOnlyReactivePropertySlim<bool> IsEnableSerialSetting { get; set; }
         Popup popup;
         // Comm
-        public ReactiveCollection<Comm.Settings.CommInfo> CommSettings { get; set; }
-        public ReactivePropertySlim<int> CommSettingsSelectIndex { get; set; }
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
         public ReactiveCommand OnClickTxBufferSend { get; set; }
@@ -42,8 +43,7 @@ namespace SerialDebugger
         public MainWindowViewModel(MainWindow window)
         {
             // 設定ファイル読み込み
-            Setting.Init();
-            var data = Setting.Data;
+            Setting.Init(0);
 
             // Serial
             serialSetting = new Serial.Settings();
@@ -94,38 +94,39 @@ namespace SerialDebugger
             popup = new Popup();
             popup.StaysOpen = false;
             popup.Child = serialSetting;
-            // Comm
-            // Comm設定取得
-            CommSettings = Comm.Settings.GetComm();
-            CommSettings.AddTo(Disposables);
-            CommSettingsSelectIndex = new ReactivePropertySlim<int>(mode:ReactivePropertyMode.DistinctUntilChanged);
-            CommSettingsSelectIndex
+            // Settingファイル選択GUI
+            Settings = Setting.DataList;
+            SettingsSelectIndex = new ReactivePropertySlim<int>(mode:ReactivePropertyMode.DistinctUntilChanged);
+            SettingsSelectIndex
                 .Subscribe((int idx) =>
                 {
                     window.BaseSerialTx.Children.Clear();
-                    TxFrames = CommSettings[idx].Tx;
+                    Setting.Select(idx);
+                    TxFrames = Setting.Data.Comm.Tx;
                     // GUI構築する
                     Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
+                    // COMポート設定更新
+                    serialSetting.vm.SetSerialSetting(Setting.Data.Serial);
                 })
                 .AddTo(Disposables);
-            // 有効な通信フォーマットがあればツールに取り込む
-            if (CommSettings.Count > 0)
+            // 有効な設定ファイルを読み込んでいたら
+            if (Settings.Count > 0)
             {
-                foreach (var comm in CommSettings)
+                // 有効な通信フォーマットがあればツールに取り込む
+                if (Setting.Data.Comm.Tx.Count > 0)
                 {
-                    comm.Tx.AddTo(Disposables);
+                    // 先頭要素を選択
+                    TxFrames = Setting.Data.Comm.Tx;
+                    // GUI構築する
+                    Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
                 }
-
-                // 先頭要素を選択
-                TxFrames = CommSettings[0].Tx;
-                CommSettingsSelectIndex.Value = 0;
-                // GUI構築する
-                Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
-            }
-            else
-            {
-                TxFrames = new ReactiveCollection<Comm.TxFrame>();
-                TxFrames.AddTo(Disposables);
+                else
+                {
+                    TxFrames = new ReactiveCollection<Comm.TxFrame>();
+                    TxFrames.AddTo(Disposables);
+                }
+                // COMポート設定更新
+                serialSetting.vm.SetSerialSetting(Setting.Data.Serial);
             }
             OnClickTxDataSend = new ReactiveCommand();
             OnClickTxDataSend

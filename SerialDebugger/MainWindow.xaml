@@ -28,7 +28,7 @@
         </Grid>
         <Grid x:Name="BaseLog" Height="34" VerticalAlignment="Top" Background="#FFE6FFD4">
             <Button x:Name="BtnSettings" Content="COM設定" Command="{Binding OnClickSerialSetting}" IsEnabled="{Binding IsEnableSerialSetting.Value}" HorizontalAlignment="Left" Height="22" Margin="5,5,0,0" VerticalAlignment="Top" Width="70" FontFamily="Meiryo UI"/>
-            <ComboBox ItemsSource="{Binding CommSettings}" DisplayMemberPath="Name" SelectedIndex="{Binding CommSettingsSelectIndex.Value}" HorizontalAlignment="Left" Margin="158,5,0,0" VerticalAlignment="Top" Width="235"/>
+            <ComboBox ItemsSource="{Binding Settings}" DisplayMemberPath="Name" SelectedIndex="{Binding SettingsSelectIndex.Value}" HorizontalAlignment="Left" Margin="158,5,0,0" VerticalAlignment="Top" Width="235"/>
             <TextBlock HorizontalAlignment="Left" Margin="101,8,0,0" TextWrapping="Wrap" Text="通信設定:" VerticalAlignment="Top" FontFamily="Meiryo UI"/>
             <Button Content="{Binding TextSerialOpen.Value}" Command="{Binding OnClickSerialOpen}" HorizontalAlignment="Left" Height="22" Margin="430,5,0,0" VerticalAlignment="Top" Width="74" FontFamily="Meiryo UI"/>
             <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}" HorizontalAlignment="Left" Margin="578,6,0,0" VerticalAlignment="Top" Width="98"/>

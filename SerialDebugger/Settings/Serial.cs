@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace SerialDebugger.Settings
 {
-    class Serial
+    public class Serial
     {
-        public int Baudrate { get; set; }
-        public int DataBits { get; set; }
+        public int Baudrate { get; set; } = 9600;
+        public int DataBits { get; set; } = 8;
         public Parity Parity { get; set; }
         public StopBits StopBits { get; set; }
-        public int TxTimeout { get; set; }
+        public int TxTimeout { get; set; } = 500;
 
         public Serial()
         {
@@ -23,9 +23,14 @@ namespace SerialDebugger.Settings
 
         public void AnalyzeJson(Json.Serial json)
         {
-            Baudrate = json.Baudrate;
-            DataBits = json.DataBits;
-            TxTimeout = json.TxTimeout;
+            if (json.Baudrate != -1)
+            {
+                Baudrate = json.Baudrate;
+            }
+            if (json.DataBits != -1)
+            {
+                DataBits = json.DataBits;
+            }
             // Parity
             switch (json.Parity)
             {
@@ -69,11 +74,16 @@ namespace SerialDebugger.Settings
                     StopBits = StopBits.None;
                     break;
             }
+            // TxTimeout
+            if (json.TxTimeout != -1)
+            {
+                TxTimeout = json.TxTimeout;
+            }
         }
     }
 
 
-    partial class Json
+    public partial class Json
     {
         public class Serial
         {

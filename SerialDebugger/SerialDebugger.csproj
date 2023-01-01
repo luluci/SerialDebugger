@@ -106,6 +106,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Comm\SettingsGui.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Serial\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>

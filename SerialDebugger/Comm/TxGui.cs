@@ -11,14 +11,18 @@ using System.Windows.Media;
 
 namespace SerialDebugger.Comm
 {
+    using Setting = SettingsGui;
+
     /// <summary>
     /// TxFrameからGUIを動的に生成する
     /// </summary>
     class TxGui
     {
         // Frame 列幅 (Byte, Bit, Value, Name, Select, Buffer, space, BackupBuffer)
-        public static int[] FrameColWidth = { 25, 25, 40, 80, 80, 50, 10, 80 };
+        //public static int[] FrameColWidth = { 25, 25, 40, 80, 80, 50, 10, 80 };
         public static int[] Button3Width = { 15, 35, 15 };
+        // Input列に表示する単位(h)表示幅
+        public static int InputColUnitWidth = 15;
 
         // Converter
         private static TxGuiValueColConverter ColConverter = new TxGuiValueColConverter();
@@ -120,12 +124,12 @@ namespace SerialDebugger.Comm
                 var col_name = new ColumnDefinition();
                 var col_select = new ColumnDefinition();
                 var col_txdata = new ColumnDefinition();
-                col_byte.Width = new GridLength(FrameColWidth[0]);
-                col_bit.Width = new GridLength(FrameColWidth[1]);
-                col_value.Width = new GridLength(FrameColWidth[2]);
-                col_name.Width = new GridLength(FrameColWidth[3]);
-                col_select.Width = new GridLength(FrameColWidth[4]);
-                col_txdata.Width = new GridLength(FrameColWidth[5]);
+                col_byte.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.ByteIndex]);
+                col_bit.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.BitIndex]);
+                col_value.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.FieldValue]);
+                col_name.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.FieldName]);
+                col_select.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.FieldInput]);
+                col_txdata.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.TxBytes]);
                 grid.ColumnDefinitions.Add(col_byte);
                 grid.ColumnDefinitions.Add(col_bit);
                 grid.ColumnDefinitions.Add(col_value);
@@ -136,12 +140,12 @@ namespace SerialDebugger.Comm
                 if (frame.BackupBufferLength > 0)
                 {
                     var col_space = new ColumnDefinition();
-                    col_space.Width = new GridLength(FrameColWidth[6]);
+                    col_space.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.Spacer]);
                     grid.ColumnDefinitions.Add(col_space);
                     for (int i = 0; i < frame.BackupBufferLength; i++)
                     {
                         var col = new ColumnDefinition();
-                        col.Width = new GridLength(FrameColWidth[7]);
+                        col.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.TxBuffer]);
                         grid.ColumnDefinitions.Add(col);
                     }
                 }
@@ -152,38 +156,38 @@ namespace SerialDebugger.Comm
                 grid.RowDefinitions.Add(row_1);
                 grid.RowDefinitions.Add(row_2);
                 // Width作成
-                for (int i=0; i<6; i++)
+                for (int i = 0; i < (int)Setting.Col.Spacer; i++)
                 {
-                    width += FrameColWidth[i];
+                    width += Setting.Data.ColWidth[i];
                 }
                 // BackupBufferを持つ場合はスペースを少し開けてGUI作成
                 if (frame.BackupBufferLength > 0)
                 {
-                    width += FrameColWidth[6];
+                    width += Setting.Data.ColWidth[(int)Setting.Col.Spacer];
                     for (int i = 0; i < frame.BackupBufferLength; i++)
                     {
-                        width += FrameColWidth[7];
+                        width += Setting.Data.ColWidth[(int)Setting.Col.TxBuffer];
                     }
                 }
             }
             // Frame名称作成
             grid.Children.Add(MakeTextBlockStyle2(frame.Name, 0, 0, -1, 5));
             // column作成: byte
-            grid.Children.Add(MakeTextBlockStyle1("Byte", 1, 0));
+            grid.Children.Add(MakeTextBlockStyle1("Byte", 1, Setting.Data.ColOrder[(int)Setting.Col.ByteIndex]));
             // column作成: bit
-            grid.Children.Add(MakeTextBlockStyle1("Bit", 1, 1));
+            grid.Children.Add(MakeTextBlockStyle1("Bit", 1, Setting.Data.ColOrder[(int)Setting.Col.BitIndex]));
             // column作成: value
-            grid.Children.Add(MakeTextBlockStyle1("Value", 1, 2));
+            grid.Children.Add(MakeTextBlockStyle1("Value", 1, Setting.Data.ColOrder[(int)Setting.Col.FieldValue]));
             // column作成: name
-            grid.Children.Add(MakeTextBlockStyle1("Name", 1, 3));
+            grid.Children.Add(MakeTextBlockStyle1("Name", 1, Setting.Data.ColOrder[(int)Setting.Col.FieldName]));
             // column作成: select
-            grid.Children.Add(MakeTextBlockStyle1("Select", 1, 4));
+            grid.Children.Add(MakeTextBlockStyle1("Select", 1, Setting.Data.ColOrder[(int)Setting.Col.FieldInput]));
             // Buffer列作成
             {
                 // 送信ボタン作成
                 // Bufferは各fieldと連動
-                grid.Children.Add(MakeButtonStyle1($"TxFrames[{frame_no}].TxBuffer", "Send", 0, 5));
-                grid.Children.Add(MakeTextBlockStyle1("TxData", 1, 5));
+                grid.Children.Add(MakeButtonStyle1($"TxFrames[{frame_no}].TxBuffer", "Send", 0, Setting.Data.ColOrder[(int)Setting.Col.TxBytes]));
+                grid.Children.Add(MakeTextBlockStyle1("TxData", 1, Setting.Data.ColOrder[(int)Setting.Col.TxBytes]));
             }
             // BackupBufferを持つ場合はスペースを少し開けてGUI作成
             if (frame.BackupBufferLength > 0)
@@ -193,9 +197,9 @@ namespace SerialDebugger.Comm
                 for (int i = 0; i < frame.BackupBufferLength; i++)
                 {
                     // 送信ボタン作成
-                    grid.Children.Add(MakeButtonLoadStore(frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}]", "Send", 0, 7 + i));
+                    grid.Children.Add(MakeButtonLoadStore(frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}]", "Send", 0, Setting.Data.ColOrder[(int)Setting.Col.TxBuffer] + i));
                     // 表示ラベル
-                    grid.Children.Add(MakeTextBlockStyle1(frame.BackupBuffer[i].Name, 1, 7 + i));
+                    grid.Children.Add(MakeTextBlockStyle1(frame.BackupBuffer[i].Name, 1, Setting.Data.ColOrder[(int)Setting.Col.TxBuffer] + i));
                 }
             }
 
@@ -215,12 +219,12 @@ namespace SerialDebugger.Comm
                 var col_name = new ColumnDefinition();
                 var col_select = new ColumnDefinition();
                 var col_txdata = new ColumnDefinition();
-                col_byte.Width = new GridLength(FrameColWidth[0]);
-                col_bit.Width = new GridLength(FrameColWidth[1]);
-                col_value.Width = new GridLength(FrameColWidth[2]);
-                col_name.Width = new GridLength(FrameColWidth[3]);
-                col_select.Width = new GridLength(FrameColWidth[4]);
-                col_txdata.Width = new GridLength(FrameColWidth[5]);
+                col_byte.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.ByteIndex]);
+                col_bit.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.BitIndex]);
+                col_value.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.FieldValue]);
+                col_name.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.FieldName]);
+                col_select.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.FieldInput]);
+                col_txdata.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.TxBytes]);
                 grid.ColumnDefinitions.Add(col_byte);
                 grid.ColumnDefinitions.Add(col_bit);
                 grid.ColumnDefinitions.Add(col_value);
@@ -231,12 +235,12 @@ namespace SerialDebugger.Comm
                 if (frame.BackupBufferLength > 0)
                 {
                     var col_space = new ColumnDefinition();
-                    col_space.Width = new GridLength(FrameColWidth[6]);
+                    col_space.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.Spacer]);
                     grid.ColumnDefinitions.Add(col_space);
                     for (int i = 0; i < frame.BackupBufferLength; i++)
                     {
                         var col = new ColumnDefinition();
-                        col.Width = new GridLength(FrameColWidth[7]);
+                        col.Width = new GridLength(Setting.Data.ColWidth[(int)Setting.Col.TxBuffer]);
                         grid.ColumnDefinitions.Add(col);
                     }
                 }
@@ -248,17 +252,17 @@ namespace SerialDebugger.Comm
                     grid.RowDefinitions.Add(row);
                 }
                 // Width作成
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < (int)Setting.Col.Spacer; i++)
                 {
-                    width += FrameColWidth[i];
+                    width += Setting.Data.ColWidth[i];
                 }
                 // BackupBufferを持つ場合はスペースを少し開けてGUI作成
                 if (frame.BackupBufferLength > 0)
                 {
-                    width += FrameColWidth[6];
+                    width += Setting.Data.ColWidth[(int)Setting.Col.Spacer];
                     for (int i = 0; i < frame.BackupBufferLength; i++)
                     {
-                        width += FrameColWidth[7];
+                        width += Setting.Data.ColWidth[(int)Setting.Col.TxBuffer];
                     }
                 }
             }
@@ -275,7 +279,7 @@ namespace SerialDebugger.Comm
                     is_byte = ((bit % 8) == 0);
                     if (bit_pos == 0)
                     {
-                        grid.Children.Add(MakeTextBlockStyle1($"{byte_pos}", bit, 0, 8));
+                        grid.Children.Add(MakeTextBlockStyle1($"{byte_pos}", bit, Setting.Data.ColOrder[(int)Setting.Col.ByteIndex], 8));
                     }
                     // field情報作成
                     if (bit_rest == 0)
@@ -288,32 +292,32 @@ namespace SerialDebugger.Comm
                             {
                                 // バイト境界に配置、かつ、バイト単位データのとき、かつ、フィールド内で名前分割しないとき、
                                 // バイト単位でまとめて表示
-                                grid.Children.Add(MakeTextBlockStyle1($"-", bit, 1, field.BitSize));
+                                grid.Children.Add(MakeTextBlockStyle1($"-", bit, Setting.Data.ColOrder[(int)Setting.Col.BitIndex], field.BitSize));
                             }
                             else
                             {
                                 // その他は各ビット情報を出力
                                 for (int i=0; i<field.BitSize; i++)
                                 {
-                                    grid.Children.Add(MakeTextBlockBindStyle2(field, $"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit+i, 1));
+                                    grid.Children.Add(MakeTextBlockBindStyle2(field, $"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit+i, Setting.Data.ColOrder[(int)Setting.Col.BitIndex]));
                                 }
                             }
                             // Value列作成
-                            grid.Children.Add(MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, 2, field.BitSize));
+                            grid.Children.Add(MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, Setting.Data.ColOrder[(int)Setting.Col.FieldValue], field.BitSize));
                             // Name列作成
                             int inner_idx = 0;
                             foreach (var inner in field.InnerFields)
                             {
-                                grid.Children.Add(MakeTextBlockStyle3(inner.Name, bit+inner_idx, 3, inner.BitSize));
+                                grid.Children.Add(MakeTextBlockStyle3(inner.Name, bit+inner_idx, Setting.Data.ColOrder[(int)Setting.Col.FieldName], inner.BitSize));
                                 inner_idx += inner.BitSize;
                             }
                             //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Select列作成
-                            grid.Children.Add(MakeSelectGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, 4, field.BitSize));
+                            grid.Children.Add(MakeSelectGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, Setting.Data.ColOrder[(int)Setting.Col.FieldInput], field.BitSize));
                             // BackupBuffer列作成
                             for (int i = 0; i < frame.BackupBufferLength; i++)
                             {
-                                grid.Children.Add(MakeBackupBufferGui(field, frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}].Disp[{field_pos}]", bit, 7+i, field.BitSize));
+                                grid.Children.Add(MakeBackupBufferGui(field, frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}].Disp[{field_pos}]", bit, Setting.Data.ColOrder[(int)Setting.Col.TxBuffer] + i, field.BitSize));
                             }
 
                             // 次周回設定処理
@@ -329,25 +333,25 @@ namespace SerialDebugger.Comm
                             // Bit列作成
                             for (int i = 0; i < bit_rest; i++)
                             {
-                                grid.Children.Add(MakeTextBlockStyle1($"{bit + i}", bit+i, 1));
+                                grid.Children.Add(MakeTextBlockStyle1($"{bit + i}", bit+i, Setting.Data.ColOrder[(int)Setting.Col.BitIndex]));
                             }
                             // Value列作成
-                            grid.Children.Add(MakeTextBlockStyle1("-", bit, 2, bit_rest));
+                            grid.Children.Add(MakeTextBlockStyle1("-", bit, Setting.Data.ColOrder[(int)Setting.Col.FieldValue], bit_rest));
                             // Name列作成
-                            grid.Children.Add(MakeTextBlockStyle1("-", bit, 3, bit_rest));
+                            grid.Children.Add(MakeTextBlockStyle1("-", bit, Setting.Data.ColOrder[(int)Setting.Col.FieldName], bit_rest));
                             // Select列作成
-                            grid.Children.Add(MakeTextBlockStyle1("-", bit, 4, bit_rest));
+                            grid.Children.Add(MakeTextBlockStyle1("-", bit, Setting.Data.ColOrder[(int)Setting.Col.FieldInput], bit_rest));
                             // BackupBuffer列作成
                             for (int i = 0; i < frame.BackupBufferLength; i++)
                             {
-                                grid.Children.Add(MakeTextBlockStyle1("-", bit, 7+i, bit_rest));
+                                grid.Children.Add(MakeTextBlockStyle1("-", bit, Setting.Data.ColOrder[(int)Setting.Col.TxBuffer] + i, bit_rest));
                             }
                         }
                     }
                     // 送信バイトシーケンス
                     if (bit_pos == 0)
                     {
-                        grid.Children.Add(MakeTextBlockBindStyle2($"TxFrames[{frame_no}].TxBuffer[{byte_pos}]", bit, 5, 8));
+                        grid.Children.Add(MakeTextBlockBindStyle2($"TxFrames[{frame_no}].TxBuffer[{byte_pos}]", bit, Setting.Data.ColOrder[(int)Setting.Col.TxBytes], 8));
                     }
                     //
                     bit_rest--;
@@ -761,7 +765,7 @@ namespace SerialDebugger.Comm
             tb.SetBinding(TextBox.TextProperty, bind);
             tb.Background = SystemColors.ControlLightLightBrush;
             tb.TextAlignment = TextAlignment.Center;
-            tb.Width = FrameColWidth[4] - 15;
+            tb.Width = Setting.Data.ColWidth[(int)Setting.Col.FieldInput] - InputColUnitWidth;
             //
             sp.Children.Add(tb);
 

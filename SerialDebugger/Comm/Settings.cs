@@ -32,7 +32,7 @@ namespace SerialDebugger.Comm
             var list = new ReactiveCollection<CommInfo>();
             // デフォルトパス
             string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-            string CommSettingPath = rootPath + @"\Comm";
+            string CommSettingPath = rootPath + @"\Settings\Comm";
             // 設定ファイルチェック
             if (Directory.Exists(CommSettingPath))
             {

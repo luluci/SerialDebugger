@@ -1,0 +1,176 @@
+{
+	"name": "XXプロトコル用設定",
+	
+	"gui": {
+		"column_order":
+			{
+				"byte_index": 0,
+				"bit_index": 1,
+				"field_value": 2,
+				"field_name": 3,
+				"field_input": 4,
+				"tx_bytes": 5,
+				"spacer": 6,
+				"tx_buffer": 7
+			},
+		"column_width":
+			{
+				"byte_index": 25,
+				"bit_index": 25,
+				"field_value": 40,
+				"field_name": 80,
+				"field_input": 80,
+				"tx_bytes": 50,
+				"spacer": 10,
+				"tx_buffer": 80
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"tx_timeout": 500
+	},
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_A",
+					"buffer_size": 2,
+					"fields": [
+						{
+							"name": "field1_1",
+							"bit_size": 8,
+							"value": 1
+						},
+						{
+							"multi_name": [
+								{
+									"name": "field1_2_status",
+									"bit_size": 5
+								},
+								{
+									"name": "field1_2_error",
+									"bit_size": 3
+								}
+							],
+							"value": 85,
+							"type": "Edit"
+						},
+						{
+							"name": "field2",
+							"bit_size": 4,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "field3",
+							"bit_size": 7,
+							"value": 4,
+							"type": "Unit",
+							"unit": {
+								"unit": "hPa",
+								"lsb": 10,
+								"disp_max": 1100,
+								"disp_min": 850,
+								"value_min": 0,
+								"format": "F1"
+							}
+						},
+						{
+							"name": "field4",
+							"bit_size": 9,
+							"value": 15
+						},
+						{
+							"name": "field5",
+							"bit_size": 1,
+							"value": 255,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "OFF"
+								},
+								{
+									"value": 1,
+									"disp": "ON"
+								}
+							]
+						},
+						{
+							"name": "field6",
+							"bit_size": 11,
+							"value": 170
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"end": 6,
+								"method": "2compl"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame_B",
+					"buffer_size": 0,
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 1,
+							"value": 1
+						},
+						{
+							"name": "field2",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"value": 4,
+							"type": "Unit",
+							"unit": {
+								"unit": "hPa",
+								"lsb": 10,
+								"disp_max": 1100,
+								"disp_min": 850,
+								"value_min": 250,
+								"format": "F1"
+							}
+						},
+						{
+							"name": "field4",
+							"bit_size": 4,
+							"value": 4
+						},
+						{
+							"name": "field5",
+							"bit_size": 4,
+							"value": 255,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 2,
+									"disp": "2"
+								},
+								{
+									"value": 3,
+									"disp": "3"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}

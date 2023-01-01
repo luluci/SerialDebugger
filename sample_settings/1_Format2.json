@@ -1,0 +1,74 @@
+{
+	"name": "Format2",
+	
+	"gui": {
+		"column_order":
+			{
+				"byte_index": 0,
+				"bit_index": 1,
+				"field_value": 2,
+				"field_name": 3,
+				"field_input": 4,
+				"tx_bytes": 5,
+				"spacer": 6,
+				"tx_buffer": 7
+			},
+		"column_width":
+			{
+				"byte_index": 25,
+				"bit_index": 25,
+				"field_value": 40,
+				"field_name": 100,
+				"field_input": 110,
+				"tx_bytes": 50,
+				"spacer": 20,
+				"tx_buffer": 80
+			}
+	},
+	
+	"serial": {
+		"baudrate": 9600,
+		"data_bits": 7,
+		"parity": "odd",
+		"stop_bits": 1.5,
+		"tx_timeout": 1500
+	},
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_2B",
+					"buffer_size": 0,
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 1,
+							"value": 1
+						},
+						{
+							"name": "field2",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "field3",
+							"bit_size": 3,
+							"value": 3
+						},
+						{
+							"name": "field4",
+							"bit_size": 4,
+							"value": 4
+						},
+						{
+							"name": "field5",
+							"bit_size": 5,
+							"value": 5
+						}
+					]
+				}
+			]
+		}
+	}
+}

@@ -16,6 +16,7 @@ namespace SerialDebugger.Comm
         // 
         public string Name { get; }
 
+        public List<UInt64> Value { get; set; }
         /// <summary>
         /// 表示データ
         /// </summary>
@@ -26,21 +27,26 @@ namespace SerialDebugger.Comm
         public List<byte> Buffer { get; set; }
 
         public ReactiveCommand OnClickSave { get; set; }
+        public ReactiveCommand OnClickStore { get; set; }
 
         public TxBuffer(string name, int disp_size, int size)
         {
             Name = name;
 
+            Value = new List<ulong>(disp_size);
             Disp = new ReactiveCollection<string>();
             Disp.AddTo(Disposables);
             Buffer = new List<byte>(size);
 
             OnClickSave = new ReactiveCommand();
             OnClickSave.AddTo(Disposables);
-            
+            OnClickStore = new ReactiveCommand();
+            OnClickStore.AddTo(Disposables);
+
             for (int i = 0; i < disp_size; i++)
             {
                 Disp.Add("<None>");
+                Value.Add(0);
             }
             for (int i=0; i<size; i++)
             {

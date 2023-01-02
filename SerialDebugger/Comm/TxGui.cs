@@ -430,10 +430,12 @@ namespace SerialDebugger.Comm
         private static UIElement MakeButtonLoadStore(TxBuffer buffer, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
         {
 
-            //var btn_store = new Button();
-            //btn_store.Content = "←";
-            //btn_store.Margin = new Thickness(2, 1, 2, 1);
-            //btn_store.Width = Button3Width[0];
+            var bind_store = new Binding(path + ".OnClickStore");
+            var btn_store = new Button();
+            btn_store.Content = "←";
+            btn_store.Margin = new Thickness(2, 1, 2, 1);
+            btn_store.Width = Button3Width[0];
+            btn_store.SetBinding(Button.CommandProperty, bind_store);
 
             var btn = new Button();
             btn.Content = text;
@@ -459,7 +461,7 @@ namespace SerialDebugger.Comm
             {
                 Grid.SetColumnSpan(sp, colspan);
             }
-            //sp.Children.Add(btn_store);
+            sp.Children.Add(btn_store);
             sp.Children.Add(btn);
             sp.Children.Add(btn_save);
 

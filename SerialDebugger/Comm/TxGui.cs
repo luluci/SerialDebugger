@@ -24,6 +24,9 @@ namespace SerialDebugger.Comm
         // Input列に表示する単位(h)表示幅
         public static int InputColUnitWidth = 15;
 
+        // GUI Resource
+        public static SolidColorBrush ColorFrameNameBg = new SolidColorBrush(Color.FromArgb(0xFF, 11, 40, 75));
+
         // Converter
         private static TxGuiValueColConverter ColConverter = new TxGuiValueColConverter();
         private static TxGuiTxBufferColConverter TxBufConverter = new TxGuiTxBufferColConverter();
@@ -508,11 +511,16 @@ namespace SerialDebugger.Comm
             //
             var tb = new TextBlock();
             tb.Text = text;
-            tb.Background = SystemColors.ControlLightLightBrush;
+            //tb.Background = SystemColors.ControlLightLightBrush;
             tb.FontSize += 2;
+            tb.FontWeight = FontWeights.Bold;
+            tb.Foreground = Brushes.White;
             tb.Padding = new Thickness(5, 2, 2, 2);
             //
             var border = MakeBorder1();
+            border.CornerRadius = new CornerRadius(9, 9, 0, 0);
+            border.Background = ColorFrameNameBg;
+            border.BorderBrush = ColorFrameNameBg;
             border.Child = tb;
             Grid.SetRow(border, row);
             Grid.SetColumn(border, col);
@@ -716,6 +724,8 @@ namespace SerialDebugger.Comm
                     return MakeSelectGuiSelecter(field, path, row, col, rowspan, colspan);
                 case TxField.SelectModeType.Edit:
                     return MakeSelectGuiEdit(field, path, row, col, rowspan, colspan);
+                case TxField.SelectModeType.Checksum:
+                    return MakeSelectGuiEdit(field, path, row, col, rowspan, colspan);
                 case TxField.SelectModeType.Fix:
                 default:
                     return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
@@ -757,6 +767,7 @@ namespace SerialDebugger.Comm
             // ベース作成
             var sp = new StackPanel();
             sp.Orientation = Orientation.Horizontal;
+            sp.VerticalAlignment = VerticalAlignment.Top;
 
             // binding作成
             var bind = new Binding(path + ".Value.Value");

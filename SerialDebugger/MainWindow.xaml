@@ -17,7 +17,7 @@
                 <TabItem Header="Tx">
                     <Grid>
                         <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
-                            <Grid x:Name="BaseSerialTx" Margin="15,0,15,0"/>
+                            <Grid x:Name="BaseSerialTx" Margin="10,0,10,0"/>
                         </ScrollViewer>
                     </Grid>
                 </TabItem>

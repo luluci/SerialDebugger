@@ -96,36 +96,11 @@ namespace SerialDebugger.Comm
             BackupBuffer.ObserveElementObservableProperty(x => x.OnClickStore).Subscribe(x =>
             {
                 var buffer = x.Instance;
-                // 表示文字列コピー
                 for (int i = 0; i < Fields.Count; i++)
                 {
                     var field = Fields[i];
                     field.Value.Value = buffer.Value[i];
                 }
-                /*
-                // 送信バイトシーケンスコピー
-                for (int i = 0; i < TxBuffer.Count; i++)
-                {
-                    buffer.Buffer[i] = TxBuffer[i];
-                }
-                // 表示文字列コピー
-                for (int i = 0; i < Fields.Count; i++)
-                {
-                    var field = Fields[i];
-                    switch (field.SelectType)
-                    {
-                        case TxField.SelectModeType.Dict:
-                        case TxField.SelectModeType.Unit:
-                            buffer.Disp[i] = $"{field.Selects[field.SelectIndexSelects.Value].Disp} ({field.Value.Value:X}h)";
-                            break;
-                        case TxField.SelectModeType.Edit:
-                        case TxField.SelectModeType.Fix:
-                        default:
-                            buffer.Disp[i] = $"{field.Value.Value:X}h";
-                            break;
-                    }
-                }
-                */
             });
             BackupBuffer.AddTo(Disposables);
         }

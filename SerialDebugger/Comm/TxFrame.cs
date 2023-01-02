@@ -8,6 +8,7 @@ using System.Reactive.Disposables;
 using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using System.Windows;
 
 namespace SerialDebugger.Comm
 {

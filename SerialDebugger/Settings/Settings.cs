@@ -13,6 +13,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using System.Windows;
 
 namespace SerialDebugger.Settings
 {
@@ -38,6 +39,7 @@ namespace SerialDebugger.Settings
 
         static public void Init(int idx)
         {
+            Impl.Load();
             DataList = Impl.DataList;
             DataIndex = Impl.DataIndex;
             Select(idx);
@@ -65,7 +67,7 @@ namespace SerialDebugger.Settings
             DataIndex = new ReactivePropertySlim<int>(0);
             DataIndex.AddTo(Disposables);
 
-            Load();
+            //Load();
         }
 
         public void Load()
@@ -95,10 +97,12 @@ namespace SerialDebugger.Settings
                     {
                         if (e.InnerException is null)
                         {
+                            //MessageBox.Show($"init exception: {e.Message}");
                             Logger.Add($"json解析エラー: {e.Message} : in file {file}");
                         }
                         else
                         {
+                            //MessageBox.Show($"init exception: {e.Message}");
                             Logger.Add($"json解析エラー: {e.InnerException.Message} : in file {file}");
                         }
                     }

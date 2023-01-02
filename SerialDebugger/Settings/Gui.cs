@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace SerialDebugger.Settings
 {
@@ -44,6 +45,12 @@ namespace SerialDebugger.Settings
         
         public void AnalyzeJson(Json.Gui json)
         {
+            // 設定なしの場合は初期値を使う
+            if (json is null)
+            {
+                return;
+            }
+
             if (!(json.Window is null))
             {
                 if (json.Window.Width > 0)

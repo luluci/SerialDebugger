@@ -23,6 +23,12 @@ namespace SerialDebugger.Settings
 
         public void AnalyzeJson(Json.Serial json)
         {
+            // 設定なしの場合は初期値を使う
+            if (json is null)
+            {
+                return;
+            }
+
             if (json.Baudrate > 0)
             {
                 Baudrate = json.Baudrate;

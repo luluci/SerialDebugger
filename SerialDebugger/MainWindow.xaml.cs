@@ -26,9 +26,16 @@ namespace SerialDebugger
         {
             InitializeComponent();
 
-            // vmを参照するので明示的に持っておく.
-            vm = new MainWindowViewModel(this);
-            this.DataContext = vm;
+            try
+            {
+                // vmを参照するので明示的に持っておく.
+                vm = new MainWindowViewModel(this);
+                this.DataContext = vm;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"init exception: {ex.Message}");
+            }
 
             /*
             //

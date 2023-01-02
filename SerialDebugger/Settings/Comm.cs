@@ -12,6 +12,7 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
 using SerialDebugger.Comm;
+using System.Windows;
 
 namespace SerialDebugger.Settings
 {
@@ -29,7 +30,7 @@ namespace SerialDebugger.Settings
 
         public void AnalyzeJson(Json.Comm json)
         {
-            if (json.Tx is null)
+            if (json is null || json.Tx is null)
             {
                 throw new Exception("txキーが定義されていません");
             }

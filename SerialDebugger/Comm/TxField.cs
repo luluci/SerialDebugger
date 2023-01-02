@@ -182,7 +182,7 @@ namespace SerialDebugger.Comm
                     {
                         if (SelectsValueMin <= x && x <= SelectsValueMax)
                         {
-                            SelectIndexSelects.Value = (int)x;
+                            SelectIndexSelects.Value = (int)(x - SelectsValueMin);
                         }
                     }
                 })
@@ -195,6 +195,8 @@ namespace SerialDebugger.Comm
                 .Subscribe((int index) =>
                 {
                     var select = Selects[index];
+                    // Value側でもSelectIndexSelectsとの同期をとって値を変更する
+                    // 値に変化がないとSubscribeは発火しない。
                     Value.Value = select.Value;
                 })
                 .AddTo(Disposables);

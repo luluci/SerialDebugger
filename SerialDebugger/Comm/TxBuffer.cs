@@ -37,7 +37,7 @@ namespace SerialDebugger.Comm
 
             OnClickSave = new ReactiveCommand();
             OnClickSave.AddTo(Disposables);
-
+            
             for (int i = 0; i < disp_size; i++)
             {
                 Disp.Add("<None>");

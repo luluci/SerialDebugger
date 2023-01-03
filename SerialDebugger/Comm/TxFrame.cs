@@ -9,6 +9,7 @@ using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System.Windows;
+using System.Collections.ObjectModel;
 
 namespace SerialDebugger.Comm
 {
@@ -190,7 +191,7 @@ namespace SerialDebugger.Comm
                     Logger.Add($"Checksum Range is invalid: Fix to {cs.Checksum.Begin}-{cs.Checksum.End}");
                 }
                 //
-                UpdateChecksum();
+                UpdateChecksum(TxBuffer);
             }
             // 送信データバックアップバッファ作成
             for (int i=0; i<BackupBufferLength; i++)
@@ -204,6 +205,24 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="field"></param>
         private void Update(TxField field)
+        {
+            // 更新されたfieldをTxBufferに適用
+            UpdateBuffer(field, TxBuffer);
+            // チェックサムを持つframeで、更新fieldがチェックサムfieldでないとき、
+            // チェックサムを再計算
+            if (HasChecksum && !field.IsChecksum)
+            {
+                UpdateChecksum(TxBuffer);
+            }
+        }
+
+        /// <summary>
+        /// fieldの値をbufferに適用する。
+        /// BackupBuffer更新に流用する。
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="buffer"></param>
+        private void UpdateBuffer(TxField field, Collection<byte> buffer)
         {
             UInt64 value = field.Value.Value;
             UInt64 mask = field.Mask;
@@ -222,9 +241,9 @@ namespace SerialDebugger.Comm
                 byte temp_inv_mask = (byte)((inv_mask << bit_pos) | inv_mask_shift_fill & 0xFF);
                 // 送信バイトシーケンスに適用
                 // 該当ビットをクリア
-                TxBuffer[byte_pos] &= temp_inv_mask;
+                buffer[byte_pos] &= temp_inv_mask;
                 // 該当ビットにセット
-                TxBuffer[byte_pos] |= temp_value;
+                buffer[byte_pos] |= temp_value;
 
                 // 使ったデータを削除
                 value >>= shift;
@@ -236,21 +255,28 @@ namespace SerialDebugger.Comm
                 shift = 8;
                 inv_mask_shift_fill = 0;
             }
-            //
-            if (HasChecksum && !field.IsChecksum)
-            {
-                UpdateChecksum();
-            }
         }
 
-        private void UpdateChecksum()
+        private void UpdateChecksum(Collection<byte> buffer)
+        {
+            var cs = Fields[ChecksumIndex];
+            cs.Value.Value = CalcChecksum(buffer);
+        }
+
+        /// <summary>
+        /// チェックサム計算
+        /// チェックサムfieldはビット単位で位置を指定できるが、バイトアライメントで配置されてる前提で計算する。
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        private UInt64 CalcChecksum(Collection<byte> buffer)
         {
             var cs = Fields[ChecksumIndex];
             // 合計算出
             UInt64 sum = 0;
-            for (int i = cs.Checksum.Begin; i<=cs.Checksum.End; i++)
+            for (int i = cs.Checksum.Begin; i <= cs.Checksum.End; i++)
             {
-                sum += TxBuffer[i];
+                sum += buffer[i];
             }
             // method
             switch (cs.Checksum.Method)
@@ -271,7 +297,8 @@ namespace SerialDebugger.Comm
                     sum &= cs.Mask;
                     break;
             }
-            cs.Value.Value = sum;
+
+            return sum;
         }
 
         #region IDisposable Support

@@ -50,8 +50,11 @@ namespace SerialDebugger
             // 設定ファイル読み込み
             Setting.Init(0);
             //
-            window.Width = Setting.Data.Gui.Window.Width;
-            window.Height = Setting.Data.Gui.Window.Height;
+            if (!(Setting.Data is null))
+            {
+                window.Width = Setting.Data.Gui.Window.Width;
+                window.Height = Setting.Data.Gui.Window.Height;
+            }
 
             // Serial
             serialSetting = new Serial.Settings();
@@ -137,6 +140,10 @@ namespace SerialDebugger
                 }
                 // COMポート設定更新
                 serialSetting.vm.SetSerialSetting(Setting.Data.Serial);
+            }
+            else
+            {
+                Logger.Add("有効な設定ファイルが存在しません。");
             }
             OnClickTxDataSend = new ReactiveCommand();
             OnClickTxDataSend

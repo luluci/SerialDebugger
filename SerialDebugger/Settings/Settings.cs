@@ -25,9 +25,9 @@ namespace SerialDebugger.Settings
         public string FilePath { get; set; }
         public string Name { get; set; }
         // 設定内容
-        public Gui Gui { get; set; }
-        public Serial Serial { get; set; }
-        public Comm Comm { get; set; }
+        public Gui Gui { get; set; } = new Gui();
+        public Serial Serial { get; set; } = new Serial();
+        public Comm Comm { get; set; } = new Comm();
     }
 
     static class Settings
@@ -136,13 +136,10 @@ namespace SerialDebugger.Settings
             info.Name = json.Name;
 
             // GUI
-            info.Gui = new Gui();
             info.Gui.AnalyzeJson(json.Gui);
             // Serial
-            info.Serial = new Serial();
             info.Serial.AnalyzeJson(json.Serial);
             // Comm
-            info.Comm = new Comm();
             info.Comm.AnalyzeJson(json.Comm);
         }
 

@@ -288,7 +288,15 @@ namespace SerialDebugger.Comm
             SelectsValueMin = selecter.ValueMin;
             while (temp <= selecter.DispMax)
             {
-                string disp = temp.ToString(selecter.Format) + selecter.Unit;
+                string disp;
+                try
+                {
+                    disp = temp.ToString(selecter.Format) + selecter.Unit;
+                }
+                catch (Exception)
+                {
+                    disp = ((Int64)temp).ToString(selecter.Format) + selecter.Unit;
+                }
                 Selects.Add(new Select(value, disp));
                 // SelectIndex
                 if (value == Value.Value)

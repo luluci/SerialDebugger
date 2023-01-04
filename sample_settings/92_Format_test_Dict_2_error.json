@@ -1,5 +1,5 @@
 {
-	"name": "テストパターン_Dict_1",
+	"name": "テストパターン_Dict_2_error",
 	
 	"gui": {
 		"column_order":
@@ -232,7 +232,7 @@
 					"name": "Frame_4",
 					"fields": [
 						{
-							"name": "field0",
+							"name": "bit0",
 							"bit_size": 1,
 							"multi_name": [
 								{
@@ -256,73 +256,8 @@
 							"type": "Dict",
 							"dict": [
 								{	"value": 0,		"disp": "0"		},
-								{	"value": 1,		"disp": "1"		},
-								{	"value": 2,		"disp": "2"		},
-								{	"value": 3,		"disp": "3"		},
-								{	"value": 4,		"disp": "4"		},
-								{	"value": 5,		"disp": "5"		},
-								{	"value": 10,	"disp": "10"	},
-								{	"value": 11,	"disp": "11"	},
-								{	"value": 12,	"disp": "12"	},
-								{	"value": 110,	"disp": "110"	},
-								{	"value": 111,	"disp": "111"	},
-								{	"value": 112,	"disp": "112"	},
-								{	"value": 1023,	"disp": "1023"	},
-								{	"value": 1024,	"disp": "1024"	},
-								{	"value": 1025,	"disp": "1025"	}
+								{	"value": 0,		"disp": "0_2"	}
 							]
-						},
-						{
-							"name": "field1",
-							"bit_size": 1,
-							"multi_name": [
-								{
-									"name": "field1_bit0",
-									"bit_size": 1
-								},
-								{
-									"name": "field1_bit1",
-									"bit_size": 1
-								},
-								{
-									"name": "field1_bit2",
-									"bit_size": 1
-								},
-								{
-									"name": "field1_bit3",
-									"bit_size": 1
-								}
-							],
-							"value": 1,
-							"type": "Dict",
-							"dict": [
-								{	"value": 0,		"disp": "0"		},
-								{	"value": 1,		"disp": "1"		},
-								{	"value": 2,		"disp": "2"		},
-								{	"value": 3,		"disp": "3"		},
-								{	"value": 4,		"disp": "4"		},
-								{	"value": 5,		"disp": "5"		},
-								{	"value": 10,	"disp": "10"	},
-								{	"value": 11,	"disp": "11"	},
-								{	"value": 12,	"disp": "12"	},
-								{	"value": 110,	"disp": "110"	},
-								{	"value": 111,	"disp": "111"	},
-								{	"value": 112,	"disp": "112"	},
-								{	"value": 1023,	"disp": "1023"	},
-								{	"value": 1024,	"disp": "1024"	},
-								{	"value": 1025,	"disp": "1025"	}
-							]
-						},
-						{
-							"name": "Checksum",
-							"bit_size": 8,
-							"value": 15,
-							"type": "Checksum",
-							"checksum": {
-								"begin": 0,
-								"end": 1,
-								"method": "Sum"
-							}
 						}
 					]
 				}

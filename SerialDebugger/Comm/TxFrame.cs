@@ -144,6 +144,12 @@ namespace SerialDebugger.Comm
                 // checksum
                 if (f.IsChecksum)
                 {
+                    // ChecksumFieldは1つだけ対応
+                    if (HasChecksum)
+                    {
+                        Logger.Add($"チェックサムフィールドは1つだけ指定してください : Frame={Name} Field={Fields[ChecksumIndex].Name}");
+                    }
+                    // 後優先で上書きする
                     HasChecksum = true;
                     ChecksumIndex = field_no;
                 }

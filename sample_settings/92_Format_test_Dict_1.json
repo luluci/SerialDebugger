@@ -1,0 +1,234 @@
+{
+	"name": "テストパターン_Dict_1",
+	
+	"gui": {
+		"column_order":
+			{
+				"byte_index": 0,
+				"bit_index": 1,
+				"field_value": 2,
+				"field_name": 3,
+				"field_input": 4,
+				"tx_bytes": 5,
+				"spacer": 6,
+				"tx_buffer": 7
+			},
+		"column_width":
+			{
+				"byte_index": 25,
+				"bit_index": 25,
+				"field_value": 40,
+				"field_name": 100,
+				"field_input": 110,
+				"tx_bytes": 50,
+				"spacer": 20,
+				"tx_buffer": 80
+			}
+	},
+	
+	"serial": {
+		"baudrate": 4800,
+		"data_bits": 9,
+		"parity": "space",
+		"stop_bits": 2,
+		"tx_timeout": 700
+	},
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_1",
+					"fields": [
+						{
+							"name": "bit0",
+							"bit_size": 1,
+							"value": 1,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "OFF"
+								},
+								{
+									"value": 1,
+									"disp": "ON"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Frame_2",
+					"fields": [
+						{
+							"name": "bit0",
+							"bit_size": 1,
+							"value": 1,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "OFF"
+								},
+								{
+									"value": 1,
+									"disp": "ON"
+								}
+							]
+						},
+						{
+							"name": "bit1-2",
+							"bit_size": 2,
+							"value": 2,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "0"
+								},
+								{
+									"value": 1,
+									"disp": "1"
+								},
+								{
+									"value": 2,
+									"disp": "2"
+								},
+								{
+									"value": 3,
+									"disp": "3"
+								},
+								{
+									"value": 4,
+									"disp": "4"
+								}
+							]
+						},
+						{
+							"name": "bit3-7",
+							"bit_size": 5,
+							"value": 4,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "0"
+								},
+								{
+									"value": 1,
+									"disp": "1"
+								},
+								{
+									"value": 2,
+									"disp": "2"
+								},
+								{
+									"value": 3,
+									"disp": "3"
+								},
+								{
+									"value": 31,
+									"disp": "31"
+								},
+								{
+									"value": 32,
+									"disp": "32"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Frame_3",
+					"fields": [
+						{
+							"name": "bit0",
+							"bit_size": 1,
+							"value": 1,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "OFF"
+								},
+								{
+									"value": 1,
+									"disp": "ON"
+								}
+							]
+						},
+						{
+							"name": "bit1-2",
+							"bit_size": 2,
+							"value": 2,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "0"
+								},
+								{
+									"value": 1,
+									"disp": "1"
+								},
+								{
+									"value": 2,
+									"disp": "2"
+								},
+								{
+									"value": 3,
+									"disp": "3"
+								},
+								{
+									"value": 4,
+									"disp": "4"
+								}
+							]
+						},
+						{
+							"name": "bit3-7",
+							"bit_size": 5,
+							"value": 4,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 0,
+									"disp": "0"
+								},
+								{
+									"value": 1,
+									"disp": "1"
+								},
+								{
+									"value": 2,
+									"disp": "2"
+								},
+								{
+									"value": 3,
+									"disp": "3"
+								},
+								{
+									"value": 4,
+									"disp": "4"
+								},
+								{
+									"value": 5,
+									"disp": "5"
+								},
+								{
+									"value": 31,
+									"disp": "31"
+								},
+								{
+									"value": 32,
+									"disp": "32"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}

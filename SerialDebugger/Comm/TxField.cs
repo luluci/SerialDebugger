@@ -158,6 +158,11 @@ namespace SerialDebugger.Comm
             {
                 BitSize += inner.BitSize;
             }
+            // BitSizeチェック
+            if (BitSize > 64)
+            {
+                throw new Exception("64bit以上は指定できません");
+            }
             //
             InnerFields = new List<InnerField>(innerFields);
             // (Min,Max)

@@ -44,7 +44,6 @@
 			"frames": [
 				{
 					"name": "Frame_A",
-					"buffer_size": 2,
 					"fields": [
 						{
 							"name": "field1_1",
@@ -122,11 +121,17 @@
 								"method": "2compl"
 							}
 						}
+					],
+					"backup_buffer_size": 2,
+					"backup_buffers": [
+						{
+							"name": "設定X",
+							"value": [ 1, 85, 2, 4, 15, 1, 170, 255 ]
+						}
 					]
 				},
 				{
 					"name": "Frame_B",
-					"buffer_size": 0,
 					"fields": [
 						{
 							"name": "field1",
@@ -189,7 +194,8 @@
 								}
 							]
 						}
-					]
+					],
+					"backup_buffer_size": 0
 				}
 			]
 		}

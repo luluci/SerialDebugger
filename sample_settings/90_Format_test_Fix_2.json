@@ -1,0 +1,323 @@
+{
+	"name": "テストパターン_Fix_2",
+	
+	"gui": {
+		"column_order":
+			{
+				"byte_index": 0,
+				"bit_index": 1,
+				"field_value": 2,
+				"field_name": 3,
+				"field_input": 4,
+				"tx_bytes": 5,
+				"spacer": 6,
+				"tx_buffer": 7
+			},
+		"column_width":
+			{
+				"byte_index": 25,
+				"bit_index": 25,
+				"field_value": 40,
+				"field_name": 100,
+				"field_input": 110,
+				"tx_bytes": 50,
+				"spacer": 20,
+				"tx_buffer": 80
+			}
+	},
+	
+	"serial": {
+		"baudrate": 9600,
+		"data_bits": 7,
+		"parity": "odd",
+		"stop_bits": 1.5,
+		"tx_timeout": 1500
+	},
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame2_A",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 1,
+							"value": 11,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 7,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "2compl"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_B",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 3,
+							"value": 11,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 7,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "2compl"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_C",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 11,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 7,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"end": 6,
+								"method": "2compl"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_D",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 11,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 7,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "2compl"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_Db",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 11,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 7,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "1compl"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_Dc",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 11,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 7,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "Sum"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_Dd",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 255,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 7,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "Sum"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_E",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 11,
+							"value": 761,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 5,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "Sum"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_Eb",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 11,
+							"value": 761,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 5,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6,
+								"method": "2compl"
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_F",
+					"fields": [
+						{
+							"multi_name": [
+								{
+									"name": "field1_bit0-19",
+									"bit_size": 20
+								},
+								{
+									"name": "field1_bit20-31",
+									"bit_size": 12
+								},
+								{
+									"name": "field1_bit32-39",
+									"bit_size": 8
+								},
+								{
+									"name": "field1_bit40",
+									"bit_size": 1
+								},
+								{
+									"name": "field1_bit41-55",
+									"bit_size": 15
+								}
+							],
+							"value": 768614336404564650,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 9,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6
+							}
+						}
+					]
+				},
+				{
+					"name": "Frame2_G",
+					"fields": [
+						{
+							"multi_name": [
+								{
+									"name": "field1_bit0-19",
+									"bit_size": 20
+								},
+								{
+									"name": "field1_bit20-31",
+									"bit_size": 12
+								},
+								{
+									"name": "field1_bit32-39",
+									"bit_size": 8
+								},
+								{
+									"name": "field1_bit40",
+									"bit_size": 1
+								},
+								{
+									"name": "field1_bit41-55",
+									"bit_size": 15
+								}
+							],
+							"value": 768614336404564650,
+							"type": "Fix"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 14,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 6
+							}
+						}
+					]
+				}
+			]
+		}
+	}
+}

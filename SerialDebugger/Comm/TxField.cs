@@ -171,19 +171,10 @@ namespace SerialDebugger.Comm
             Value
                 .Subscribe(x =>
                 {
-                    if (SelectType == SelectModeType.Dict)
+                    var index = GetSelectsIndex(x);
+                    if (index != -1)
                     {
-                        if (SelectsValueCheckTable.TryGetValue(x, out int index))
-                        {
-                            SelectIndexSelects.Value = index;
-                        }
-                    }
-                    else if(SelectType == SelectModeType.Unit)
-                    {
-                        if (SelectsValueMin <= x && x <= SelectsValueMax)
-                        {
-                            SelectIndexSelects.Value = (int)(x - SelectsValueMin);
-                        }
+                        SelectIndexSelects.Value = index;
                     }
                 })
                 .AddTo(Disposables);
@@ -205,6 +196,55 @@ namespace SerialDebugger.Comm
             MakeSelectMode(selecter);
         }
 
+        public int GetSelectsIndex(UInt64 value)
+        {
+            int index = -1;
+            if (SelectType == SelectModeType.Dict)
+            {
+                if (SelectsValueCheckTable.TryGetValue(value, out index))
+                {
+                    //SelectIndexSelects.Value = index;
+                }
+            }
+            else if (SelectType == SelectModeType.Unit)
+            {
+                if (SelectsValueMin <= value && value <= SelectsValueMax)
+                {
+                    index = (int)(value - SelectsValueMin);
+                }
+            }
+            return index;
+        }
+
+        /// <summary>
+        /// 自TxFieldの表示名を取得する
+        /// </summary>
+        /// <returns></returns>
+        public string GetDisp()
+        {
+            return MakeDisp(SelectIndexSelects.Value, Value.Value);
+        }
+
+        /// <summary>
+        /// 指定したパラメータで表示名を作成する。
+        /// BackupBufferで再利用。
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string MakeDisp(int index, UInt64 value)
+        {
+            switch (SelectType)
+            {
+                case TxField.SelectModeType.Dict:
+                case TxField.SelectModeType.Unit:
+                    return $"{Selects[index].Disp} ({value:X}h)";
+                case TxField.SelectModeType.Edit:
+                case TxField.SelectModeType.Fix:
+                default:
+                    return $"{value:X}h";
+            }
+        }
 
         private void MakeSelectMode(Selecter selecter)
         {

@@ -14,15 +14,22 @@
     <Grid>
         <Grid x:Name="BaseSerialData" Margin="0,34,0,98" Background="#FFDBF5FF">
             <TabControl>
-                <TabItem Header="Tx">
+                <TabItem Header="送信フレーム">
                     <Grid>
                         <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
                             <Grid x:Name="BaseSerialTx" Margin="10,0,10,0"/>
                         </ScrollViewer>
                     </Grid>
                 </TabItem>
-                <TabItem Header="TabItem">
-                    <Grid Background="#FFE5E5E5"/>
+                <TabItem Header="受信解析">
+                    <Grid Background="#FFE5E5E5">
+                        <TextBlock HorizontalAlignment="Left" Height="32" Margin="63,53,0,0" TextWrapping="Wrap" Text="未実装" VerticalAlignment="Top" Width="83"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="自動操作">
+                    <Grid Background="#FFE5E5E5">
+                        <TextBlock HorizontalAlignment="Left" Height="34" Margin="56,32,0,0" TextWrapping="Wrap" Text="未実装" VerticalAlignment="Top" Width="121"/>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </Grid>
@@ -34,8 +41,6 @@
             <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}" HorizontalAlignment="Left" Margin="578,6,0,0" VerticalAlignment="Top" Width="98"/>
         </Grid>
         <Grid x:Name="BaseCtrl" Height="98" VerticalAlignment="Bottom" Background="#FFFFFFE1">
-
-
             <GroupBox Grid.Column="1" Header="log">
                 <!--
                 <DockPanel>
@@ -70,18 +75,18 @@
                 </ListBox>
                 -->
                 <ScrollViewer x:Name="log_scrl" HorizontalScrollBarVisibility="Auto">
-                <ListBox x:Name="log" ItemsSource="{Binding Log}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.Template>
-                        <ControlTemplate>
-                            <ItemsPresenter />
-                        </ControlTemplate>
-                    </ListBox.Template>
-                </ListBox>
+                    <ListBox x:Name="log" ItemsSource="{Binding Log}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.Template>
+                            <ControlTemplate>
+                                <ItemsPresenter />
+                            </ControlTemplate>
+                        </ListBox.Template>
+                    </ListBox>
                 </ScrollViewer>
             </GroupBox>
 

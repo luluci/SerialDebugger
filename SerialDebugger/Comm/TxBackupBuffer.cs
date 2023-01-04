@@ -11,7 +11,7 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Comm
 {
-    class TxBuffer : BindableBase, IDisposable
+    class TxBackupBuffer : BindableBase, IDisposable
     {
         // 
         public string Name { get; }
@@ -29,7 +29,7 @@ namespace SerialDebugger.Comm
         public ReactiveCommand OnClickSave { get; set; }
         public ReactiveCommand OnClickStore { get; set; }
 
-        public TxBuffer(string name, int disp_size, int size)
+        public TxBackupBuffer(string name, int disp_size, int size)
         {
             Name = name;
 

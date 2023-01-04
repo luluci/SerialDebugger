@@ -90,7 +90,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Comm\TxBuffer.cs" />
+    <Compile Include="Comm\TxBackupBuffer.cs" />
     <Compile Include="Comm\TxField.cs" />
     <Compile Include="Comm\TxFrame.cs" />
     <Compile Include="Comm\TxGui.cs" />

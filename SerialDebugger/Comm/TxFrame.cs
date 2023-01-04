@@ -35,20 +35,19 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// 送信データセーブ用バッファ
         /// </summary>
-        public ReactiveCollection<TxBuffer> BackupBuffer { get; set; }
+        public ReactiveCollection<TxBackupBuffer> BackupBuffer { get; set; }
         /// <summary>
         /// 送信バッファ数
         /// </summary>
-        public int BackupBufferLength { get; }
+        public int BackupBufferLength { get; set; } = 0;
 
         // checksum
         public bool HasChecksum { get; set; } = false;
-        private int ChecksumIndex { get; set; }
+        public int ChecksumIndex { get; set; }
 
-        public TxFrame(string name, int buff_len)
+        public TxFrame(string name)
         {
             Name = name;
-            BackupBufferLength = buff_len;
 
             Fields = new ReactiveCollection<TxField>();
             Fields
@@ -64,7 +63,7 @@ namespace SerialDebugger.Comm
                 .AddTo(Disposables);
             TxBuffer = new ReactiveCollection<byte>();
             TxBuffer.AddTo(Disposables);
-            BackupBuffer = new ReactiveCollection<TxBuffer>();
+            BackupBuffer = new ReactiveCollection<TxBackupBuffer>();
             // Saveボタン
             BackupBuffer.ObserveElementObservableProperty(x => x.OnClickSave).Subscribe(x =>
             {
@@ -79,18 +78,7 @@ namespace SerialDebugger.Comm
                 {
                     var field = Fields[i];
                     buffer.Value[i] = field.Value.Value;
-                    switch (field.SelectType)
-                    {
-                        case TxField.SelectModeType.Dict:
-                        case TxField.SelectModeType.Unit:
-                            buffer.Disp[i] = $"{field.Selects[field.SelectIndexSelects.Value].Disp} ({field.Value.Value:X}h)";
-                            break;
-                        case TxField.SelectModeType.Edit:
-                        case TxField.SelectModeType.Fix:
-                        default:
-                            buffer.Disp[i] = $"{field.Value.Value:X}h";
-                            break;
-                    }
+                    buffer.Disp[i] = field.GetDisp();
                 }
             });
             // Storeボタン
@@ -193,11 +181,6 @@ namespace SerialDebugger.Comm
                 //
                 UpdateChecksum(TxBuffer);
             }
-            // 送信データバックアップバッファ作成
-            for (int i=0; i<BackupBufferLength; i++)
-            {
-                BackupBuffer.Add(new TxBuffer($"buffer_{i}", disp_len, Length));
-            }
         }
 
         /// <summary>
@@ -207,7 +190,7 @@ namespace SerialDebugger.Comm
         private void Update(TxField field)
         {
             // 更新されたfieldをTxBufferに適用
-            UpdateBuffer(field, TxBuffer);
+            UpdateBuffer(field, field.Value.Value, TxBuffer);
             // チェックサムを持つframeで、更新fieldがチェックサムfieldでないとき、
             // チェックサムを再計算
             if (HasChecksum && !field.IsChecksum)
@@ -222,9 +205,8 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="field"></param>
         /// <param name="buffer"></param>
-        private void UpdateBuffer(TxField field, Collection<byte> buffer)
+        public void UpdateBuffer(TxField field, UInt64 value, IList<byte> buffer)
         {
-            UInt64 value = field.Value.Value;
             UInt64 mask = field.Mask;
             UInt64 inv_mask = field.InvMask;
             // 1回目はvalueのビット位置がbit_pos分右にあるが、
@@ -257,7 +239,7 @@ namespace SerialDebugger.Comm
             }
         }
 
-        private void UpdateChecksum(Collection<byte> buffer)
+        private void UpdateChecksum(IList<byte> buffer)
         {
             var cs = Fields[ChecksumIndex];
             cs.Value.Value = CalcChecksum(buffer);
@@ -269,7 +251,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        private UInt64 CalcChecksum(Collection<byte> buffer)
+        public UInt64 CalcChecksum(IList<byte> buffer)
         {
             var cs = Fields[ChecksumIndex];
             // 合計算出

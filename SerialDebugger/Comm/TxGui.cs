@@ -430,7 +430,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeButtonLoadStore(TxBuffer buffer, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeButtonLoadStore(TxBackupBuffer buffer, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
         {
 
             var bind_store = new Binding(path + ".OnClickStore");
@@ -869,7 +869,7 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeBackupBufferGui(TxField field, TxBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeBackupBufferGui(TxField field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
             var bind = new Binding(path);

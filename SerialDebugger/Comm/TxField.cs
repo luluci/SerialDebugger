@@ -160,10 +160,18 @@ namespace SerialDebugger.Comm
             }
             //
             InnerFields = new List<InnerField>(innerFields);
-            // (Min,Max]
-            Max = (UInt64)1 << BitSize;
-            Min = 0;
-            Mask = Max - 1;
+            // (Min,Max)
+            if (BitSize == 64)
+            {
+                Max = UInt64.MaxValue;
+                Min = UInt64.MinValue;
+            }
+            else
+            {
+                Max = ((UInt64)1 << BitSize) - 1;
+                Min = 0;
+            }
+            Mask = Max;
             InvMask = ~Mask;
             //
             value = value & Mask;
@@ -287,7 +295,7 @@ namespace SerialDebugger.Comm
                 index++;
                 value++;
                 // BitSize定義の上限到達で終了
-                if (value >= Max)
+                if (value > Max)
                 {
                     break;
                 }
@@ -305,7 +313,7 @@ namespace SerialDebugger.Comm
             foreach (var item in selecter.Dict)
             {
                 // BitSize定義の範囲チェック
-                if (item.Item1 < Max)
+                if (item.Item1 <= Max)
                 {
                     Selects.Add(new Select(item.Item1, item.Item2));
                     //

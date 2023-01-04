@@ -51,11 +51,14 @@ namespace SerialDebugger.Settings
         {
             // TxFrame作成
             var f = new TxFrame(frame.Name);
-            foreach (var field in frame.Fields)
+            if (!(frame.Fields is null))
             {
-                f.Fields.Add(MakeTxField(field));
+                foreach (var field in frame.Fields)
+                {
+                    f.Fields.Add(MakeTxField(field));
+                }
+                f.Build();
             }
-            f.Build();
             // TxFrame作成後にBackupBuffer作成
             MakeTxBackupBuffers(frame, f);
 

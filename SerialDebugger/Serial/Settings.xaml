@@ -4,26 +4,36 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SerialDebugger.Serial"
-             mc:Ignorable="d" Height="241.463" Width="252.592">
-    <Grid>
+             mc:Ignorable="d" Height="352" Width="274">
+    <Grid Margin="0,0,0,0">
         <Grid Background="#FFF5F0F0">
-            <Border BorderBrush="Black" BorderThickness="1"/>
-            <TextBlock HorizontalAlignment="Left" Width="80" Margin="10,14,0,0" TextWrapping="Wrap" Text="COM:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
-            <ComboBox ItemsSource="{Binding ComList}" SelectedIndex="{Binding ComListSelectIndex.Value}" HorizontalAlignment="Left" Margin="95,10,0,0" VerticalAlignment="Top" Width="120"/>
-            <TextBlock HorizontalAlignment="Left" Width="80" Margin="10,44,0,0" TextWrapping="Wrap" Text="Baudrate:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
-            <ComboBox ItemsSource="{Binding BaudrateList}" SelectedIndex="{Binding BaudrateListSelectIndex.Value}" Text="{Binding BaudrateListSelectItem.Value}" HorizontalAlignment="Left" Margin="95,40,0,0" VerticalAlignment="Top" Width="120" IsEditable="True" IsReadOnly="False"/>
-            <TextBlock TextWrapping="Wrap" Text="bps" Margin="220,44,10,182"/>
-            <TextBlock HorizontalAlignment="Left" Width="80" Margin="10,74,0,0" TextWrapping="Wrap" Text="DataBitSize:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
-            <ComboBox ItemsSource="{Binding DataBitsList}" SelectedIndex="{Binding DataBitsListSelectIndex.Value}" HorizontalAlignment="Left" Margin="95,70,0,0" VerticalAlignment="Top" Width="120"/>
-            <TextBlock TextWrapping="Wrap" Text="bit" Margin="220,74,10,152"/>
-            <TextBlock HorizontalAlignment="Left" Width="80" Margin="10,104,0,0" TextWrapping="Wrap" Text="Parity:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
-            <TextBlock HorizontalAlignment="Left" Width="80" Margin="10,134,0,0" TextWrapping="Wrap" Text="StopBit:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
-            <ComboBox ItemsSource="{Binding ParityList}" DisplayMemberPath="Disp" SelectedIndex="{Binding ParityListSelectIndex.Value}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="95,100,0,0"/>
-            <ComboBox ItemsSource="{Binding StopBitsList}" DisplayMemberPath="Disp" SelectedIndex="{Binding StopBitsListSelectIndex.Value}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="95,130,0,0"/>
+            <Border BorderBrush="Black" BorderThickness="1">
+            </Border>
+            <TextBlock HorizontalAlignment="Left" Width="80" Margin="29,14,0,0" TextWrapping="Wrap" Text="COM:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
+            <ComboBox ItemsSource="{Binding ComList}" SelectedIndex="{Binding ComListSelectIndex.Value}" HorizontalAlignment="Left" Margin="114,10,0,0" VerticalAlignment="Top" Width="120"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" Margin="29,44,0,0" TextWrapping="Wrap" Text="Baudrate:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
+            <ComboBox ItemsSource="{Binding BaudrateList}" SelectedIndex="{Binding BaudrateListSelectIndex.Value}" Text="{Binding BaudrateListSelectItem.Value}" HorizontalAlignment="Left" Margin="114,40,0,0" VerticalAlignment="Top" Width="120" IsEditable="True" IsReadOnly="False"/>
+            <TextBlock TextWrapping="Wrap" Text="bps" Margin="239,44,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="23"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" Margin="29,74,0,0" TextWrapping="Wrap" Text="DataBitSize:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
+            <ComboBox ItemsSource="{Binding DataBitsList}" SelectedIndex="{Binding DataBitsListSelectIndex.Value}" HorizontalAlignment="Left" Margin="114,70,0,0" VerticalAlignment="Top" Width="120"/>
+            <TextBlock TextWrapping="Wrap" Text="bit" Margin="239,74,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="23"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" Margin="29,104,0,0" TextWrapping="Wrap" Text="Parity:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" Margin="29,134,0,0" TextWrapping="Wrap" Text="StopBit:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
+            <ComboBox ItemsSource="{Binding ParityList}" DisplayMemberPath="Disp" SelectedIndex="{Binding ParityListSelectIndex.Value}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="114,100,0,0"/>
+            <ComboBox ItemsSource="{Binding StopBitsList}" DisplayMemberPath="Disp" SelectedIndex="{Binding StopBitsListSelectIndex.Value}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="114,130,0,0"/>
             <Button Content="COMポート再読み込み" Command="{Binding OnClickReload}" Margin="10,0,10,10" FontFamily="Meiryo UI" Height="20" VerticalAlignment="Bottom"/>
-            <TextBlock HorizontalAlignment="Left" Width="80" Margin="10,164,0,0" TextWrapping="Wrap" Text="送信Timeout:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right"/>
-            <TextBox HorizontalAlignment="Left" Height="23" Margin="95,160,0,0" TextWrapping="Wrap" Text="{Binding TxTimeout.Value}" VerticalAlignment="Top" Width="120"/>
-            <TextBlock TextWrapping="Wrap" Text="ms" Margin="220,164,10,62"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" TextWrapping="Wrap" Text="RTS/CTS:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right" Margin="29,164,0,0"/>
+            <ComboBox ItemsSource="{Binding RtsList}" SelectedIndex="{Binding RtsListSelectIndex.Value}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="114,160,0,0"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" TextWrapping="Wrap" Text="XOn/XOff:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right" Margin="29,194,0,0"/>
+            <ComboBox ItemsSource="{Binding XonList}" SelectedIndex="{Binding XonListSelectIndex.Value}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="114,190,0,0"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" TextWrapping="Wrap" Text="DTR/STR:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right" Margin="29,224,0,0"/>
+            <ComboBox ItemsSource="{Binding DtrEnableList}" SelectedIndex="{Binding DtrEnableListSelectIndex.Value}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Margin="114,220,0,0"/>
+            <CheckBox Content="送信Timeout:" IsChecked="{Binding TxTimeoutEnable.Value}" HorizontalAlignment="Left" Height="16" Margin="12,254,0,0" VerticalAlignment="Top" Width="97" FontFamily="Meiryo UI"/>
+            <TextBox HorizontalAlignment="Left" Height="23" Margin="114,250,0,0" TextWrapping="Wrap" Text="{Binding TxTimeout.Value}" IsEnabled="{Binding TxTimeoutEnable.Value}" VerticalAlignment="Top" Width="120"/>
+            <TextBlock TextWrapping="Wrap" Text="ms" Margin="239,254,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="23"/>
+            <CheckBox Content="受信Timeout:" IsChecked="{Binding RxTimeoutEnable.Value}" HorizontalAlignment="Left" Height="16" Margin="12,284,0,0" VerticalAlignment="Top" Width="97" FontFamily="Meiryo UI"/>
+            <TextBox HorizontalAlignment="Left" Height="23" Margin="114,280,0,0" TextWrapping="Wrap" Text="{Binding RxTimeout.Value}" IsEnabled="{Binding RxTimeoutEnable.Value}" VerticalAlignment="Top" Width="120"/>
+            <TextBlock TextWrapping="Wrap" Text="ms" Margin="239,284,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="23"/>
         </Grid>
 
 

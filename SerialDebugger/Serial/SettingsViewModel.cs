@@ -33,14 +33,23 @@ namespace SerialDebugger.Serial
         public ReactiveCollection<int> BaudrateList { get; set; }
         public ReactivePropertySlim<int> BaudrateListSelectIndex { get; set; }
         public ReactivePropertySlim<int> BaudrateListSelectItem { get; set; }
-        private int[] DataBits = { 7, 8, 9 };
+        private int[] DataBits = { 5, 6, 7, 8 };
         public ReactiveCollection<int> DataBitsList { get; set; }
         public ReactivePropertySlim<int> DataBitsListSelectIndex { get; set; }
         public ReactiveCollection<ParityNode> ParityList { get; set; }
         public ReactivePropertySlim<int> ParityListSelectIndex { get; set; }
         public ReactiveCollection<StopBitsNode> StopBitsList { get; set; }
         public ReactivePropertySlim<int> StopBitsListSelectIndex { get; set; }
+        public ReactiveCollection<string> RtsList { get; set; }
+        public ReactivePropertySlim<int> RtsListSelectIndex { get; set; }
+        public ReactiveCollection<string> XonList { get; set; }
+        public ReactivePropertySlim<int> XonListSelectIndex { get; set; }
+        public ReactiveCollection<string> DtrEnableList { get; set; }
+        public ReactivePropertySlim<int> DtrEnableListSelectIndex { get; set; }
         public ReactivePropertySlim<int> TxTimeout { get; set; }
+        public ReactivePropertySlim<bool> TxTimeoutEnable { get; set; }
+        public ReactivePropertySlim<int> RxTimeout { get; set; }
+        public ReactivePropertySlim<bool> RxTimeoutEnable { get; set; }
         public ReactiveCommand OnClickReload { get; set; }
 
         public SettingsViewModel()
@@ -72,7 +81,7 @@ namespace SerialDebugger.Serial
             {
                 DataBitsList.Add(d);
             }
-            DataBitsListSelectIndex = new ReactivePropertySlim<int>(1);
+            DataBitsListSelectIndex = new ReactivePropertySlim<int>(3);
             DataBitsListSelectIndex.AddTo(Disposables);
             // Parity bit
             ParityList = new ReactiveCollection<ParityNode>();
@@ -93,9 +102,37 @@ namespace SerialDebugger.Serial
             StopBitsList.Add(new StopBitsNode { StopBits = StopBits.Two, Disp = "2bit" });
             StopBitsListSelectIndex = new ReactivePropertySlim<int>(1);
             StopBitsListSelectIndex.AddTo(Disposables);
-            // 送信タイムアウト
+            // フロー制御
+            // RTS/CTS
+            RtsList = new ReactiveCollection<string>();
+            RtsList.AddTo(Disposables);
+            RtsList.Add("Disable");
+            RtsList.Add("Enable");
+            RtsListSelectIndex = new ReactivePropertySlim<int>(0);
+            RtsListSelectIndex.AddTo(Disposables);
+            // XOn/XOff
+            XonList = new ReactiveCollection<string>();
+            XonList.AddTo(Disposables);
+            XonList.Add("Disable");
+            XonList.Add("Enable");
+            XonListSelectIndex = new ReactivePropertySlim<int>(0);
+            XonListSelectIndex.AddTo(Disposables);
+            // DTR Enable
+            DtrEnableList = new ReactiveCollection<string>();
+            DtrEnableList.AddTo(Disposables);
+            DtrEnableList.Add("Disable");
+            DtrEnableList.Add("Enable");
+            DtrEnableListSelectIndex = new ReactivePropertySlim<int>(0);
+            DtrEnableListSelectIndex.AddTo(Disposables);
+            // タイムアウト
             TxTimeout = new ReactivePropertySlim<int>(1000);
             TxTimeout.AddTo(Disposables);
+            TxTimeoutEnable = new ReactivePropertySlim<bool>(false);
+            TxTimeoutEnable.AddTo(Disposables);
+            RxTimeout = new ReactivePropertySlim<int>(1000);
+            RxTimeout.AddTo(Disposables);
+            RxTimeoutEnable = new ReactivePropertySlim<bool>(false);
+            RxTimeoutEnable.AddTo(Disposables);
 
             // COMポート再読み込み
             OnClickReload = new ReactiveCommand();
@@ -172,6 +209,34 @@ namespace SerialDebugger.Serial
 
         public SerialPort GetSerialPort()
         {
+            // Handshake作成
+            var handshake = Handshake.None;
+            var rts = RtsListSelectIndex.Value == 1;
+            var xon = XonListSelectIndex.Value == 1;
+            if (rts && xon)
+            {
+                handshake = Handshake.RequestToSendXOnXOff;
+            }
+            else if (rts)
+            {
+                handshake = Handshake.RequestToSend;
+            }
+            else if (xon)
+            {
+                handshake = Handshake.XOnXOff;
+            }
+            // timeout
+            int txtimeout = -1;
+            if (TxTimeoutEnable.Value)
+            {
+                txtimeout = TxTimeout.Value;
+            }
+            int rxtimeout = -1;
+            if (RxTimeoutEnable.Value)
+            {
+                rxtimeout = RxTimeout.Value;
+            }
+
             return new SerialPort
             {
                 PortName = ComList[ComListSelectIndex.Value],
@@ -179,7 +244,12 @@ namespace SerialDebugger.Serial
                 DataBits = DataBitsList[DataBitsListSelectIndex.Value],
                 Parity = ParityList[ParityListSelectIndex.Value].Parity,
                 StopBits = StopBitsList[StopBitsListSelectIndex.Value].StopBits,
-                WriteTimeout = TxTimeout.Value,
+                // フロー制御
+                DtrEnable = (DtrEnableListSelectIndex.Value == 1),
+                Handshake = handshake,
+                // Timeout
+                WriteTimeout = txtimeout,
+                ReadTimeout = rxtimeout,
             };
         }
 

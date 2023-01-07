@@ -78,6 +78,7 @@ namespace SerialDebugger.Comm
             Edit,       // 直接入力
             Unit,       // 単位指定
             Dict,       // 辞書指定
+            Time,       // 時間(HH:MM)表現
             Checksum,   // チェックサム
         };
         public SelectModeType SelectType { get; }
@@ -94,6 +95,10 @@ namespace SerialDebugger.Comm
             public double DispMin { get; }
             public UInt64 ValueMin { get; }
             public string Format { get; }
+            // Time
+            public double Elapse { get; }
+            public DateTime TimeBegin { get; }
+            public DateTime TimeEnd { get; }
 
             public Selecter((UInt64, string)[] dict)
             {
@@ -111,6 +116,27 @@ namespace SerialDebugger.Comm
                 ValueMin = value_min;
                 Format = format;
             }
+
+            public Selecter(double elapse, string begin, string end, UInt64 value_min)
+            {
+                Type = SelectModeType.Time;
+                Elapse = elapse;
+                TimeBegin = DateTime.Parse(begin);
+                TimeEnd = DateTime.Parse(end);
+                ValueMin = value_min;
+            }
+        }
+        public static Selecter MakeSelecterDict((UInt64, string)[] dict)
+        {
+            return new Selecter(dict);
+        }
+        public static Selecter MakeSelecterUnit(string unit, double lsb, double disp_max, double disp_min, UInt64 value_min, string format)
+        {
+            return new Selecter(unit, lsb, disp_max, disp_min, value_min, format);
+        }
+        public static Selecter MakeSelecterTime(double elapse, string begin, string end, UInt64 value_min)
+        {
+            return new Selecter(elapse, begin, end, value_min);
         }
 
         public class Select
@@ -251,6 +277,7 @@ namespace SerialDebugger.Comm
             {
                 case TxField.SelectModeType.Dict:
                 case TxField.SelectModeType.Unit:
+                case TxField.SelectModeType.Time:
                     return $"{Selects[index].Disp} ({value:X}h)";
                 case TxField.SelectModeType.Edit:
                 case TxField.SelectModeType.Fix:
@@ -270,6 +297,10 @@ namespace SerialDebugger.Comm
                     break;
                 case SelectModeType.Dict:
                     index = MakeSelectModeDict(selecter);
+                    SelectIndexSelects.Value = index;
+                    break;
+                case SelectModeType.Time:
+                    index = MakeSelectModeTime(selecter);
                     SelectIndexSelects.Value = index;
                     break;
                 case SelectModeType.Edit:
@@ -340,6 +371,40 @@ namespace SerialDebugger.Comm
                     index++;
                 }
             }
+
+            return selectIndex;
+        }
+
+        private int MakeSelectModeTime(Selecter selecter)
+        {
+            int selectIndex = 0;
+            int index = 0;
+            UInt64 value = selecter.ValueMin;
+            SelectsValueMin = selecter.ValueMin;
+            double elapse = selecter.Elapse;
+            var dt = selecter.TimeBegin;
+            var end_dt = selecter.TimeEnd;
+
+            while (end_dt.CompareTo(dt) >= 0)
+            {
+                var disp = dt.ToString("HH:mm");
+                Selects.Add(new Select(value, disp));
+                // SelectIndex
+                if (value == Value.Value)
+                {
+                    selectIndex = index;
+                }
+                //
+                dt = dt.AddMinutes(elapse);
+                index++;
+                value++;
+                // BitSize定義の上限到達で終了
+                if (value > Max)
+                {
+                    break;
+                }
+            }
+            SelectsValueMax = value - 1;
 
             return selectIndex;
         }

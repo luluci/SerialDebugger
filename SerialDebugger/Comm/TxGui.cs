@@ -368,7 +368,7 @@ namespace SerialDebugger.Comm
                             }
                             //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Input列作成
-                            grid.Children.Add(MakeSelectGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, Setting.Data.Gui.ColOrder[(int)SettingGui.Col.FieldInput], field.BitSize));
+                            grid.Children.Add(MakeInputGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, Setting.Data.Gui.ColOrder[(int)SettingGui.Col.FieldInput], field.BitSize));
                             // BackupBuffer列作成
                             for (int i = 0; i < frame.BackupBufferLength; i++)
                             {
@@ -759,7 +759,7 @@ namespace SerialDebugger.Comm
         }
 
         /// <summary>
-        /// Select GUI作成
+        /// Input GUI作成
         /// </summary>
         /// <param name="path"></param>
         /// <param name="row"></param>
@@ -767,12 +767,13 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeSelectGui(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeInputGui(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             switch (field.SelectType)
             {
                 case TxField.SelectModeType.Dict:
                 case TxField.SelectModeType.Unit:
+                case TxField.SelectModeType.Time:
                     return MakeSelectGuiSelecter(field, path, row, col, rowspan, colspan);
                 case TxField.SelectModeType.Edit:
                     return MakeSelectGuiEdit(field, path, row, col, rowspan, colspan);

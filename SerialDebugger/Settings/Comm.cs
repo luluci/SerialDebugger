@@ -167,6 +167,8 @@ namespace SerialDebugger.Settings
                     return MakeTxFieldDict(field);
                 case "Unit":
                     return MakeTxFieldUnit(field);
+                case "Time":
+                    return MakeTxFieldTime(field);
                 case "Edit":
                     return MakeTxFieldImpl(field, TxField.SelectModeType.Edit, null);
                 case "Fix":
@@ -219,35 +221,50 @@ namespace SerialDebugger.Settings
 
         private TxField MakeTxFieldDict(Json.CommTxField field)
         {
-            // Checksumチェック
-            if (field.Dict is null)
+            // nullチェック
+            var dict = field.Dict;
+            if (dict is null)
             {
                 throw new Exception("type:DictではDictオブジェクトを指定してください。");
             }
             // Selecter作成
-            var selecter = new (UInt64, string)[field.Dict.Count];
+            var selecter = new (UInt64, string)[dict.Count];
             int i = 0;
-            foreach (var pair in field.Dict)
+            foreach (var pair in dict)
             {
                 selecter[i] = (pair.Value, pair.Disp);
                 i++;
             }
             // TxField生成
-            return MakeTxFieldImpl(field, TxField.SelectModeType.Dict, new TxField.Selecter(selecter));
+            return MakeTxFieldImpl(field, TxField.SelectModeType.Dict, TxField.MakeSelecterDict(selecter));
         }
 
         private TxField MakeTxFieldUnit(Json.CommTxField field)
         {
+            // nullチェック
             var unit = field.Unit;
-            // Checksumチェック
             if (unit is null)
             {
                 throw new Exception("type:UnitではUnitオブジェクトを指定してください。");
             }
             // Selecter作成
-            var selecter = new TxField.Selecter(unit.Unit, unit.Lsb, unit.DispMax, unit.DispMin, unit.ValueMin, unit.Format);
+            var selecter = TxField.MakeSelecterUnit(unit.Unit, unit.Lsb, unit.DispMax, unit.DispMin, unit.ValueMin, unit.Format);
             // TxField生成
             return MakeTxFieldImpl(field, TxField.SelectModeType.Unit, selecter);
+        }
+
+        private TxField MakeTxFieldTime(Json.CommTxField field)
+        {
+            // nullチェック
+            var time = field.Time;
+            if (time is null)
+            {
+                throw new Exception("type:TimeではTimeオブジェクトを指定してください。");
+            }
+            // Selecter作成
+            var selecter = TxField.MakeSelecterTime(time.Elapse, time.Begin, time.End, time.ValueMin);
+            // TxField生成
+            return MakeTxFieldImpl(field, TxField.SelectModeType.Time, selecter);
         }
 
         private TxField MakeTxFieldImpl(Json.CommTxField field, TxField.SelectModeType type, TxField.Selecter selecter)
@@ -375,6 +392,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("dict")]
             public IList<CommTxFieldDict> Dict { get; set; }
 
+            [JsonPropertyName("time")]
+            public CommTxFieldTime Time { get; set; }
+
             [JsonPropertyName("checksum")]
             public CommTxFieldChecksum Checksum { get; set; }
         }
@@ -416,6 +436,21 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("disp")]
             public string Disp { get; set; } = string.Empty;
+        }
+
+        public class CommTxFieldTime
+        {
+            [JsonPropertyName("elapse")]
+            public double Elapse { get; set; } = 0;
+
+            [JsonPropertyName("begin")]
+            public string Begin { get; set; } = string.Empty;
+
+            [JsonPropertyName("end")]
+            public string End { get; set; } = string.Empty;
+
+            [JsonPropertyName("value_min")]
+            public UInt64 ValueMin { get; set; } = 0;
         }
 
         public class CommTxFieldChecksum

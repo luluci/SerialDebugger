@@ -14,7 +14,11 @@ namespace SerialDebugger.Settings
         public int DataBits { get; set; } = 8;
         public Parity Parity { get; set; }
         public StopBits StopBits { get; set; }
+        public bool Rts { get; set; } = false;
+        public bool Xon { get; set; } = false;
+        public bool Dtr { get; set; } = false;
         public int TxTimeout { get; set; } = 500;
+        public int RxTimeout { get; set; } = 500;
 
         public Serial()
         {
@@ -80,10 +84,21 @@ namespace SerialDebugger.Settings
                     StopBits = StopBits.None;
                     break;
             }
+            // RTS/CTS
+            Rts = json.Rts;
+            // XOn/XOff
+            Xon = json.Xon;
+            // DTR/STR
+            Dtr = json.Dtr;
             // TxTimeout
             if (json.TxTimeout >= 0)
             {
                 TxTimeout = json.TxTimeout;
+            }
+            // RxTimeout
+            if (json.RxTimeout >= 0)
+            {
+                RxTimeout = json.RxTimeout;
             }
         }
     }
@@ -109,9 +124,25 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("stop_bits")]
             public double StopBits { get; set; } = -1;
 
+            // RTS/CTS
+            [JsonPropertyName("rts_cts")]
+            public bool Rts { get; set; } = false;
+
+            // XOn/XOff
+            [JsonPropertyName("xon_xoff")]
+            public bool Xon { get; set; } = false;
+
+            // DTR/STR
+            [JsonPropertyName("dtr_str")]
+            public bool Dtr { get; set; } = false;
+
             // WriteTimeout
             [JsonPropertyName("tx_timeout")]
             public int TxTimeout { get; set; } = -1;
+
+            // ReadTimeout
+            [JsonPropertyName("rx_timeout")]
+            public int RxTimeout { get; set; } = -1;
         }
         
     }

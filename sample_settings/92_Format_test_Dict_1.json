@@ -27,11 +27,15 @@
 	},
 	
 	"serial": {
-		"baudrate": 4800,
-		"data_bits": 9,
-		"parity": "space",
-		"stop_bits": 2,
-		"tx_timeout": 700
+		"baudrate": 2400,
+		"data_bits": 8,
+		"parity": "mark",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": true,
+		"dtr_str": false,
+		"tx_timeout": 700,
+		"rx_timeout": 600
 	},
 	
 	"comm": {

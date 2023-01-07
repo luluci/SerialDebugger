@@ -36,7 +36,11 @@
 		"data_bits": 8,
 		"parity": "even",
 		"stop_bits": 1,
-		"tx_timeout": 500
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"rx_timeout": 500
 	},
 	
 	"comm": {

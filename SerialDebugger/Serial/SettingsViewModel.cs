@@ -203,8 +203,18 @@ namespace SerialDebugger.Serial
                     StopBitsListSelectIndex.Value = 0;
                     break;
             }
+            // RTS/CTS
+            RtsListSelectIndex.Value = serial.Rts ? 1 : 0;
+            // XOn/XOff
+            XonListSelectIndex.Value = serial.Xon ? 1 : 0;
+            // DTR/STR
+            DtrEnableListSelectIndex.Value = serial.Dtr ? 1 : 0;
             // TxTimeout
             TxTimeout.Value = serial.TxTimeout;
+            TxTimeoutEnable.Value = serial.TxTimeout != -1;
+            // RxTimeout
+            RxTimeout.Value = serial.RxTimeout;
+            RxTimeoutEnable.Value = serial.RxTimeout != -1;
         }
 
         public SerialPort GetSerialPort()

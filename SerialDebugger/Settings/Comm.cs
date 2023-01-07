@@ -170,10 +170,10 @@ namespace SerialDebugger.Settings
                 case "Time":
                     return MakeTxFieldTime(field);
                 case "Edit":
-                    return MakeTxFieldImpl(field, TxField.SelectModeType.Edit, null);
+                    return MakeTxFieldImpl(field, TxField.InputModeType.Edit, null);
                 case "Fix":
                 default:
-                    return MakeTxFieldImpl(field, TxField.SelectModeType.Fix, null);
+                    return MakeTxFieldImpl(field, TxField.InputModeType.Fix, null);
             }
         }
 
@@ -236,7 +236,7 @@ namespace SerialDebugger.Settings
                 i++;
             }
             // TxField生成
-            return MakeTxFieldImpl(field, TxField.SelectModeType.Dict, TxField.MakeSelecterDict(selecter));
+            return MakeTxFieldImpl(field, TxField.InputModeType.Dict, TxField.MakeSelecterDict(selecter));
         }
 
         private TxField MakeTxFieldUnit(Json.CommTxField field)
@@ -250,7 +250,7 @@ namespace SerialDebugger.Settings
             // Selecter作成
             var selecter = TxField.MakeSelecterUnit(unit.Unit, unit.Lsb, unit.DispMax, unit.DispMin, unit.ValueMin, unit.Format);
             // TxField生成
-            return MakeTxFieldImpl(field, TxField.SelectModeType.Unit, selecter);
+            return MakeTxFieldImpl(field, TxField.InputModeType.Unit, selecter);
         }
 
         private TxField MakeTxFieldTime(Json.CommTxField field)
@@ -264,10 +264,10 @@ namespace SerialDebugger.Settings
             // Selecter作成
             var selecter = TxField.MakeSelecterTime(time.Elapse, time.Begin, time.End, time.ValueMin);
             // TxField生成
-            return MakeTxFieldImpl(field, TxField.SelectModeType.Time, selecter);
+            return MakeTxFieldImpl(field, TxField.InputModeType.Time, selecter);
         }
 
-        private TxField MakeTxFieldImpl(Json.CommTxField field, TxField.SelectModeType type, TxField.Selecter selecter)
+        private TxField MakeTxFieldImpl(Json.CommTxField field, TxField.InputModeType type, TxField.Selecter selecter)
         {
             // name, multi_name選択
             if (!(field.MultiNames is null))

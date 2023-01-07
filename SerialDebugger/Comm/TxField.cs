@@ -72,7 +72,7 @@ namespace SerialDebugger.Comm
         internal List<InnerField> InnerFields { get; }
 
         //
-        public enum SelectModeType
+        public enum InputModeType
         {
             Fix,        // 固定値:変更不可
             Edit,       // 直接入力
@@ -81,11 +81,11 @@ namespace SerialDebugger.Comm
             Time,       // 時間(HH:MM)表現
             Checksum,   // チェックサム
         };
-        public SelectModeType SelectType { get; }
+        public InputModeType InputType { get; }
 
         public class Selecter
         {
-            public SelectModeType Type { get; }
+            public InputModeType Type { get; }
             // Dict表現要素
             public (UInt64, string)[] Dict { get; }
             // Unit表現要素
@@ -102,13 +102,13 @@ namespace SerialDebugger.Comm
 
             public Selecter((UInt64, string)[] dict)
             {
-                Type = SelectModeType.Dict;
+                Type = InputModeType.Dict;
                 Dict = dict;
             }
 
             public Selecter(string unit, double lsb, double disp_max, double disp_min, UInt64 value_min, string format)
             {
-                Type = SelectModeType.Unit;
+                Type = InputModeType.Unit;
                 Unit = unit;
                 Lsb = lsb;
                 DispMax = disp_max;
@@ -119,7 +119,7 @@ namespace SerialDebugger.Comm
 
             public Selecter(double elapse, string begin, string end, UInt64 value_min)
             {
-                Type = SelectModeType.Time;
+                Type = InputModeType.Time;
                 Elapse = elapse;
                 TimeBegin = DateTime.Parse(begin);
                 TimeEnd = DateTime.Parse(end);
@@ -165,18 +165,18 @@ namespace SerialDebugger.Comm
         /// <param name="type"></param>
         /// <param name="selecter"></param>
         public TxField(ChecksumNode node)
-            : this(new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, SelectModeType.Checksum, null)
+            : this(new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, InputModeType.Checksum, null)
         {
             Checksum = node;
             IsChecksum = true;
         }
 
-        public TxField(string name, int bitsize, UInt64 value = 0, SelectModeType type = SelectModeType.Fix, Selecter selecter = null)
+        public TxField(string name, int bitsize, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
             : this(new InnerField[]{ new InnerField(name, bitsize) }, value, type, selecter)
         {
         }
 
-        public TxField(InnerField[] innerFields, UInt64 value = 0, SelectModeType type = SelectModeType.Fix, Selecter selecter = null)
+        public TxField(InnerField[] innerFields, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
             Name = innerFields[0].Name;
             BitSize = 0;
@@ -231,21 +231,21 @@ namespace SerialDebugger.Comm
                 })
                 .AddTo(Disposables);
             //
-            SelectType = type;
+            InputType = type;
             MakeSelectMode(selecter);
         }
 
         public int GetSelectsIndex(UInt64 value)
         {
             int index = -1;
-            if (SelectType == SelectModeType.Dict)
+            if (InputType == InputModeType.Dict)
             {
                 if (SelectsValueCheckTable.TryGetValue(value, out index))
                 {
                     //SelectIndexSelects.Value = index;
                 }
             }
-            else if (SelectType == SelectModeType.Unit)
+            else if (InputType == InputModeType.Unit)
             {
                 if (SelectsValueMin <= value && value <= SelectsValueMax)
                 {
@@ -273,14 +273,14 @@ namespace SerialDebugger.Comm
         /// <returns></returns>
         public string MakeDisp(int index, UInt64 value)
         {
-            switch (SelectType)
+            switch (InputType)
             {
-                case TxField.SelectModeType.Dict:
-                case TxField.SelectModeType.Unit:
-                case TxField.SelectModeType.Time:
+                case TxField.InputModeType.Dict:
+                case TxField.InputModeType.Unit:
+                case TxField.InputModeType.Time:
                     return $"{Selects[index].Disp} ({value:X}h)";
-                case TxField.SelectModeType.Edit:
-                case TxField.SelectModeType.Fix:
+                case TxField.InputModeType.Edit:
+                case TxField.InputModeType.Fix:
                 default:
                     return $"{value:X}h";
             }
@@ -289,22 +289,22 @@ namespace SerialDebugger.Comm
         private void MakeSelectMode(Selecter selecter)
         {
             int index;
-            switch (SelectType)
+            switch (InputType)
             {
-                case SelectModeType.Unit:
+                case InputModeType.Unit:
                     index = MakeSelectModeUnit(selecter);
                     SelectIndexSelects.Value = index;
                     break;
-                case SelectModeType.Dict:
+                case InputModeType.Dict:
                     index = MakeSelectModeDict(selecter);
                     SelectIndexSelects.Value = index;
                     break;
-                case SelectModeType.Time:
+                case InputModeType.Time:
                     index = MakeSelectModeTime(selecter);
                     SelectIndexSelects.Value = index;
                     break;
-                case SelectModeType.Edit:
-                case SelectModeType.Fix:
+                case InputModeType.Edit:
+                case InputModeType.Fix:
                 default:
                     break;
             }

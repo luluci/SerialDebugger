@@ -600,7 +600,7 @@ namespace SerialDebugger.Comm
             var tb = new TextBlock();
             tb.Text = text;
             tb.Background = SystemColors.ControlLightLightBrush;
-            tb.FontSize += 3;
+            //tb.FontSize += 1;
             tb.TextWrapping = TextWrapping.Wrap;
             tb.Padding = new Thickness(5, 2, 2, 2);
             //

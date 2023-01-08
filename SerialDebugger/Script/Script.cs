@@ -32,13 +32,26 @@ namespace SerialDebugger.Script
         [ComVisible(true)]
         public class EvalExecResult
         {
-            public UInt64 key;
-            public string value;
+            [System.Runtime.CompilerServices.IndexerName("Items")]
+            public string this[int index]
+            {
+                get { return list[index]; }
+                set { list[index] = value; }
+            }
+            public Dictionary<int, string> list = new Dictionary<int, string>();
+
+            public UInt64 Key { get; set; }
+            public string Value { get; set; }
 
             public void result(UInt64 key, string value)
             {
-                this.key = key;
-                this.value = value;
+                this.Key = key;
+                this.Value = value;
+            }
+
+            public void Test(string value)
+            {
+                this.Value = value;
             }
         };
         public EvalExecResult evalExecResult = new EvalExecResult();
@@ -76,6 +89,23 @@ namespace SerialDebugger.Script
             wv.WebMessageReceived += webView_WebMessageReceived;
         }
 
+
+        public async Task EvalTest()
+        {
+            evalExecResult.Value = "test_setted";
+            await wv.CoreWebView2.ExecuteScriptAsync($@"
+                var eval_test = (i) => {{
+                    const test = chrome.webview.hostObjects.sync.evalExecResult;
+                    test.Key = 55;
+                    test.Value = 'test';
+                    test[100] = 'test 100';
+                    test.Test('test_');
+                    return test.Value;
+                }}
+            ");
+            var result = await wv.CoreWebView2.ExecuteScriptAsync($"eval_test(0)");
+            return;
+        }
 
 
         public async Task EvalInit(string script)

@@ -10,6 +10,8 @@ using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System.Windows.Controls.Primitives;
+using System.Windows.Controls;
+using System.Windows;
 
 namespace SerialDebugger
 {
@@ -38,23 +40,14 @@ namespace SerialDebugger
         public ReactiveCollection<string> Log { get; set; }
         //
         MainWindow window;
+        UIElement BaseSerialTxOrig;
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
 
         public MainWindowViewModel(MainWindow window)
         {
-            // Logger設定
-            Logger.Init(window);
             this.window = window;
-            // 設定ファイル読み込み
-            Setting.Init(0);
-            //
-            if (!(Setting.Data is null))
-            {
-                window.Width = Setting.Data.Gui.Window.Width;
-                window.Height = Setting.Data.Gui.Window.Height;
-            }
 
             // Serial
             serialSetting = new Serial.Settings();
@@ -106,45 +99,28 @@ namespace SerialDebugger
             popup.StaysOpen = false;
             popup.Child = serialSetting;
             // Settingファイル選択GUI
-            Settings = Setting.DataList;
+            Settings = new ReactiveCollection<Settings.SettingInfo>();
+            Settings.AddTo(Disposables);
             SettingsSelectIndex = new ReactivePropertySlim<int>(mode:ReactivePropertyMode.DistinctUntilChanged);
             SettingsSelectIndex
                 .Subscribe((int idx) =>
                 {
                     window.BaseSerialTx.Children.Clear();
-                    Setting.Select(idx);
-                    TxFrames = Setting.Data.Comm.Tx;
+                    window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
+                    //Setting.Select(idx);
+                    var data = Settings[SettingsSelectIndex.Value];
+                    TxFrames = data.Comm.Tx;
                     // GUI構築する
-                    window.Width = Setting.Data.Gui.Window.Width;
-                    window.Height = Setting.Data.Gui.Window.Height;
-                    Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
+                    window.Width = data.Gui.Window.Width;
+                    window.Height = data.Gui.Window.Height;
+                    // GUI作成
+                    var grid = Comm.TxGui.Make(data);
+                    window.BaseSerialTx.Children.Clear();
+                    window.BaseSerialTx.Children.Add(grid);
                     // COMポート設定更新
-                    serialSetting.vm.SetSerialSetting(Setting.Data.Serial);
+                    serialSetting.vm.SetSerialSetting(data.Serial);
                 })
                 .AddTo(Disposables);
-            // 有効な設定ファイルを読み込んでいたら
-            if (Settings.Count > 0)
-            {
-                // 有効な通信フォーマットがあればツールに取り込む
-                if (Setting.Data.Comm.Tx.Count > 0)
-                {
-                    // 先頭要素を選択
-                    TxFrames = Setting.Data.Comm.Tx;
-                    // GUI構築する
-                    Comm.TxGui.Make(window.BaseSerialTx, TxFrames);
-                }
-                else
-                {
-                    TxFrames = new ReactiveCollection<Comm.TxFrame>();
-                    TxFrames.AddTo(Disposables);
-                }
-                // COMポート設定更新
-                serialSetting.vm.SetSerialSetting(Setting.Data.Serial);
-            }
-            else
-            {
-                Logger.Add("有効な設定ファイルが存在しません。");
-            }
             OnClickTxDataSend = new ReactiveCommand();
             OnClickTxDataSend
                 .Subscribe(x => {
@@ -165,6 +141,43 @@ namespace SerialDebugger
                     SerialWrite_test();
                 })
                 .AddTo(Disposables);
+        }
+
+        public async Task InitAsync()
+        {
+            // 設定ファイル読み込み
+            await Setting.InitAsync(Settings);
+
+            // 有効な設定ファイルを読み込んでいたら
+            if (Settings.Count > 0)
+            {
+                SettingsSelectIndex.Value = 0;
+                var data = Settings[SettingsSelectIndex.Value];
+                // 有効な通信フォーマットがあればツールに取り込む
+                if (data.Comm.Tx.Count > 0)
+                {
+                    // GUI作成
+                    window.Width = data.Gui.Window.Width;
+                    window.Height = data.Gui.Window.Height;
+                    TxFrames = data.Comm.Tx;
+                    var grid = Comm.TxGui.Make(data);
+                    // GUI反映
+                    BaseSerialTxOrig = window.BaseSerialTx.Children[0];
+                    window.BaseSerialTx.Children.Clear();
+                    window.BaseSerialTx.Children.Add(grid);
+                }
+                else
+                {
+                    TxFrames = new ReactiveCollection<Comm.TxFrame>();
+                    TxFrames.AddTo(Disposables);
+                }
+                // COMポート設定更新
+                serialSetting.vm.SetSerialSetting(data.Serial);
+            }
+            else
+            {
+                Logger.Add("有効な設定ファイルが存在しません。");
+            }
         }
 
         private void SerialWrite(ReactiveCollection<byte> buff)

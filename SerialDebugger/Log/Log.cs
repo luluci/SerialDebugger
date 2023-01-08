@@ -31,6 +31,40 @@ namespace SerialDebugger.Log
             MainWindow.log_scrl.ScrollToBottom();
         }
 
+        static public void AddException(Exception e, string prefix = "")
+        {
+            if (e.InnerException is null)
+            {
+                //MessageBox.Show($"init exception: {e.Message}");
+                Add($"{prefix}\n  {e.Message}");
+            }
+            else
+            {
+                //MessageBox.Show($"init exception: {e.Message}");
+                Add($"{prefix}\n  {e.InnerException.Message}");
+            }
+        }
+
+        static public void AddException(AggregateException e, string prefix = "")
+        {
+            if (e.InnerException is null)
+            {
+                //MessageBox.Show($"init exception: {e.Message}");
+                Add($"{prefix}\n  {e.Message}");
+            }
+            else
+            {
+                //MessageBox.Show($"init exception: {e.Message}");
+                var sb = new StringBuilder();
+                sb.AppendLine($"{prefix}");
+                foreach (var ie in e.InnerExceptions)
+                {
+                    sb.AppendLine($"  {ie.Message}");
+                }
+                Add(sb.ToString());
+            }
+        }
+
         static public void Init(MainWindow window)
         {
             MainWindow = window;

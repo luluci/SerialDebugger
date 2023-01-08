@@ -33,44 +33,46 @@ namespace SerialDebugger.Settings
     static class Settings
     {
         static public SettingsImpl Impl = new SettingsImpl();
-        static public ReactiveCollection<SettingInfo> DataList { get; set; }
+        //static public ReactiveCollection<SettingInfo> DataList { get; set; }
         static public SettingInfo Data { get; set; }
-        static public ReactivePropertySlim<int> DataIndex { get; set; }
+        //static public ReactivePropertySlim<int> DataIndex { get; set; }
 
-        static public void Init(int idx)
+        static public async Task InitAsync(ReactiveCollection<SettingInfo> list)
         {
-            Impl.Load();
-            DataList = Impl.DataList;
-            DataIndex = Impl.DataIndex;
-            Select(idx);
+            await Impl.LoadAsync(list);
+            //DataList = Impl.DataList;
+            //DataIndex = Impl.DataIndex;
+            //Select(0);
         }
 
         static public void Select(int idx)
         {
+            /*
             if (DataList.Count > idx)
             {
                 DataIndex.Value = idx;
                 Data = DataList[idx];
             }
+            */
         }
     }
 
     class SettingsImpl : BindableBase, IDisposable
     {
-        public ReactiveCollection<SettingInfo> DataList { get; set; }
-        public ReactivePropertySlim<int> DataIndex { get; set; }
+        //public ReactiveCollection<SettingInfo> DataList { get; set; }
+        //public ReactivePropertySlim<int> DataIndex { get; set; }
 
         public SettingsImpl()
         {
-            DataList = new ReactiveCollection<SettingInfo>();
-            DataList.AddTo(Disposables);
-            DataIndex = new ReactivePropertySlim<int>(0);
-            DataIndex.AddTo(Disposables);
+            //DataList = new ReactiveCollection<SettingInfo>();
+            //DataList.AddTo(Disposables);
+            //DataIndex = new ReactivePropertySlim<int>(0);
+            //DataIndex.AddTo(Disposables);
 
             //Load();
         }
 
-        public void Load()
+        public async Task LoadAsync(ReactiveCollection<SettingInfo> list)
         {
             // デフォルトパス
             string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
@@ -90,27 +92,18 @@ namespace SerialDebugger.Settings
                         {
                             FilePath = file
                         };
-                        LoadSettingFile(file, info);
-                        DataList.Add(info);
+                        await LoadSettingFileAsync(file, info);
+                        list.Add(info);
                     }
                     catch (Exception e)
                     {
-                        if (e.InnerException is null)
-                        {
-                            //MessageBox.Show($"init exception: {e.Message}");
-                            Logger.Add($"json解析エラー: {e.Message} : in file {file}");
-                        }
-                        else
-                        {
-                            //MessageBox.Show($"init exception: {e.Message}");
-                            Logger.Add($"json解析エラー: {e.InnerException.Message} : in file {file}");
-                        }
+                        Logger.AddException(e, $"json解析エラー: in file {file}");
                     }
                 }
             }
         }
 
-        private void LoadSettingFile(string path, SettingInfo info)
+        private async Task LoadSettingFileAsync(string path, SettingInfo info)
         {
             var options = new JsonSerializerOptions
             {
@@ -122,15 +115,13 @@ namespace SerialDebugger.Settings
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
                 // jsonファイルパース
-                // 呼び出し元でWait()している。ConfigureAwait(false)無しにawaitするとデッドロックで死ぬ。
-                var json = JsonSerializer.DeserializeAsync<Json.Settings>(stream, options).AsTask();
-                json.Wait();
+                var json = await JsonSerializer.DeserializeAsync<Json.Settings>(stream, options);
                 // json読み込み
-                MakeSetting(json.Result, info);
+                await MakeSettingAsync(json, info);
             }
         }
 
-        private void MakeSetting(Json.Settings json, SettingInfo info)
+        private async Task MakeSettingAsync(Json.Settings json, SettingInfo info)
         {
             // 設定ファイル情報
             info.Name = json.Name;
@@ -140,7 +131,7 @@ namespace SerialDebugger.Settings
             // Serial
             info.Serial.AnalyzeJson(json.Serial);
             // Comm
-            info.Comm.AnalyzeJson(json.Comm);
+            await info.Comm.AnalyzeJsonAsync(json.Comm);
         }
 
         #region IDisposable Support

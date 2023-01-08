@@ -79,6 +79,7 @@ namespace SerialDebugger.Comm
             Unit,       // 単位指定
             Dict,       // 辞書指定
             Time,       // 時間(HH:MM)表現
+            Script,     // スクリプト生成
             Checksum,   // チェックサム
         };
         public InputModeType InputType { get; }
@@ -99,6 +100,11 @@ namespace SerialDebugger.Comm
             public double Elapse { get; }
             public DateTime TimeBegin { get; }
             public DateTime TimeEnd { get; }
+            // ValueMin
+            // Script
+            public string Mode { get; }
+            public int Count { get; }
+            public string Script { get; }
 
             public Selecter((UInt64, string)[] dict)
             {
@@ -125,6 +131,14 @@ namespace SerialDebugger.Comm
                 TimeEnd = DateTime.Parse(end);
                 ValueMin = value_min;
             }
+
+            public Selecter(string mode, int count, string script)
+            {
+                Type = InputModeType.Script;
+                Mode = mode;
+                Count = count;
+                Script = script;
+            }
         }
         public static Selecter MakeSelecterDict((UInt64, string)[] dict)
         {
@@ -138,6 +152,12 @@ namespace SerialDebugger.Comm
         {
             return new Selecter(elapse, begin, end, value_min);
         }
+        public static Selecter MakeSelecterScript(string mode, int count, string script)
+        {
+            return new Selecter(mode, count, script);
+        }
+
+        private Selecter selecter;
 
         public class Select
         {
@@ -178,6 +198,7 @@ namespace SerialDebugger.Comm
 
         public TxField(InnerField[] innerFields, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
+            this.selecter = selecter;
             Name = innerFields[0].Name;
             BitSize = 0;
             foreach (var inner in innerFields)
@@ -232,7 +253,11 @@ namespace SerialDebugger.Comm
                 .AddTo(Disposables);
             //
             InputType = type;
-            MakeSelectMode(selecter);
+        }
+
+        public async Task InitAsync()
+        {
+            await MakeSelectModeAsync(selecter);
         }
 
         public int GetSelectsIndex(UInt64 value)
@@ -286,7 +311,7 @@ namespace SerialDebugger.Comm
             }
         }
 
-        private void MakeSelectMode(Selecter selecter)
+        private async Task MakeSelectModeAsync(Selecter selecter)
         {
             int index;
             switch (InputType)
@@ -301,6 +326,10 @@ namespace SerialDebugger.Comm
                     break;
                 case InputModeType.Time:
                     index = MakeSelectModeTime(selecter);
+                    SelectIndexSelects.Value = index;
+                    break;
+                case InputModeType.Script:
+                    index = await MakeSelectModeScriptAsync(selecter);
                     SelectIndexSelects.Value = index;
                     break;
                 case InputModeType.Edit:
@@ -409,6 +438,72 @@ namespace SerialDebugger.Comm
             return selectIndex;
         }
 
+        private async Task<int> MakeSelectModeScriptAsync(Selecter selecter)
+        {
+            switch (selecter.Mode)
+            {
+                case "Exec":
+                    return await MakeSelectModeScriptExecAsync(selecter);
+                case "Call":
+                    return await MakeSelectModeScriptCallAsync(selecter);
+                default:
+                    return -1;
+            }
+        }
+        private async Task<int> MakeSelectModeScriptExecAsync(Selecter selecter)
+        {
+            int index = 0;
+            int selectIndex = 0;
+
+            // Script初期化
+            await Script.Interpreter.Engine.EvalInit(selecter.Script);
+
+            for (int i=0; i<selecter.Count; i++)
+            {
+                // Script評価
+                var result = await Script.Interpreter.Engine.EvalExec(i);
+                if (!(result.Item2 is null) && result.Item1 <= Max)
+                {
+                    Selects.Add(new Select(result.Item1, result.Item2));
+                    // SelectIndex
+                    if (result.Item1 == Value.Value)
+                    {
+                        selectIndex = index;
+                    }
+                    //
+                    index++;
+                }
+            }
+
+            return selectIndex;
+        }
+        private async Task<int> MakeSelectModeScriptCallAsync(Selecter selecter)
+        {
+            int index = 0;
+            int selectIndex = 0;
+
+            // Script初期化
+            //await Script.Interpreter.Engine.EvalInit(selecter.Script);
+
+            for (int i = 0; i < selecter.Count; i++)
+            {
+                // Script評価
+                var result = await Script.Interpreter.Engine.Call($"{selecter.Script}({i})");
+                if (!(result.Item2 is null) && result.Item1 <= Max)
+                {
+                    Selects.Add(new Select(result.Item1, result.Item2));
+                    // SelectIndex
+                    if (result.Item1 == Value.Value)
+                    {
+                        selectIndex = index;
+                    }
+                    //
+                    index++;
+                }
+            }
+
+            return selectIndex;
+        }
 
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();

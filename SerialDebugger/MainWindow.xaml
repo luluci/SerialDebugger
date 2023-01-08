@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SerialDebugger"
         mc:Ignorable="d"
-        Title="SerialDebugger" Width="750" MinWidth="330">
+        Title="SerialDebugger" Width="750" MinWidth="330" Loaded="Window_Loaded">
     <!--
     <Window.DataContext>
         <local:MainWindowViewModel />
@@ -14,7 +14,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="500*"/>
+            <RowDefinition Height="400*"/>
             <RowDefinition Height="3"/>
             <RowDefinition Height="120"/>
         </Grid.RowDefinitions>
@@ -22,7 +22,7 @@
 
         <Grid Grid.Row="0" Background="#FFE6FFD4">
             <WrapPanel Margin="5,0,5,5">
-                <StackPanel Orientation="Horizontal" Margin="0,5,0,0" Height="20">
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0" Height="22">
                     <TextBlock Margin="0,2,0,0" Text="通信設定:" FontFamily="Meiryo UI"/>
                     <ComboBox ItemsSource="{Binding Settings}" DisplayMemberPath="Name" SelectedIndex="{Binding SettingsSelectIndex.Value}" IsEnabled="{Binding IsEnableSerialSetting.Value}" Margin="5,0,0,0" Width="235"/>
                 </StackPanel>
@@ -36,7 +36,11 @@
                 <TabItem Header="送信フレーム">
                     <Grid>
                         <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
-                            <Grid x:Name="BaseSerialTx" Margin="10,0,10,0"/>
+                            <Grid x:Name="BaseSerialTx" Margin="10,0,10,0">
+                                <Grid>
+                                    <TextBlock Text="Loading..."/>
+                                </Grid>
+                            </Grid>
                         </ScrollViewer>
                     </Grid>
                 </TabItem>

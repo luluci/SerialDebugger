@@ -103,12 +103,17 @@ namespace SerialDebugger
             Settings.AddTo(Disposables);
             SettingsSelectIndex = new ReactivePropertySlim<int>(mode:ReactivePropertyMode.DistinctUntilChanged);
             SettingsSelectIndex
-                .Subscribe((int idx) =>
+                .Subscribe(async (int idx) =>
                 {
                     window.BaseSerialTx.Children.Clear();
                     window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
                     //Setting.Select(idx);
                     var data = Settings[SettingsSelectIndex.Value];
+                    // 未ロードファイルならロード処理
+                    if (!data.IsLoaded)
+                    {
+                        await Setting.LoadAsync(data);
+                    }
                     TxFrames = data.Comm.Tx;
                     // GUI構築する
                     window.Width = data.Gui.Window.Width;
@@ -153,6 +158,11 @@ namespace SerialDebugger
             {
                 SettingsSelectIndex.Value = 0;
                 var data = Settings[SettingsSelectIndex.Value];
+                // 未ロードファイルならロード処理
+                if (!data.IsLoaded)
+                {
+                    await Setting.LoadAsync(data);
+                }
                 // 有効な通信フォーマットがあればツールに取り込む
                 if (data.Comm.Tx.Count > 0)
                 {

@@ -12,7 +12,7 @@
 			if ((i % 2) == 1) {
 				key <<= 4;
 			}
-			let value = (base + lsb * i) + unit;
+			let value = (base + lsb * i).toFixed(1) + unit;
 			return { key:key, value:value }
 		}
 

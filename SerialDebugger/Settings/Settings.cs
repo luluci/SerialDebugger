@@ -24,6 +24,8 @@ namespace SerialDebugger.Settings
         // 設定ファイル情報
         public string FilePath { get; set; }
         public string Name { get; set; }
+        // 設定読み込み遅延処理
+        public bool IsLoaded { get; set; } = false;
         // 設定内容
         public Gui Gui { get; set; } = new Gui();
         public Serial Serial { get; set; } = new Serial();
@@ -39,10 +41,15 @@ namespace SerialDebugger.Settings
 
         static public async Task InitAsync(ReactiveCollection<SettingInfo> list)
         {
-            await Impl.LoadAsync(list);
+            await Impl.InitAsync(list);
             //DataList = Impl.DataList;
             //DataIndex = Impl.DataIndex;
             //Select(0);
+        }
+
+        static public async Task LoadAsync(SettingInfo info)
+        {
+            await Impl.LoadAsync(info);
         }
 
         static public void Select(int idx)
@@ -61,6 +68,7 @@ namespace SerialDebugger.Settings
     {
         //public ReactiveCollection<SettingInfo> DataList { get; set; }
         //public ReactivePropertySlim<int> DataIndex { get; set; }
+        private JsonSerializerOptions jsonOptions;
 
         public SettingsImpl()
         {
@@ -72,8 +80,16 @@ namespace SerialDebugger.Settings
             //Load();
         }
 
-        public async Task LoadAsync(ReactiveCollection<SettingInfo> list)
+        public async Task InitAsync(ReactiveCollection<SettingInfo> list)
         {
+            // JSON読み込みオプション
+            jsonOptions = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                //NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            };
+
             // デフォルトパス
             string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             string SettingPath = rootPath + @"\Settings";
@@ -92,7 +108,7 @@ namespace SerialDebugger.Settings
                         {
                             FilePath = file
                         };
-                        await LoadSettingFileAsync(file, info);
+                        await InitSettingFileAsync(file, info);
                         list.Add(info);
                     }
                     catch (Exception e)
@@ -103,19 +119,31 @@ namespace SerialDebugger.Settings
             }
         }
 
-        private async Task LoadSettingFileAsync(string path, SettingInfo info)
+        private async Task InitSettingFileAsync(string path, SettingInfo info)
         {
-            var options = new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
-                //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                //NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            };
-            //
+            // jsonファイル解析
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
                 // jsonファイルパース
-                var json = await JsonSerializer.DeserializeAsync<Json.Settings>(stream, options);
+                var json = await JsonSerializer.DeserializeAsync<Json.Settings>(stream, jsonOptions);
+                // json読み込み
+                InitSetting(json, info);
+            }
+        }
+
+        private void InitSetting(Json.Settings json, SettingInfo info)
+        {
+            // 設定ファイル情報
+            info.Name = json.Name;
+        }
+
+        public async Task LoadAsync(SettingInfo info)
+        {
+            // jsonファイル解析
+            using (var stream = new FileStream(info.FilePath, FileMode.Open, FileAccess.Read))
+            {
+                // jsonファイルパース
+                var json = await JsonSerializer.DeserializeAsync<Json.Settings>(stream, jsonOptions);
                 // json読み込み
                 await MakeSettingAsync(json, info);
             }
@@ -123,9 +151,6 @@ namespace SerialDebugger.Settings
 
         private async Task MakeSettingAsync(Json.Settings json, SettingInfo info)
         {
-            // 設定ファイル情報
-            info.Name = json.Name;
-
             // GUI
             info.Gui.AnalyzeJson(json.Gui);
             // Serial

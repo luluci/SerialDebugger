@@ -21,7 +21,7 @@
         <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Background="DarkGray" />
 
         <Grid Grid.Row="0" Background="#FFE6FFD4">
-            <WrapPanel Margin="5,0,5,5">
+            <WrapPanel Margin="10,0,5,5">
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,0" Height="22">
                     <TextBlock Margin="0,2,0,0" Text="通信設定:" FontFamily="Meiryo UI"/>
                     <ComboBox ItemsSource="{Binding Settings}" DisplayMemberPath="Name" SelectedIndex="{Binding SettingsSelectIndex.Value}" IsEnabled="{Binding IsEnableSerialSetting.Value}" Margin="5,0,0,0" Width="235"/>

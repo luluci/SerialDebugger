@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xaml.Behaviors;
+using Reactive.Bindings.Interactivity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -374,7 +376,7 @@ namespace SerialDebugger.Comm
                             int inner_idx = 0;
                             foreach (var inner in field.InnerFields)
                             {
-                                grid.Children.Add(MakeTextBlockStyle3(inner.Name, bit+inner_idx, setting.Gui.ColOrder[(int)SettingGui.Col.FieldName], inner.BitSize));
+                                grid.Children.Add(MakeNameGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", inner.Name, bit+inner_idx, setting.Gui.ColOrder[(int)SettingGui.Col.FieldName], inner.BitSize));
                                 inner_idx += inner.BitSize;
                             }
                             //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
@@ -605,7 +607,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeTextBlockStyle3(string text, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeNameGui(TxField field, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
         {
             //
             var tb = new TextBlock();
@@ -614,6 +616,19 @@ namespace SerialDebugger.Comm
             //tb.FontSize += 1;
             tb.TextWrapping = TextWrapping.Wrap;
             tb.Padding = new Thickness(5, 2, 2, 2);
+            //
+            //Interaction.GetTriggers(tb).Add(
+            //new Microsoft.Xaml.Behaviors.EventTrigger("MouseDown")
+            //{
+            //    Actions =
+            //    {
+            //        new EventToReactiveCommand
+            //        {
+            //            Command = field.OnMouseDown,
+            //        },
+            //    },
+            //});
+            tb.MouseDown += (s,e) => field.OnMouseDown.Execute(e);
             //
             var border = MakeBorder1();
             border.Child = tb;

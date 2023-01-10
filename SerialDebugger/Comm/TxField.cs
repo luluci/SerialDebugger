@@ -175,6 +175,7 @@ namespace SerialDebugger.Comm
         private UInt64 SelectsValueMax = 0;
         private UInt64 SelectsValueMin = 0;
         private Dictionary<UInt64, int> SelectsValueCheckTable;
+        public ReactiveCommand OnMouseDown { get; set; }
 
         /// <summary>
         /// チェックサムノード用コンストラクタ
@@ -251,6 +252,12 @@ namespace SerialDebugger.Comm
                     Value.Value = select.Value;
                 })
                 .AddTo(Disposables);
+            //
+            OnMouseDown = new ReactiveCommand();
+            OnMouseDown.Subscribe((x) =>
+            {
+            });
+            OnMouseDown.AddTo(Disposables);
             //
             InputType = type;
         }

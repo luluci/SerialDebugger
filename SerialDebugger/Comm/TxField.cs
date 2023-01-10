@@ -8,6 +8,8 @@ using System.Reactive.Disposables;
 using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace SerialDebugger.Comm
 {
@@ -254,8 +256,9 @@ namespace SerialDebugger.Comm
                 .AddTo(Disposables);
             //
             OnMouseDown = new ReactiveCommand();
-            OnMouseDown.Subscribe((x) =>
+            OnMouseDown.Subscribe((e) =>
             {
+                DoDragDropField(e as System.Windows.Input.MouseButtonEventArgs);
             });
             OnMouseDown.AddTo(Disposables);
             //
@@ -265,6 +268,35 @@ namespace SerialDebugger.Comm
         public async Task InitAsync()
         {
             await MakeSelectModeAsync(selecter);
+        }
+
+        public void DoDragDropField(System.Windows.Input.MouseButtonEventArgs e)
+        {
+            DragDrop.DoDragDrop(e.Source as TextBlock, MakeDragDropStr(), DragDropEffects.Copy);
+        }
+
+        public string MakeDragDropStr()
+        {
+            var value = Value.Value;
+            var str = new StringBuilder();
+            str.AppendLine("<table>");
+            str.AppendLine("  <tbody>");
+            for (int i=0; i<InnerFields.Count; i++)
+            {
+                // 該当データ計算
+                var inf = InnerFields[i];
+                var mask = ((UInt64)1 << inf.BitSize) - 1;
+                // html生成
+                str.AppendLine($"    <tr>");
+                str.AppendLine($"      <td>{inf.Name}</td>");
+                str.AppendLine($"      <td>{value & mask}</td>");
+                str.AppendLine($"    </tr>");
+                // 後処理
+                value >>= inf.BitSize;
+            }
+            str.AppendLine("  </tbody>");
+            str.AppendLine("</table>");
+            return str.ToString();
         }
 
         public int GetSelectsIndex(UInt64 value)

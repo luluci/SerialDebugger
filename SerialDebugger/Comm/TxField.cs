@@ -270,19 +270,26 @@ namespace SerialDebugger.Comm
         public int GetSelectsIndex(UInt64 value)
         {
             int index = -1;
-            if (InputType == InputModeType.Dict)
+            switch (InputType)
             {
-                if (SelectsValueCheckTable.TryGetValue(value, out index))
-                {
-                    //SelectIndexSelects.Value = index;
-                }
-            }
-            else if (InputType == InputModeType.Unit)
-            {
-                if (SelectsValueMin <= value && value <= SelectsValueMax)
-                {
-                    index = (int)(value - SelectsValueMin);
-                }
+                case TxField.InputModeType.Dict:
+                case TxField.InputModeType.Script:
+                    if (SelectsValueCheckTable.TryGetValue(value, out index))
+                    {
+                        //SelectIndexSelects.Value = index;
+                    }
+                    break;
+                case TxField.InputModeType.Unit:
+                case TxField.InputModeType.Time:
+                    if (SelectsValueMin <= value && value <= SelectsValueMax)
+                    {
+                        index = (int)(value - SelectsValueMin);
+                    }
+                    break;
+                case TxField.InputModeType.Edit:
+                case TxField.InputModeType.Fix:
+                default:
+                    break;
             }
             return index;
         }
@@ -310,6 +317,7 @@ namespace SerialDebugger.Comm
                 case TxField.InputModeType.Dict:
                 case TxField.InputModeType.Unit:
                 case TxField.InputModeType.Time:
+                case TxField.InputModeType.Script:
                     return $"{Selects[index].Disp} ({value:X}h)";
                 case TxField.InputModeType.Edit:
                 case TxField.InputModeType.Fix:
@@ -447,6 +455,7 @@ namespace SerialDebugger.Comm
 
         private async Task<int> MakeSelectModeScriptAsync(Selecter selecter)
         {
+            SelectsValueCheckTable = new Dictionary<ulong, int>();
             switch (selecter.Mode)
             {
                 case "Exec":
@@ -478,6 +487,8 @@ namespace SerialDebugger.Comm
                         selectIndex = index;
                     }
                     //
+                    SelectsValueCheckTable.Add(result.Item1, index);
+                    //
                     index++;
                 }
             }
@@ -504,6 +515,8 @@ namespace SerialDebugger.Comm
                     {
                         selectIndex = index;
                     }
+                    //
+                    SelectsValueCheckTable.Add(result.Item1, index);
                     //
                     index++;
                 }

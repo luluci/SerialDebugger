@@ -16,6 +16,7 @@ namespace SerialDebugger.Comm
     class TxField : BindableBase, IDisposable
     {
         // 
+        public int Id { get; }
         public string Name { get; }
         public int BitSize { get; }
         //
@@ -187,22 +188,18 @@ namespace SerialDebugger.Comm
         /// <param name="value"></param>
         /// <param name="type"></param>
         /// <param name="selecter"></param>
-        public TxField(ChecksumNode node)
-            : this(new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, InputModeType.Checksum, null)
+        public TxField(int id, ChecksumNode node)
+            : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, InputModeType.Checksum, null)
         {
             Checksum = node;
             IsChecksum = true;
         }
-
-        public TxField(string name, int bitsize, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
-            : this(new InnerField[]{ new InnerField(name, bitsize) }, value, type, selecter)
-        {
-        }
-
-        public TxField(InnerField[] innerFields, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
+        
+        public TxField(int id, string name, InnerField[] innerFields, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
             this.selecter = selecter;
-            Name = innerFields[0].Name;
+            Id = id;
+            Name = name;
             BitSize = 0;
             foreach (var inner in innerFields)
             {
@@ -281,6 +278,11 @@ namespace SerialDebugger.Comm
             var str = new StringBuilder();
             str.AppendLine("<table>");
             str.AppendLine("  <tbody>");
+            // html生成
+            str.AppendLine($"    <tr>");
+            str.AppendLine($"      <td>{Name}</td>");
+            str.AppendLine($"      <td>{value}</td>");
+            str.AppendLine($"    </tr>");
             for (int i=0; i<InnerFields.Count; i++)
             {
                 // 該当データ計算

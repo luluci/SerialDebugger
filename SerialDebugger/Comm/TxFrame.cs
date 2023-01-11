@@ -17,6 +17,7 @@ namespace SerialDebugger.Comm
 
     class TxFrame : BindableBase, IDisposable
     {
+        public int Id { get; }
         // 
         public string Name { get; }
         /// <summary>
@@ -45,8 +46,9 @@ namespace SerialDebugger.Comm
         public bool HasChecksum { get; set; } = false;
         public int ChecksumIndex { get; set; }
 
-        public TxFrame(string name)
+        public TxFrame(int id, string name)
         {
+            Id = id;
             Name = name;
 
             Fields = new ReactiveCollection<TxField>();

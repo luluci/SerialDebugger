@@ -36,9 +36,11 @@ namespace SerialDebugger.Settings
             }
 
             // TxFrameコレクション作成
+            int i = 0;
             foreach (var frame in json.Tx.Frames)
             {
-                Tx.Add(await MakeTxFrameAsync(frame));
+                Tx.Add(await MakeTxFrameAsync(i, frame));
+                i++;
             }
         }
 
@@ -47,15 +49,17 @@ namespace SerialDebugger.Settings
         /// JsonTxFrameからTxFrameを作成する
         /// </summary>
         /// <param name="frame"></param>
-        private async Task<TxFrame> MakeTxFrameAsync(Json.CommTxFrame frame)
+        private async Task<TxFrame> MakeTxFrameAsync(int id, Json.CommTxFrame frame)
         {
             // TxFrame作成
-            var f = new TxFrame(frame.Name);
+            var f = new TxFrame(id, frame.Name);
             if (!(frame.Fields is null))
             {
+                int i = 0;
                 foreach (var field in frame.Fields)
                 {
-                    f.Fields.Add(await MakeTxFieldAsync(field));
+                    f.Fields.Add(await MakeTxFieldAsync(i, field));
+                    i++;
                 }
                 f.Build();
             }
@@ -157,29 +161,29 @@ namespace SerialDebugger.Settings
             return new TxBackupBuffer(name, f.Fields.Count, f.Length);
         }
 
-        private async Task<TxField> MakeTxFieldAsync(Json.CommTxField field)
+        private async Task<TxField> MakeTxFieldAsync(int id, Json.CommTxField field)
         {
             switch (field.Type)
             {
                 case "Checksum":
-                    return await MakeTxFieldChecksumAsync(field);
+                    return await MakeTxFieldChecksumAsync(id, field);
                 case "Dict":
-                    return await MakeTxFieldDictAsync(field);
+                    return await MakeTxFieldDictAsync(id, field);
                 case "Unit":
-                    return await MakeTxFieldUnitAsync(field);
+                    return await MakeTxFieldUnitAsync(id, field);
                 case "Time":
-                    return await MakeTxFieldTimeAsync(field);
+                    return await MakeTxFieldTimeAsync(id, field);
                 case "Script":
-                    return await MakeTxFieldScriptAsync(field);
+                    return await MakeTxFieldScriptAsync(id, field);
                 case "Edit":
-                    return await MakeTxFieldImplAsync(field, TxField.InputModeType.Edit, null);
+                    return await MakeTxFieldImplAsync(id, field, TxField.InputModeType.Edit, null);
                 case "Fix":
                 default:
-                    return await MakeTxFieldImplAsync(field, TxField.InputModeType.Fix, null);
+                    return await MakeTxFieldImplAsync(id, field, TxField.InputModeType.Fix, null);
             }
         }
 
-        private async Task<TxField> MakeTxFieldChecksumAsync(Json.CommTxField field)
+        private async Task<TxField> MakeTxFieldChecksumAsync(int id, Json.CommTxField field)
         {
             // Checksumチェック
             if (field.Checksum is null)
@@ -211,7 +215,7 @@ namespace SerialDebugger.Settings
                     break;
             }
             // TxField生成
-            var result = new TxField(new TxField.ChecksumNode
+            var result = new TxField(id, new TxField.ChecksumNode
             {
                 Name = field.Name,
                 BitSize = field.BitSize,
@@ -223,7 +227,7 @@ namespace SerialDebugger.Settings
             return result;
         }
 
-        private async Task<TxField> MakeTxFieldDictAsync(Json.CommTxField field)
+        private async Task<TxField> MakeTxFieldDictAsync(int id, Json.CommTxField field)
         {
             // nullチェック
             var dict = field.Dict;
@@ -240,10 +244,10 @@ namespace SerialDebugger.Settings
                 i++;
             }
             // TxField生成
-            return await MakeTxFieldImplAsync(field, TxField.InputModeType.Dict, TxField.MakeSelecterDict(selecter));
+            return await MakeTxFieldImplAsync(id, field, TxField.InputModeType.Dict, TxField.MakeSelecterDict(selecter));
         }
 
-        private async Task<TxField> MakeTxFieldUnitAsync(Json.CommTxField field)
+        private async Task<TxField> MakeTxFieldUnitAsync(int id, Json.CommTxField field)
         {
             // nullチェック
             var unit = field.Unit;
@@ -254,10 +258,10 @@ namespace SerialDebugger.Settings
             // Selecter作成
             var selecter = TxField.MakeSelecterUnit(unit.Unit, unit.Lsb, unit.DispMax, unit.DispMin, unit.ValueMin, unit.Format);
             // TxField生成
-            return await MakeTxFieldImplAsync(field, TxField.InputModeType.Unit, selecter);
+            return await MakeTxFieldImplAsync(id, field, TxField.InputModeType.Unit, selecter);
         }
 
-        private async Task<TxField> MakeTxFieldTimeAsync(Json.CommTxField field)
+        private async Task<TxField> MakeTxFieldTimeAsync(int id, Json.CommTxField field)
         {
             // nullチェック
             var time = field.Time;
@@ -268,10 +272,10 @@ namespace SerialDebugger.Settings
             // Selecter作成
             var selecter = TxField.MakeSelecterTime(time.Elapse, time.Begin, time.End, time.ValueMin);
             // TxField生成
-            return await MakeTxFieldImplAsync(field, TxField.InputModeType.Time, selecter);
+            return await MakeTxFieldImplAsync(id, field, TxField.InputModeType.Time, selecter);
         }
 
-        private async Task<TxField> MakeTxFieldScriptAsync(Json.CommTxField field)
+        private async Task<TxField> MakeTxFieldScriptAsync(int id, Json.CommTxField field)
         {
             // nullチェック
             var script = field.Script;
@@ -282,10 +286,10 @@ namespace SerialDebugger.Settings
             // Selecter作成
             var selecter = TxField.MakeSelecterScript(script.Mode, script.Count, script.Script);
             // TxField生成
-            return await MakeTxFieldImplAsync(field, TxField.InputModeType.Script, selecter);
+            return await MakeTxFieldImplAsync(id, field, TxField.InputModeType.Script, selecter);
         }
 
-        private async Task<TxField> MakeTxFieldImplAsync(Json.CommTxField field, TxField.InputModeType type, TxField.Selecter selecter)
+        private async Task<TxField> MakeTxFieldImplAsync(int id, Json.CommTxField field, TxField.InputModeType type, TxField.Selecter selecter)
         {
             TxField result;
             // name, multi_name選択
@@ -299,18 +303,33 @@ namespace SerialDebugger.Settings
                     multi_name[i] = new TxField.InnerField(pair.Name, pair.BitSize);
                     i++;
                 }
+                // name設定
+                // nameがnullのときはmulti_nameの最初のnameを使用
+                var name = field.Name;
+                if (name is null)
+                {
+                    name = multi_name[0].Name;
+                }
+                // multi_name指定時はBitSizeは使わない
                 // TxField生成
-                result = new TxField(multi_name, field.Value, type, selecter);
+                result = new TxField(id, name, multi_name, field.Value, type, selecter);
             }
             else
             {
-                // name
+                // multi_nameが指定されていないときはnameとbitsizeを使用
+                // データチェック, nameとbitsizeの両方が有効である必要がある
                 if (field.Name is null)
                 {
                     throw new Exception("nameかmulti_nameのどちらかを指定してください。");
                 }
+                if (field.BitSize <= 0)
+                {
+                    throw new Exception("有効なbit_sizeを指定してください。");
+                }
+                var multi_name = new TxField.InnerField[1];
+                multi_name[0] = new TxField.InnerField(field.Name, field.BitSize);
                 // TxField生成
-                result = new TxField(field.Name, field.BitSize, field.Value, type, selecter);
+                result = new TxField(id, field.Name, multi_name, field.Value, type, selecter);
             }
 
             await result.InitAsync();

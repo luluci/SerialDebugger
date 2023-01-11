@@ -38,7 +38,7 @@
                         <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
                             <Grid x:Name="BaseSerialTx" Margin="10,0,10,0">
                                 <Grid>
-                                    <TextBlock Text="Loading..."/>
+                                    <TextBlock Text="{Binding BaseSerialTxMsg.Value}" Margin="0,10,0,0"/>
                                 </Grid>
                             </Grid>
                         </ScrollViewer>

@@ -38,9 +38,10 @@ namespace SerialDebugger
         public ReactiveCommand OnClickTxBufferSend { get; set; }
         // Log
         public ReactiveCollection<string> Log { get; set; }
-        //
+        // ベースGUI
         MainWindow window;
         UIElement BaseSerialTxOrig;
+        public ReactivePropertySlim<string> BaseSerialTxMsg { get; set; }
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
@@ -48,6 +49,10 @@ namespace SerialDebugger
         public MainWindowViewModel(MainWindow window)
         {
             this.window = window;
+            // 初期表示のGridは動的に入れ替えるので最初に参照を取得しておく
+            BaseSerialTxOrig = window.BaseSerialTx.Children[0];
+            BaseSerialTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
+            BaseSerialTxMsg.AddTo(Disposables);
 
             // Serial
             serialSetting = new Serial.Settings();
@@ -105,25 +110,7 @@ namespace SerialDebugger
             SettingsSelectIndex
                 .Subscribe(async (int idx) =>
                 {
-                    window.BaseSerialTx.Children.Clear();
-                    window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
-                    //Setting.Select(idx);
-                    var data = Settings[SettingsSelectIndex.Value];
-                    // 未ロードファイルならロード処理
-                    if (!data.IsLoaded)
-                    {
-                        await Setting.LoadAsync(data);
-                    }
-                    TxFrames = data.Comm.Tx;
-                    // GUI構築する
-                    window.Width = data.Gui.Window.Width;
-                    window.Height = data.Gui.Window.Height;
-                    // GUI作成
-                    var grid = Comm.TxGui.Make(data);
-                    window.BaseSerialTx.Children.Clear();
-                    window.BaseSerialTx.Children.Add(grid);
-                    // COMポート設定更新
-                    serialSetting.vm.SetSerialSetting(data.Serial);
+                    await UpdateTxAsync();
                 })
                 .AddTo(Disposables);
             OnClickTxDataSend = new ReactiveCommand();
@@ -172,12 +159,12 @@ namespace SerialDebugger
                     TxFrames = data.Comm.Tx;
                     var grid = Comm.TxGui.Make(data);
                     // GUI反映
-                    BaseSerialTxOrig = window.BaseSerialTx.Children[0];
                     window.BaseSerialTx.Children.Clear();
                     window.BaseSerialTx.Children.Add(grid);
                 }
                 else
                 {
+                    BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
                     TxFrames = new ReactiveCollection<Comm.TxFrame>();
                     TxFrames.AddTo(Disposables);
                 }
@@ -186,7 +173,43 @@ namespace SerialDebugger
             }
             else
             {
+                BaseSerialTxMsg.Value = "有効な設定ファイルが存在しません。";
                 Logger.Add("有効な設定ファイルが存在しません。");
+            }
+        }
+
+        public async Task UpdateTxAsync()
+        {
+            // 現在表示中のGUIを破棄
+            window.BaseSerialTx.Children.Clear();
+            window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
+            // 選択した設定ファイルを取得
+            var data = Settings[SettingsSelectIndex.Value];
+            // 未ロードファイルならロード処理
+            if (!data.IsLoaded)
+            {
+                await Setting.LoadAsync(data);
+            }
+            TxFrames = data.Comm.Tx;
+
+            // 有効な通信フォーマットがあればツールに取り込む
+            if (data.Comm.Tx.Count > 0)
+            {
+                // Window設定を反映
+                window.Width = data.Gui.Window.Width;
+                window.Height = data.Gui.Window.Height;
+                // GUI作成
+                var grid = Comm.TxGui.Make(data);
+                window.BaseSerialTx.Children.Clear();
+                window.BaseSerialTx.Children.Add(grid);
+                // COMポート設定更新
+                serialSetting.vm.SetSerialSetting(data.Serial);
+            }
+            else
+            {
+                BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                TxFrames = new ReactiveCollection<Comm.TxFrame>();
+                TxFrames.AddTo(Disposables);
             }
         }
 

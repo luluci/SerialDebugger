@@ -83,6 +83,17 @@
 								"end": "23:50",
 								"value_min": 0
 							}
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 0,
+								"method": "Sum"
+							}
 						}
 					]
 				},
@@ -112,8 +123,20 @@
 								"end": "23:59",
 								"value_min": 0
 							}
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 16,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 2,
+								"method": "Sum"
+							}
 						}
-					]
+					],
+					"backup_buffer_size": 2
 				}
 			]
 		}

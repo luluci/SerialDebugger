@@ -71,7 +71,8 @@
 								"script": "Setting_Selecter_Script_2"
 							}
 						}
-					]
+					],
+					"backup_buffer_size": 2
 				}
 			]
 		}

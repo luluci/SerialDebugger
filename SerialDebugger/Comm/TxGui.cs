@@ -955,15 +955,15 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeBackupBufferGui(TxBackupBuffer.Field field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeBackupBufferGui(TxField field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            switch (field.FieldRef.InputType)
+            switch (field.selecter.FieldRef.InputType)
             {
                 case TxField.InputModeType.Dict:
                 case TxField.InputModeType.Unit:
                 case TxField.InputModeType.Time:
                 case TxField.InputModeType.Script:
-                    return MakeInputGuiSelecter(field.FieldRef, field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiSelecter(field.selecter.FieldRef, field, path, row, col, rowspan, colspan);
                 case TxField.InputModeType.Edit:
                     return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
                 case TxField.InputModeType.Checksum:

@@ -183,6 +183,10 @@ namespace SerialDebugger
 
             try
             {
+                // GUI再構築するため明示的にGC起動しておく
+                GC.Collect();
+                //Logger.Add($"GC: {GC.GetTotalMemory(false)}");
+
                 // 選択した設定ファイルを取得
                 var data = Settings[SettingsSelectIndex.Value];
                 // 未ロードファイルならロード処理

@@ -130,7 +130,8 @@ namespace SerialDebugger.Settings
                 // valueをバッファに反映
                 var field = f.Fields[i];
                 var value = json.Values[i];
-                buffer.Fields[i].Value.Value = value;
+                var bk_field = buffer.Fields[i];
+                bk_field.SetValue(value);
                 f.UpdateBuffer(field, value, buffer.Buffer);
             }
             

@@ -13,89 +13,6 @@ namespace SerialDebugger.Comm
 {
     class TxBackupBuffer : BindableBase, IDisposable
     {
-        public class Field : BindableBase, IDisposable
-        {
-            public ReactivePropertySlim<UInt64> Value { get; set; }
-            // DropDownList用
-            public ReadOnlyReactiveCollection<TxField.Select> Selects { get; set; }
-            public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
-            // 参照
-            public TxField FieldRef { get; }
-
-            public Field(TxField field, UInt64 value)
-            {
-                FieldRef = field;
-
-                //
-                Value = new ReactivePropertySlim<ulong>(value, ReactivePropertyMode.DistinctUntilChanged);
-                Value.Subscribe(x =>
-                    {
-                        var index = FieldRef.GetSelectsIndex(x);
-                        if (index != -1)
-                        {
-                            SelectIndexSelects.Value = index;
-                        }
-                    })
-                    .AddTo(Disposables);
-
-                Selects = null;
-                SelectIndexSelects = new ReactivePropertySlim<int>(0, ReactivePropertyMode.DistinctUntilChanged);
-                SelectIndexSelects.Subscribe((int index) =>
-                {
-                    var select = Selects[index];
-                    // Value側でもSelectIndexSelectsとの同期をとって値を変更する
-                    // 値に変化がないとSubscribeは発火しない。
-                    Value.Value = select.Value;
-                })
-                    .AddTo(Disposables);
-            }
-
-            public Field(TxField field, ReactiveCollection<TxField.Select> selects, int selectIndex, UInt64 value)
-                : this(field, value)
-            {
-                Selects = selects.ToReadOnlyReactiveCollection();
-                SelectIndexSelects.Value = selectIndex;
-            }
-            
-            #region IDisposable Support
-            private CompositeDisposable Disposables { get; } = new CompositeDisposable();
-
-            private bool disposedValue = false; // 重複する呼び出しを検出するには
-
-            protected virtual void Dispose(bool disposing)
-            {
-                if (!disposedValue)
-                {
-                    if (disposing)
-                    {
-                        // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
-                        this.Disposables.Dispose();
-                    }
-
-                    // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
-                    // TODO: 大きなフィールドを null に設定します。
-
-                    disposedValue = true;
-                }
-            }
-
-            // TODO: 上の Dispose(bool disposing) にアンマネージド リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
-            // ~TxFrame() {
-            //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
-            //   Dispose(false);
-            // }
-
-            // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
-            void IDisposable.Dispose()
-            {
-                // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
-                Dispose(true);
-                // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
-                // GC.SuppressFinalize(this);
-            }
-            #endregion
-        }
-
         // 
         public int Id { get; }
         public string Name { get; }
@@ -103,7 +20,7 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// 表示データ
         /// </summary>
-        public ReactiveCollection<Field> Fields { get; set; }
+        public ReactiveCollection<TxField> Fields { get; set; }
         /// <summary>
         /// 送信データバイトシーケンス
         /// </summary>
@@ -118,7 +35,7 @@ namespace SerialDebugger.Comm
             Name = name;
             FrameRef = frame;
 
-            Fields = new ReactiveCollection<Field>();
+            Fields = new ReactiveCollection<TxField>();
             Fields
                 .ObserveElementObservableProperty(x => x.Value).Subscribe(x =>
                 {
@@ -141,19 +58,27 @@ namespace SerialDebugger.Comm
             {
                 // field展開
                 var field = frame.Fields[i];
+                var bk_field = new TxField(
+                    field.Id,
+                    field.Name,
+                    field.InnerFields.ToArray(),
+                    field.Value.Value,
+                    field.InputType,
+                    new TxField.Selecter(field)
+                );
                 switch (field.InputType)
                 {
                     case TxField.InputModeType.Dict:
                     case TxField.InputModeType.Unit:
                     case TxField.InputModeType.Time:
                     case TxField.InputModeType.Script:
-                        Fields.Add(new Field(field, field.Selects, field.SelectIndexSelects.Value, field.Value.Value));
+                        bk_field.MakeSelectModeRefer();
                         break;
 
                     default:
-                        Fields.Add(new Field(field, field.Value.Value));
                         break;
                 }
+                Fields.Add(bk_field);
             }
             // Buffer作成
             foreach (var value in frame.TxBuffer)
@@ -166,13 +91,13 @@ namespace SerialDebugger.Comm
         /// Fieldsが更新されたとき、送信バイトシーケンスに反映する
         /// </summary>
         /// <param name="field"></param>
-        private void Update(Field field)
+        private void Update(TxField field)
         {
             // 更新されたfieldをTxBufferに適用
-            FrameRef.UpdateBuffer(field.FieldRef, field.Value.Value, Buffer);
+            FrameRef.UpdateBuffer(field.selecter.FieldRef, field.Value.Value, Buffer);
             // チェックサムを持つframeで、更新fieldがチェックサムfieldでないとき、
             // チェックサムを再計算
-            if (FrameRef.HasChecksum && !field.FieldRef.IsChecksum)
+            if (FrameRef.HasChecksum && !field.selecter.FieldRef.IsChecksum)
             {
                 Fields[FrameRef.ChecksumIndex].Value.Value = FrameRef.CalcChecksum(Buffer);
             }

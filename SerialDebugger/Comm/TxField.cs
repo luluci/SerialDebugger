@@ -84,8 +84,10 @@ namespace SerialDebugger.Comm
             Time,       // 時間(HH:MM)表現
             Script,     // スクリプト生成
             Checksum,   // チェックサム
+
+            Refer,      // 参照
         };
-        public InputModeType InputType { get; }
+        public InputModeType InputType { get; private set; }
 
         public class Selecter
         {
@@ -108,6 +110,8 @@ namespace SerialDebugger.Comm
             public string Mode { get; }
             public int Count { get; }
             public string Script { get; }
+            // Refer
+            public TxField FieldRef { get; }
 
             public Selecter((UInt64, string)[] dict)
             {
@@ -142,6 +146,12 @@ namespace SerialDebugger.Comm
                 Count = count;
                 Script = script;
             }
+
+            public Selecter(TxField field)
+            {
+                Type = InputModeType.Refer;
+                FieldRef = field;
+            }
         }
         public static Selecter MakeSelecterDict((UInt64, string)[] dict)
         {
@@ -160,7 +170,7 @@ namespace SerialDebugger.Comm
             return new Selecter(mode, count, script);
         }
 
-        private Selecter selecter;
+        public Selecter selecter;
 
         public class Select
         {
@@ -175,9 +185,9 @@ namespace SerialDebugger.Comm
         }
         public ReactiveCollection<Select> Selects { get; private set; }
         public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
-        private UInt64 SelectsValueMax = 0;
-        private UInt64 SelectsValueMin = 0;
-        private Dictionary<UInt64, int> SelectsValueCheckTable;
+        public UInt64 SelectsValueMax = 0;
+        public UInt64 SelectsValueMin = 0;
+        public Dictionary<UInt64, int> SelectsValueCheckTable;
         public ReactiveCommand OnMouseDown { get; set; }
 
         /// <summary>
@@ -245,10 +255,13 @@ namespace SerialDebugger.Comm
             SelectIndexSelects
                 .Subscribe((int index) =>
                 {
-                    var select = Selects[index];
-                    // Value側でもSelectIndexSelectsとの同期をとって値を変更する
-                    // 値に変化がないとSubscribeは発火しない。
-                    Value.Value = select.Value;
+                    if (index >= 0)
+                    {
+                        var select = Selects[index];
+                        // Value側でもSelectIndexSelectsとの同期をとって値を変更する
+                        // 値に変化がないとSubscribeは発火しない。
+                        Value.Value = select.Value;
+                    }
                 })
                 .AddTo(Disposables);
             //
@@ -265,6 +278,19 @@ namespace SerialDebugger.Comm
         public async Task InitAsync()
         {
             await MakeSelectModeAsync(selecter);
+        }
+
+        /// <summary>
+        /// 設定ファイルからの初期値設定
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetValue(UInt64 value)
+        {
+            // Value
+            value = value & Mask;
+            Value.Value = value;
+            // SelectIndexSelects
+            SelectIndexSelects.Value = GetSelectsIndex(value);
         }
 
         public void DoDragDropField(System.Windows.Input.MouseButtonEventArgs e)
@@ -322,6 +348,7 @@ namespace SerialDebugger.Comm
                     break;
                 case TxField.InputModeType.Edit:
                 case TxField.InputModeType.Fix:
+                case TxField.InputModeType.Checksum:
                 default:
                     break;
             }
@@ -363,7 +390,12 @@ namespace SerialDebugger.Comm
         private async Task MakeSelectModeAsync(Selecter selecter)
         {
             int index;
-            switch (InputType)
+            var inputtype = InputType;
+            if (!(selecter is null))
+            {
+                inputtype = selecter.Type;
+            }
+            switch (inputtype)
             {
                 case InputModeType.Unit:
                     index = MakeSelectModeUnit(selecter);
@@ -380,6 +412,9 @@ namespace SerialDebugger.Comm
                 case InputModeType.Script:
                     index = await MakeSelectModeScriptAsync(selecter);
                     SelectIndexSelects.Value = index;
+                    break;
+                case InputModeType.Refer:
+                    MakeSelectModeRefer();
                     break;
                 case InputModeType.Edit:
                 case InputModeType.Fix:
@@ -557,6 +592,19 @@ namespace SerialDebugger.Comm
             }
 
             return selectIndex;
+        }
+
+        public void MakeSelectModeRefer()
+        {
+            //
+            Selects.Dispose();
+            //
+            //InputType = InputModeType.Refer;
+            Selects = selecter.FieldRef.Selects;
+            SelectIndexSelects.Value = selecter.FieldRef.SelectIndexSelects.Value;
+            SelectsValueCheckTable = selecter.FieldRef.SelectsValueCheckTable;
+            SelectsValueMax = selecter.FieldRef.SelectsValueMax;
+            SelectsValueMin = selecter.FieldRef.SelectsValueMin;
         }
 
         #region IDisposable Support

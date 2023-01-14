@@ -103,10 +103,6 @@ namespace SerialDebugger.Comm
         {
             UInt64 temp = Convert.ToUInt64((string)value, 16);
             var field = parameter as TxField;
-            if (field is null)
-            {
-                field = (parameter as TxBackupBuffer.Field).FieldRef;
-            }
             if ((field.Min <= temp) && (temp <= field.Max))
             {
                 return temp;

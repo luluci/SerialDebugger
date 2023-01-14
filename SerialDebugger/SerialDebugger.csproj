@@ -72,6 +72,7 @@
     </ApplicationDefinition>
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Script\Script.cs" />
+    <Compile Include="Serial\CommHandler.cs" />
     <Compile Include="Serial\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>

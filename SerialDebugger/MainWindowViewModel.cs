@@ -25,13 +25,13 @@ namespace SerialDebugger
         public ReactivePropertySlim<int> SettingsSelectIndex { get; set; }
         // Serial
         Serial.Settings serialSetting;
-        SerialPort serialPort = null;
         public ReactivePropertySlim<bool> IsSerialOpen { get; set; }
         public ReactivePropertySlim<string> TextSerialOpen { get; set; }
         public ReactiveCommand OnClickSerialOpen { get; set; }
         public ReactiveCommand OnClickSerialSetting { get; set; }
         public ReadOnlyReactivePropertySlim<bool> IsEnableSerialSetting { get; set; }
         Popup popup;
+        public Serial.CommHandler serialHandler;
         // Comm
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
@@ -56,36 +56,16 @@ namespace SerialDebugger
 
             // Serial
             serialSetting = new Serial.Settings();
+            serialHandler = new Serial.CommHandler();
             // Serial Open
             IsSerialOpen = new ReactivePropertySlim<bool>(false);
             IsSerialOpen.AddTo(Disposables);
             TextSerialOpen = new ReactivePropertySlim<string>("COM接続");
             TextSerialOpen.AddTo(Disposables);
             OnClickSerialOpen = new ReactiveCommand();
-            OnClickSerialOpen.Subscribe(x => 
+            OnClickSerialOpen.Subscribe(async (x) => 
                 {
-                    try
-                    {
-                        if (!IsSerialOpen.Value)
-                        {
-                            serialPort = serialSetting.vm.GetSerialPort();
-                            serialPort.Open();
-
-                            IsSerialOpen.Value = true;
-                            TextSerialOpen.Value = "COM切断";
-                        }
-                        else
-                        {
-                            serialPort.Close();
-                            serialPort = null;
-                            IsSerialOpen.Value = false;
-                            TextSerialOpen.Value = "COM接続";
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Add($"COM Open Error: {e.Message}");
-                    }
+                    await SerialMain();
                 })
                 .AddTo(Disposables);
             // 設定ボタン
@@ -128,9 +108,25 @@ namespace SerialDebugger
 
             // test
             OnClickTestSend = new ReactiveCommand();
-            OnClickTestSend.Subscribe(x =>
+            OnClickTestSend.Subscribe(async (x) =>
                 {
-                    SerialWrite_test();
+                    //SerialWrite_test();
+                    var task = Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync($@"
+
+                        (function () {{
+                            //処理
+                            try {{
+                                return {{ code: -1, result: test_func_async()}};
+                            }} catch (e) {{
+                                return {{ code: -1, result: e.message}};
+                            }}
+                            return 2;
+                        }}())
+                    ");
+                    int i = 0;
+                    i++;
+                    var result = await task;
+                    i++;
                 })
                 .AddTo(Disposables);
         }
@@ -183,33 +179,78 @@ namespace SerialDebugger
             // 現在表示中のGUIを破棄
             window.BaseSerialTx.Children.Clear();
             window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
-            // 選択した設定ファイルを取得
-            var data = Settings[SettingsSelectIndex.Value];
-            // 未ロードファイルならロード処理
-            if (!data.IsLoaded)
-            {
-                await Setting.LoadAsync(data);
-            }
-            TxFrames = data.Comm.Tx;
 
-            // 有効な通信フォーマットがあればツールに取り込む
-            if (data.Comm.Tx.Count > 0)
+
+            try
             {
-                // Window設定を反映
-                window.Width = data.Gui.Window.Width;
-                window.Height = data.Gui.Window.Height;
-                // GUI作成
-                var grid = Comm.TxGui.Make(data);
-                window.BaseSerialTx.Children.Clear();
-                window.BaseSerialTx.Children.Add(grid);
-                // COMポート設定更新
-                serialSetting.vm.SetSerialSetting(data.Serial);
+                // 選択した設定ファイルを取得
+                var data = Settings[SettingsSelectIndex.Value];
+                // 未ロードファイルならロード処理
+                if (!data.IsLoaded)
+                {
+                    await Setting.LoadAsync(data);
+                }
+                TxFrames = data.Comm.Tx;
+
+                // 有効な通信フォーマットがあればツールに取り込む
+                if (data.Comm.Tx.Count > 0)
+                {
+                    // Window設定を反映
+                    window.Width = data.Gui.Window.Width;
+                    window.Height = data.Gui.Window.Height;
+                    // GUI作成
+                    var grid = Comm.TxGui.Make(data);
+                    window.BaseSerialTx.Children.Clear();
+                    window.BaseSerialTx.Children.Add(grid);
+                    // COMポート設定更新
+                    serialSetting.vm.SetSerialSetting(data.Serial);
+                }
+                else
+                {
+                    BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                    TxFrames = new ReactiveCollection<Comm.TxFrame>();
+                    TxFrames.AddTo(Disposables);
+                }
             }
-            else
+            catch (Exception ex)
             {
+                //MessageBox.Show($"Setting File Load Error: {ex.Message}");
+                Logger.AddException(ex, "設定ファイル読み込みエラー:");
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
-                TxFrames = new ReactiveCollection<Comm.TxFrame>();
-                TxFrames.AddTo(Disposables);
+            }
+
+        }
+
+        private async Task SerialMain()
+        {
+            try
+            {
+                if (!IsSerialOpen.Value)
+                {
+                    using (var serialPort = serialSetting.vm.GetSerialPort())
+                    {
+                        // シリアルポートを開く
+                        serialPort.Open();
+                        // COM切断を有効化
+                        IsSerialOpen.Value = true;
+                        TextSerialOpen.Value = "COM切断";
+                        // シリアル通信管理ハンドラを別スレッドで起動
+                        // スレッドが終了するまで待機
+                        await serialHandler.Run(serialPort);
+                        IsSerialOpen.Value = false;
+                        TextSerialOpen.Value = "COM接続";
+                    }
+                }
+                else
+                {
+                    // スレッド終了メッセージ送信
+                }
+            }
+            catch (Exception e)
+            {
+                IsSerialOpen.Value = false;
+                TextSerialOpen.Value = "COM接続";
+                Logger.Add($"COM Open Error: {e.Message}");
             }
         }
 
@@ -219,7 +260,7 @@ namespace SerialDebugger
             {
                 try
                 {
-                    serialPort.Write(buff.ToArray(), 0, buff.Count);
+                    //serialPort.Write(buff.ToArray(), 0, buff.Count);
                 }
                 catch (Exception ex)
                 {
@@ -240,12 +281,12 @@ namespace SerialDebugger
                 {
                     {
                         var buff = TxFrames[0].TxBuffer;
-                        serialPort.Write(buff.ToArray(), 0, buff.Count);
+                        //serialPort.Write(buff.ToArray(), 0, buff.Count);
                     }
                     System.Threading.Thread.Sleep(1000);
                     {
                         var buff = TxFrames[1].TxBuffer;
-                        serialPort.Write(buff.ToArray(), 0, buff.Count);
+                        //serialPort.Write(buff.ToArray(), 0, buff.Count);
                     }
                 }
                 catch (Exception ex)

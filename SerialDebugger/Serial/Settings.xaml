@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SerialDebugger.Serial"
-             mc:Ignorable="d" Height="352" Width="274">
+             mc:Ignorable="d" Height="358" Width="274">
     <Grid Margin="0,0,0,0">
         <Grid Background="#FFF5F0F0">
             <Border BorderBrush="Black" BorderThickness="1">
@@ -31,9 +31,9 @@
             <CheckBox Content="送信Timeout:" IsChecked="{Binding TxTimeoutEnable.Value}" HorizontalAlignment="Left" Height="16" Margin="12,254,0,0" VerticalAlignment="Top" Width="97" FontFamily="Meiryo UI"/>
             <TextBox HorizontalAlignment="Left" Height="23" Margin="114,250,0,0" TextWrapping="Wrap" Text="{Binding TxTimeout.Value}" IsEnabled="{Binding TxTimeoutEnable.Value}" VerticalAlignment="Top" Width="120"/>
             <TextBlock TextWrapping="Wrap" Text="ms" Margin="239,254,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="23"/>
-            <CheckBox Content="受信Timeout:" IsChecked="{Binding RxTimeoutEnable.Value}" HorizontalAlignment="Left" Height="16" Margin="12,284,0,0" VerticalAlignment="Top" Width="97" FontFamily="Meiryo UI"/>
-            <TextBox HorizontalAlignment="Left" Height="23" Margin="114,280,0,0" TextWrapping="Wrap" Text="{Binding RxTimeout.Value}" IsEnabled="{Binding RxTimeoutEnable.Value}" VerticalAlignment="Top" Width="120"/>
-            <TextBlock TextWrapping="Wrap" Text="ms" Margin="239,284,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="23"/>
+            <TextBlock HorizontalAlignment="Left" Width="80" TextWrapping="Wrap" Text="ポーリング周期:" VerticalAlignment="Top" FontFamily="Meiryo UI" TextAlignment="Right" Margin="29,294,0,0"/>
+            <TextBox HorizontalAlignment="Left" Height="23" Margin="114,290,0,0" TextWrapping="Wrap" Text="{Binding PollingCycle.Value}" VerticalAlignment="Top" Width="120"/>
+            <TextBlock TextWrapping="Wrap" Text="ms" Margin="239,294,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="23"/>
         </Grid>
 
 

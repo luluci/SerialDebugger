@@ -55,7 +55,7 @@ namespace SerialDebugger
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"init exception: {ex.Message}");
+                //MessageBox.Show($"init exception: {ex.Message}");
                 Logger.AddException(ex, "初期化時エラー:");
             }
         }

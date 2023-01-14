@@ -48,8 +48,7 @@ namespace SerialDebugger.Serial
         public ReactivePropertySlim<int> DtrEnableListSelectIndex { get; set; }
         public ReactivePropertySlim<int> TxTimeout { get; set; }
         public ReactivePropertySlim<bool> TxTimeoutEnable { get; set; }
-        public ReactivePropertySlim<int> RxTimeout { get; set; }
-        public ReactivePropertySlim<bool> RxTimeoutEnable { get; set; }
+        public ReactivePropertySlim<int> PollingCycle { get; set; }
         public ReactiveCommand OnClickReload { get; set; }
 
         public SettingsViewModel()
@@ -129,10 +128,8 @@ namespace SerialDebugger.Serial
             TxTimeout.AddTo(Disposables);
             TxTimeoutEnable = new ReactivePropertySlim<bool>(false);
             TxTimeoutEnable.AddTo(Disposables);
-            RxTimeout = new ReactivePropertySlim<int>(1000);
-            RxTimeout.AddTo(Disposables);
-            RxTimeoutEnable = new ReactivePropertySlim<bool>(false);
-            RxTimeoutEnable.AddTo(Disposables);
+            PollingCycle = new ReactivePropertySlim<int>(100);
+            PollingCycle.AddTo(Disposables);
 
             // COMポート再読み込み
             OnClickReload = new ReactiveCommand();
@@ -213,8 +210,7 @@ namespace SerialDebugger.Serial
             TxTimeout.Value = serial.TxTimeout;
             TxTimeoutEnable.Value = serial.TxTimeout != -1;
             // RxTimeout
-            RxTimeout.Value = serial.RxTimeout;
-            RxTimeoutEnable.Value = serial.RxTimeout != -1;
+            PollingCycle.Value = serial.PollingCycle;
         }
 
         public SerialPort GetSerialPort()
@@ -241,11 +237,6 @@ namespace SerialDebugger.Serial
             {
                 txtimeout = TxTimeout.Value;
             }
-            int rxtimeout = -1;
-            if (RxTimeoutEnable.Value)
-            {
-                rxtimeout = RxTimeout.Value;
-            }
 
             return new SerialPort
             {
@@ -259,7 +250,7 @@ namespace SerialDebugger.Serial
                 Handshake = handshake,
                 // Timeout
                 WriteTimeout = txtimeout,
-                ReadTimeout = rxtimeout,
+                ReadTimeout = 0,
             };
         }
 

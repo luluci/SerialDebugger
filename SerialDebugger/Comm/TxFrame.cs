@@ -79,8 +79,8 @@ namespace SerialDebugger.Comm
                 for (int i=0; i<Fields.Count; i++)
                 {
                     var field = Fields[i];
-                    buffer.Value[i] = field.Value.Value;
-                    buffer.Disp[i] = field.GetDisp();
+                    var bk_field = buffer.Fields[i];
+                    bk_field.Value.Value = field.Value.Value;
                 }
             });
             // Storeボタン
@@ -90,7 +90,8 @@ namespace SerialDebugger.Comm
                 for (int i = 0; i < Fields.Count; i++)
                 {
                     var field = Fields[i];
-                    field.Value.Value = buffer.Value[i];
+                    var bk_field = buffer.Fields[i];
+                    field.Value.Value = bk_field.Value.Value;
                 }
             });
             BackupBuffer.AddTo(Disposables);

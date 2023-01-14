@@ -102,7 +102,11 @@ namespace SerialDebugger.Comm
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             UInt64 temp = Convert.ToUInt64((string)value, 16);
-            var field = (TxField)parameter;
+            var field = parameter as TxField;
+            if (field is null)
+            {
+                field = (parameter as TxBackupBuffer.Field).FieldRef;
+            }
             if ((field.Min <= temp) && (temp <= field.Max))
             {
                 return temp;

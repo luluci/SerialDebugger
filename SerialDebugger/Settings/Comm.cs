@@ -116,41 +116,32 @@ namespace SerialDebugger.Settings
             {
                 name = $"buffer[{idx}]";
             }
+            // Buffer作成
+            var buffer = new TxBackupBuffer(idx, name, f);
             // value定義が無いなら空バッファを返す
             if (json.Values is null)
             {
-                return MakeTxBackupBufferEmpty(name, f, idx);
+                return buffer;
             }
 
-            // Buffer作成
-            var buffer = new TxBackupBuffer(name, f.Fields.Count, f.Length);
-
-            // Values作成
-            for (int i=0; i<f.Fields.Count; i++)
+            // json設定値反映
+            for (int i = 0; i < json.Values.Count; i++)
             {
+                // valueをバッファに反映
                 var field = f.Fields[i];
-                if (i < json.Values.Count)
-                {
-                    // valueをバッファに反映
-                    var value = json.Values[i];
-                    buffer.Value[i] = value;
-                    f.UpdateBuffer(field, value, buffer.Buffer);
-                    // 表示名を作成
-                    var index = field.GetSelectsIndex(value);
-                    buffer.Disp[i] = field.MakeDisp(index, value);
-                }
+                var value = json.Values[i];
+                buffer.Fields[i].Value.Value = value;
+                f.UpdateBuffer(field, value, buffer.Buffer);
             }
+            
             // チェックサム
             if (f.HasChecksum)
             {
                 var i = f.ChecksumIndex;
                 var field = f.Fields[i];
                 var value = f.CalcChecksum(buffer.Buffer);
-                buffer.Value[i] = value;
+                buffer.Fields[i].Value.Value = value;
                 f.UpdateBuffer(field, value, buffer.Buffer);
-                // 表示名を作成
-                var index = field.GetSelectsIndex(value);
-                buffer.Disp[i] = field.MakeDisp(index, value);
             }
 
             return buffer;
@@ -158,7 +149,7 @@ namespace SerialDebugger.Settings
         private TxBackupBuffer MakeTxBackupBufferEmpty(string name, TxFrame f, int idx)
         {
             // Buffer作成
-            return new TxBackupBuffer(name, f.Fields.Count, f.Length);
+            return new TxBackupBuffer(idx, name, f);
         }
 
         private async Task<TxField> MakeTxFieldAsync(int id, Json.CommTxField field)

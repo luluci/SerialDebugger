@@ -385,7 +385,9 @@ namespace SerialDebugger.Comm
                             // BackupBuffer列作成
                             for (int i = 0; i < frame.BackupBufferLength; i++)
                             {
-                                grid.Children.Add(MakeBackupBufferGui(field, frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}].Disp[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i, field.BitSize));
+                                var bk_buffer = frame.BackupBuffer[i];
+                                var bk_field = bk_buffer.Fields[field_pos];
+                                grid.Children.Add(MakeBackupBufferGui(bk_field, bk_buffer, $"TxFrames[{frame_no}].BackupBuffer[{i}].Fields[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i, field.BitSize));
                             }
 
                             // 次周回設定処理
@@ -801,7 +803,7 @@ namespace SerialDebugger.Comm
                 case TxField.InputModeType.Unit:
                 case TxField.InputModeType.Time:
                 case TxField.InputModeType.Script:
-                    return MakeInputGuiSelecter(field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiSelecter(field, field, path, row, col, rowspan, colspan);
                 case TxField.InputModeType.Edit:
                     return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
                 case TxField.InputModeType.Checksum:
@@ -817,9 +819,9 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeInputGuiEdit(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeInputGuiEdit(Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            var tb = MakeInputGuiTextBox(field, path, row, col, rowspan, colspan);
+            var tb = MakeInputGuiTextBox(param, path, row, col, rowspan, colspan);
             //
             var border = MakeBorder1();
             border.Child = tb;
@@ -842,17 +844,19 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeInputGuiTextBox(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeInputGuiTextBox(Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // ベース作成
-            var sp = new StackPanel();
-            sp.Orientation = Orientation.Horizontal;
-            sp.VerticalAlignment = VerticalAlignment.Top;
+            var sp = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Top
+            };
 
             // binding作成
             var bind = new Binding(path + ".Value.Value");
             bind.Converter = EditConverter;
-            bind.ConverterParameter = field;
+            bind.ConverterParameter = param;
             //
             var tb = new TextBox();
             tb.SetBinding(TextBox.TextProperty, bind);
@@ -863,8 +867,10 @@ namespace SerialDebugger.Comm
             sp.Children.Add(tb);
 
             // h表示
-            var text = new TextBlock();
-            text.Text = "h";
+            var text = new TextBlock
+            {
+                Text = "h"
+            };
             //
             sp.Children.Add(text);
 
@@ -876,7 +882,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeInputGuiSelecter(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeInputGuiSelecter(TxField field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             UIElement gui_ptr;
             // 2行(2bit)以上の領域があれば直接編集GUI追加
@@ -885,12 +891,12 @@ namespace SerialDebugger.Comm
                 // ベース作成
                 var sp = new StackPanel();
                 // TextBox作成
-                var tb = MakeInputGuiTextBox(field, path, row, col, rowspan, colspan);
+                var tb = MakeInputGuiTextBox(param, path, row, col, rowspan, colspan);
                 //
                 sp.Children.Add(tb);
 
                 // ComboBox作成
-                var cb = MakeInputGuiComboBox(field, path, row, col, rowspan, colspan);
+                var cb = MakeInputGuiComboBox(param, path, row, col, rowspan, colspan);
                 sp.Children.Add(cb);
 
                 gui_ptr = sp;
@@ -898,7 +904,7 @@ namespace SerialDebugger.Comm
             else
             {
                 // ComboBox作成
-                var cb = MakeInputGuiComboBox(field, path, row, col, rowspan, colspan);
+                var cb = MakeInputGuiComboBox(param, path, row, col, rowspan, colspan);
 
                 gui_ptr = cb;
             }
@@ -924,7 +930,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeInputGuiComboBox(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeInputGuiComboBox(Object field, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
             var bind_itemsrc = new Binding(path + ".Selects");
@@ -949,8 +955,25 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeBackupBufferGui(TxField field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeBackupBufferGui(TxBackupBuffer.Field field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
+            switch (field.FieldRef.InputType)
+            {
+                case TxField.InputModeType.Dict:
+                case TxField.InputModeType.Unit:
+                case TxField.InputModeType.Time:
+                case TxField.InputModeType.Script:
+                    return MakeInputGuiSelecter(field.FieldRef, field, path, row, col, rowspan, colspan);
+                case TxField.InputModeType.Edit:
+                    return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
+                case TxField.InputModeType.Checksum:
+                    return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
+                case TxField.InputModeType.Fix:
+                default:
+                    return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
+            }
+
+            /*
             // binding作成
             var bind = new Binding(path);
             //
@@ -972,8 +995,9 @@ namespace SerialDebugger.Comm
             {
                 Grid.SetColumnSpan(border, colspan);
             }
-
             return border;
+            */
+
         }
 
     }

@@ -1,0 +1,21 @@
+{
+	"name": "テストパターン_Error_3",
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_1",
+					"fields": [
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum"
+						}
+					]
+				}
+			]
+		}
+	}
+}

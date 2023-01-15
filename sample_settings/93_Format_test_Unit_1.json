@@ -35,7 +35,7 @@
 		"xon_xoff": true,
 		"dtr_str": true,
 		"tx_timeout": 700,
-		"rx_timeout": 600
+		"polling_cycle": 600
 	},
 	
 	"comm": {

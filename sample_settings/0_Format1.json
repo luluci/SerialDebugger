@@ -40,7 +40,7 @@
 		"xon_xoff": false,
 		"dtr_str": false,
 		"tx_timeout": 500,
-		"rx_timeout": 500
+		"polling_cycle": 100
 	},
 	
 	"comm": {
@@ -113,8 +113,31 @@
 						},
 						{
 							"name": "field6",
-							"bit_size": 11,
+							"bit_size": 9,
 							"value": 170
+						},
+						{
+							"name": "bit0",
+							"bit_size": 5,
+							"value": 1,
+							"type": "Time",
+							"time": {
+								"elapse": 10,
+								"begin": "14:50",
+								"end": "23:50",
+								"value_min": 0
+							}
+						},
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Script",
+							"script": {
+								"mode": "Exec",
+								"count": 10,
+								"script": "key = i * 2 + (i%2 == 0 ? 0x80 : 0x00);   value = key + ' h';"
+							}
 						},
 						{
 							"name": "Checksum",
@@ -132,7 +155,11 @@
 					"backup_buffers": [
 						{
 							"name": "設定X",
-							"value": [ 1, 85, 2, 4, 15, 1, 170, 255 ]
+							"value": [ 1, 85, 2, 4, 15, 1, 170, 255, 0 ]
+						},
+						{
+							"name": "設定Y",
+							"value": [ 1, 77, 2, 4, 15, 0, 170, 255, 255 ]
 						}
 					]
 				},

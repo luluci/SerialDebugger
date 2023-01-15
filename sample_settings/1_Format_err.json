@@ -1,0 +1,52 @@
+{
+	"name": "テストパターン_Error_1",
+	
+	"gui": {
+		"window":
+			{
+				"width": 900,
+				"height": 700
+			},
+		"column_order":
+			{
+				"byte_index": 0,
+				"bit_index": 1,
+				"field_value": 2,
+				"field_name": 3,
+				"field_input": 4,
+				"tx_bytes": 5,
+				"spacer": 6,
+				"tx_buffer": 7
+			},
+		"column_width":
+			{
+				"byte_index": 25,
+				"bit_index": 25,
+				"field_value": 40,
+				"field_name": 80,
+				"field_input": 80,
+				"tx_bytes": 50,
+				"spacer": 10,
+				"tx_buffer": 80
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"comm": {
+		"tx": {
+			"frames": [
+			]
+		}
+	}
+}

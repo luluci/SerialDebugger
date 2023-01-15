@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace SerialDebugger.Serial
 {
+    
     class CommHandler
     {
         // Queue: GUI -> Comm
@@ -15,16 +16,29 @@ namespace SerialDebugger.Serial
         // Queue: Comm -> GUI
         public ConcurrentQueue<int> qComm2Gui = new ConcurrentQueue<int>();
 
+        // Buffer
+        public CommData Data { get; set; }
+
         public CommHandler()
         {
             
+        }
+
+        public void Init(ICollection<Comm.TxFrame> frames)
+        {
+            Data = new CommData();
+            Data.InitTx(frames);
         }
 
         public Task Run(SerialPort serial)
         {
             return Task.Run(async () =>
             {
-                return await RunImpl(serial);
+                // シリアル処理開始
+                var result = await RunImpl(serial);
+                // 終了したらデータ解放
+                Data = null;
+                return result;
             });
         }
 

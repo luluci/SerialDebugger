@@ -33,6 +33,8 @@ namespace SerialDebugger.Comm
         private static TxGuiValueColConverter ColConverter = new TxGuiValueColConverter();
         private static TxGuiTxBufferColConverter TxBufConverter = new TxGuiTxBufferColConverter();
         private static TxGuiEditConverter EditConverter = new TxGuiEditConverter();
+        private static TxGuiTxSendFixNameConverter TxSendFixNameConverter = new TxGuiTxSendFixNameConverter();
+        private static TxGuiTxSendFixBGColorConverter TxSendFixBGColorConverter = new TxGuiTxSendFixBGColorConverter();
         private static TxGuiBitColBgConverter[] BitColBgConverter = new TxGuiBitColBgConverter[]
         {
             // 2byte
@@ -467,8 +469,12 @@ namespace SerialDebugger.Comm
             btn.SetBinding(Button.CommandParameterProperty, bind_param);
             // Text
             var bind_text = new Binding(buff_path + ".ChangeState.Value");
-            bind_text.Converter = new TxGuiTxSendFixColNameConverter();
+            bind_text.Converter = TxSendFixNameConverter;
             btn.SetBinding(Button.ContentProperty, bind_text);
+            // border
+            var bind_bgcolor = new Binding(buff_path + ".ChangeState.Value");
+            bind_bgcolor.Converter = TxSendFixBGColorConverter;
+            btn.SetBinding(Button.BorderBrushProperty, bind_bgcolor);
 
             return btn;
         }
@@ -492,6 +498,10 @@ namespace SerialDebugger.Comm
             var btn = MakeTxSendFixButton(path, "OnClickTxBufferSend", 0, col);
             btn.Margin = new Thickness(2, 1, 2, 1);
             btn.Padding = new Thickness(5, 0, 5, 0);
+            // border
+            var bind_bgcolor = new Binding(path + ".ChangeState.Value");
+            bind_bgcolor.Converter = TxSendFixBGColorConverter;
+            btn.SetBinding(Button.BorderBrushProperty, bind_bgcolor);
 
             var bind_save = new Binding(path + ".OnClickSave");
             var btn_save = new Button();
@@ -817,6 +827,10 @@ namespace SerialDebugger.Comm
                 Grid.SetColumnSpan(border, colspan);
             }
 
+            var bind_bgcolor = new Binding(path + ".ChangeState.Value");
+            bind_bgcolor.Converter = TxSendFixBGColorConverter;
+            border.SetBinding(Border.BorderBrushProperty, bind_bgcolor);
+
             return border;
         }
 
@@ -902,6 +916,10 @@ namespace SerialDebugger.Comm
             {
                 Grid.SetColumnSpan(border, colspan);
             }
+
+            var bind_bgcolor = new Binding(path + ".ChangeState.Value");
+            bind_bgcolor.Converter = TxSendFixBGColorConverter;
+            border.SetBinding(Border.BorderBrushProperty, bind_bgcolor);
 
             return border;
         }

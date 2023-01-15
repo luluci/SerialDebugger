@@ -33,6 +33,8 @@ namespace SerialDebugger.Comm
         /// TxBackupBuffer全体の変更状況
         /// </summary>
         public ReactivePropertySlim<TxField.ChangeStates> ChangeState { get; set; }
+        //
+        //public ReactivePropertySlim<Serial.UpdateTxBuffMsg> UpdateMsg { get; set; }
 
         public TxBackupBuffer(int id, string name, TxFrame frame)
         {
@@ -40,6 +42,8 @@ namespace SerialDebugger.Comm
             Name = name;
             FrameRef = frame;
 
+            //UpdateMsg = new ReactivePropertySlim<Serial.UpdateTxBuffMsg>();
+            //UpdateMsg.AddTo(Disposables);
             Fields = new ReactiveCollection<TxField>();
             Fields
                 .ObserveElementObservableProperty(x => x.Value).Subscribe(x =>
@@ -112,10 +116,19 @@ namespace SerialDebugger.Comm
         {
             // 更新されたfieldをTxBufferに適用
             FrameRef.UpdateBuffer(field.selecter.FieldRef, field.Value.Value, Buffer);
+            //// 更新メッセージ作成
+            //var begin = field.selecter.FieldRef.BytePos;
+            //var end = field.selecter.FieldRef.BytePos + field.selecter.FieldRef.ByteSize;
+            //for (int pos = begin; pos < end; pos++)
+            //{
+            //    UpdateMsg.Value = new Serial.UpdateTxBuffMsg(Serial.UpdateTxBuffMsg.MsgType.UpdateBackupBuffer, Id, pos, Buffer[pos]);
+            //}
             // チェックサムを持つframeで、更新fieldがチェックサムfieldでないとき、
             // チェックサムを再計算
             if (FrameRef.HasChecksum && !field.selecter.FieldRef.IsChecksum)
             {
+                // チェックサム更新時はチェックサムfieldの更新により
+                // Updateがコールされるため、ここではメッセージ作成しない
                 Fields[FrameRef.ChecksumIndex].Value.Value = FrameRef.CalcChecksum(Buffer);
             }
         }

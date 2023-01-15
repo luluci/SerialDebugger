@@ -119,7 +119,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// 送信バイトシーケンス列に表示する文字列を作成する
     /// </summary>
-    internal class TxGuiTxSendFixColNameConverter : IValueConverter
+    internal class TxGuiTxSendFixNameConverter : IValueConverter
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -131,6 +131,34 @@ namespace SerialDebugger.Comm
                     return "確定";
                 default:
                     return "送信";
+            }
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// 送信バイトシーケンス列に表示する文字列を作成する
+    /// </summary>
+    internal class TxGuiTxSendFixBGColorConverter : IValueConverter
+    {
+        public static SolidColorBrush ChangedColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xEE, 0x44, 0x44));
+        //public static SolidColorBrush FixedColor = SystemColors.ControlBrush;  // ボタン表面色
+        public static SolidColorBrush FixedColor = Brushes.Black;
+
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            //var temp = ((ReactivePropertySlim<TxField.ChangeStates>)value).Value;
+            var temp = (TxField.ChangeStates)value;
+            switch (temp)
+            {
+                case TxField.ChangeStates.Changed:
+                    return ChangedColor;
+                default:
+                    return FixedColor;
             }
         }
 

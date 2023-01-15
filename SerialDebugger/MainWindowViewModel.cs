@@ -97,14 +97,14 @@ namespace SerialDebugger
             OnClickTxDataSend
                 .Subscribe(x => {
                     var frame = (Comm.TxFrame)x;
-                    SerialWrite(frame.TxBuffer);
+                    SerialTxBufferSendFix(frame);
                 })
                 .AddTo(Disposables);
             OnClickTxBufferSend = new ReactiveCommand();
             OnClickTxBufferSend
                 .Subscribe(x => {
                     var frame = (Comm.TxBackupBuffer)x;
-                    //SerialWrite(frame.Buffer);
+                    SerialTxBufferSendFix(frame);
                 })
                 .AddTo(Disposables);
 
@@ -145,34 +145,7 @@ namespace SerialDebugger
             if (Settings.Count > 0)
             {
                 SettingsSelectIndex.Value = 0;
-                var data = Settings[SettingsSelectIndex.Value];
-                // 未ロードファイルならロード処理
-                if (!data.IsLoaded)
-                {
-                    await Setting.LoadAsync(data);
-                }
-                // 有効な通信フォーマットがあればツールに取り込む
-                if (data.Comm.Tx.Count > 0)
-                {
-                    // GUI作成
-                    window.Width = data.Gui.Window.Width;
-                    window.Height = data.Gui.Window.Height;
-                    TxFrames = data.Comm.Tx;
-                    var grid = Comm.TxGui.Make(data);
-                    // GUI反映
-                    window.BaseSerialTx.Children.Clear();
-                    window.BaseSerialTx.Children.Add(grid);
-                    // 通信データ初期化
-                    InitComm();
-                }
-                else
-                {
-                    BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
-                    TxFrames = new ReactiveCollection<Comm.TxFrame>();
-                    TxFrames.AddTo(Disposables);
-                }
-                // COMポート設定更新
-                serialSetting.vm.SetSerialSetting(data.Serial);
+                await LoadTxAsync();
             }
             else
             {
@@ -185,53 +158,59 @@ namespace SerialDebugger
         {
             // 現在表示中のGUIを破棄
             window.BaseSerialTx.Children.Clear();
+            BaseSerialTxMsg.Value = "設定ファイル読み込み中。。";
             window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
-
 
             try
             {
                 // GUI再構築するため明示的にGC起動しておく
-                GC.Collect();
+                await Task.Run(() => { GC.Collect(); });
                 //Logger.Add($"GC: {GC.GetTotalMemory(false)}");
-
-                // 選択した設定ファイルを取得
-                var data = Settings[SettingsSelectIndex.Value];
-                // 未ロードファイルならロード処理
-                if (!data.IsLoaded)
-                {
-                    await Setting.LoadAsync(data);
-                }
-                TxFrames = data.Comm.Tx;
-
-                // 有効な通信フォーマットがあればツールに取り込む
-                if (data.Comm.Tx.Count > 0)
-                {
-                    // Window設定を反映
-                    window.Width = data.Gui.Window.Width;
-                    window.Height = data.Gui.Window.Height;
-                    // GUI作成
-                    var grid = Comm.TxGui.Make(data);
-                    window.BaseSerialTx.Children.Clear();
-                    window.BaseSerialTx.Children.Add(grid);
-                    // 通信データ初期化
-                    InitComm();
-                    // COMポート設定更新
-                    serialSetting.vm.SetSerialSetting(data.Serial);
-                }
-                else
-                {
-                    BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
-                    TxFrames = new ReactiveCollection<Comm.TxFrame>();
-                    TxFrames.AddTo(Disposables);
-                }
+                await LoadTxAsync();
             }
             catch (Exception ex)
             {
                 //MessageBox.Show($"Setting File Load Error: {ex.Message}");
-                Logger.AddException(ex, "設定ファイル読み込みエラー:");
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                Logger.AddException(ex, "設定ファイル読み込みエラー:");
             }
+        }
 
+        public async Task LoadTxAsync()
+        {
+            var data = Settings[SettingsSelectIndex.Value];
+            // 未ロードファイルならロード処理
+            if (!data.IsLoaded)
+            {
+                await Setting.LoadAsync(data);
+            }
+            // 有効な通信フォーマットがあればツールに取り込む
+            if (data.Comm.Tx.Count > 0)
+            {
+                // GUI作成
+                window.Width = data.Gui.Window.Width;
+                window.Height = data.Gui.Window.Height;
+                TxFrames = data.Comm.Tx;
+                //TxFrames.ObserveElementObservableProperty(x => x.UpdateMsg).Subscribe(x =>
+                //{
+                //    int hoge;
+                //    hoge = 0;
+                //});
+                var grid = Comm.TxGui.Make(data);
+                // GUI反映
+                window.BaseSerialTx.Children.Clear();
+                window.BaseSerialTx.Children.Add(grid);
+                // 通信データ初期化
+                InitComm();
+                // COMポート設定更新
+                serialSetting.vm.SetSerialSetting(data.Serial);
+            }
+            else
+            {
+                BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                TxFrames = new ReactiveCollection<Comm.TxFrame>();
+                TxFrames.AddTo(Disposables);
+            }
         }
 
         private void InitComm()
@@ -274,6 +253,7 @@ namespace SerialDebugger
                         TextSerialOpen.Value = "COM切断";
                         // シリアル通信管理ハンドラを別スレッドで起動
                         // スレッドが終了するまで待機
+                        serialHandler.Init(TxFrames);
                         await serialHandler.Run(serialPort);
                         IsSerialOpen.Value = false;
                         TextSerialOpen.Value = "COM接続";
@@ -291,6 +271,103 @@ namespace SerialDebugger
                 Logger.Add($"COM Open Error: {e.Message}");
             }
         }
+
+        private void SerialTxBufferSendFix(Comm.TxFrame frame)
+        {
+            switch (frame.ChangeState.Value)
+            {
+                case Comm.TxField.ChangeStates.Changed:
+                    // 変更内容をシリアル通信データに反映
+                    SerialTxBufferFix(frame);
+                    break;
+
+                default:
+                    // 送信
+                    break;
+            }
+        }
+        private void SerialTxBufferSendFix(Comm.TxBackupBuffer frame)
+        {
+            switch (frame.ChangeState.Value)
+            {
+                case Comm.TxField.ChangeStates.Changed:
+                    // 変更内容をシリアル通信データに反映
+                    SerialTxBufferFix(frame);
+                    break;
+
+                default:
+                    // 送信
+                    break;
+            }
+        }
+
+        private void SerialTxBufferFix(Comm.TxFrame frame)
+        {
+            int prev_pos = 0;
+            foreach (var field in frame.Fields)
+            {
+                if (field.ChangeState.Value == Comm.TxField.ChangeStates.Changed)
+                {
+                    if (!(serialHandler.Data is null))
+                    {
+                        var begin = field.BytePos;
+                        var end = field.BytePos + field.ByteSize;
+                        int pos = begin;
+                        for (; pos < end; pos++)
+                        {
+                            if (prev_pos != pos)
+                            {
+                                serialHandler.Data.TxBuffer[frame.Id][field.Id].Buffer[1][pos] = frame.TxBuffer[pos];
+                            }
+                        }
+                        prev_pos = pos;
+                    }
+                    else
+                    {
+
+                    }
+
+                    field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                }
+            }
+            //
+            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+        }
+        private void SerialTxBufferFix(Comm.TxBackupBuffer frame)
+        {
+            int prev_pos = 0;
+            foreach (var field in frame.Fields)
+            {
+                if (field.ChangeState.Value == Comm.TxField.ChangeStates.Changed)
+                {
+                    if (!(serialHandler.Data is null))
+                    {
+                        var begin = field.BytePos;
+                        var end = field.BytePos + field.ByteSize;
+                        int pos = begin;
+                        for (; pos < end; pos++)
+                        {
+                            if (prev_pos != pos)
+                            {
+                                // BackupBufferはインデックス1～の割り当て
+                                serialHandler.Data.TxBuffer[1+frame.Id][field.Id].Buffer[1][pos] = frame.Buffer[pos];
+                            }
+                        }
+                        prev_pos = pos;
+                    }
+                    else
+                    {
+
+                    }
+
+                    field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                }
+            }
+            //
+            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+        }
+
+
 
         private void SerialWrite(ReactiveCollection<byte> buff)
         {

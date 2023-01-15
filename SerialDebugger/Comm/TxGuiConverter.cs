@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reactive.Bindings;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -112,6 +113,30 @@ namespace SerialDebugger.Comm
                 // 範囲外は読み捨て
                 return DependencyProperty.UnsetValue;
             }
+        }
+    }
+
+    /// <summary>
+    /// 送信バイトシーケンス列に表示する文字列を作成する
+    /// </summary>
+    internal class TxGuiTxSendFixColNameConverter : IValueConverter
+    {
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            //var temp = ((ReactivePropertySlim<TxField.ChangeStates>)value).Value;
+            var temp = (TxField.ChangeStates)value;
+            switch (temp)
+            {
+                case TxField.ChangeStates.Changed:
+                    return "確定";
+                default:
+                    return "送信";
+            }
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 

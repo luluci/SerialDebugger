@@ -96,12 +96,17 @@ namespace SerialDebugger
             OnClickTxDataSend = new ReactiveCommand();
             OnClickTxDataSend
                 .Subscribe(x => {
-                    var bytes = (ReactiveCollection<byte>)x;
-                    SerialWrite(bytes);
+                    var frame = (Comm.TxFrame)x;
+                    SerialWrite(frame.TxBuffer);
                 })
                 .AddTo(Disposables);
             OnClickTxBufferSend = new ReactiveCommand();
-            OnClickTxBufferSend.AddTo(Disposables);
+            OnClickTxBufferSend
+                .Subscribe(x => {
+                    var frame = (Comm.TxBackupBuffer)x;
+                    //SerialWrite(frame.Buffer);
+                })
+                .AddTo(Disposables);
 
             // Log
             Log = Logger.GetLogData();
@@ -157,6 +162,8 @@ namespace SerialDebugger
                     // GUI反映
                     window.BaseSerialTx.Children.Clear();
                     window.BaseSerialTx.Children.Add(grid);
+                    // 通信データ初期化
+                    InitComm();
                 }
                 else
                 {
@@ -206,6 +213,8 @@ namespace SerialDebugger
                     var grid = Comm.TxGui.Make(data);
                     window.BaseSerialTx.Children.Clear();
                     window.BaseSerialTx.Children.Add(grid);
+                    // 通信データ初期化
+                    InitComm();
                     // COMポート設定更新
                     serialSetting.vm.SetSerialSetting(data.Serial);
                 }
@@ -223,6 +232,31 @@ namespace SerialDebugger
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
             }
 
+        }
+
+        private void InitComm()
+        {
+            // 送信データをすべて確定する
+            // TxFrame
+            foreach (var frame in TxFrames)
+            {
+                foreach (var field in frame.Fields)
+                {
+                    field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                }
+                // BackupBuffer
+                foreach (var bk_buff in frame.BackupBuffer)
+                {
+                    foreach (var field in bk_buff.Fields)
+                    {
+                        field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                    }
+                    //
+                    bk_buff.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                }
+                //
+                frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+            }
         }
 
         private async Task SerialMain()

@@ -254,7 +254,7 @@ namespace SerialDebugger.Comm
             {
                 // 送信ボタン作成
                 // Bufferは各fieldと連動
-                grid.Children.Add(MakeButtonStyle1($"TxFrames[{frame_no}].TxBuffer", "Send", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes]));
+                grid.Children.Add(MakeTxSendFixButton($"TxFrames[{frame_no}]", "OnClickTxDataSend", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes]));
                 grid.Children.Add(MakeTextBlockStyle1("TxData", 1, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes]));
             }
             // BackupBufferを持つ場合はスペースを少し開けてGUI作成
@@ -265,7 +265,7 @@ namespace SerialDebugger.Comm
                 for (int i = 0; i < frame.BackupBufferLength; i++)
                 {
                     // 送信ボタン作成
-                    grid.Children.Add(MakeButtonLoadStore(frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}]", "Send", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i));
+                    grid.Children.Add(MakeButtonLoadStore(frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}]", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i));
                     // 表示ラベル
                     grid.Children.Add(MakeTextBlockStyle1(frame.BackupBuffer[i].Name, 1, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i));
                 }
@@ -444,32 +444,9 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeButtonStyle1(string buff_path, string text, int row, int col, int rowspan = -1, int colspan = -1)
+        private static Button MakeTxSendFixButton(string buff_path, string cmnd_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            /*
             var btn = new Button();
-            btn.Content = text;
-            //
-            var border = MakeBorder1();
-            border.Child = btn;
-            border.CornerRadius = new CornerRadius(4);
-            border.Margin = new Thickness(2, 1, 2, 1);
-            Grid.SetRow(border, row);
-            Grid.SetColumn(border, col);
-            if (rowspan != -1)
-            {
-                Grid.SetRowSpan(border, rowspan);
-            }
-            if (colspan != -1)
-            {
-                Grid.SetColumnSpan(border, colspan);
-            }
-
-            return border;
-            */
-
-            var btn = new Button();
-            btn.Content = text;
             btn.Margin = new Thickness(5, 2, 5, 2);
             Grid.SetRow(btn, row);
             Grid.SetColumn(btn, col);
@@ -482,11 +459,16 @@ namespace SerialDebugger.Comm
                 Grid.SetColumnSpan(btn, colspan);
             }
 
-            // binding
-            var bind_cmnd = new Binding("OnClickTxDataSend");
+            // Binding
+            // Command
+            var bind_cmnd = new Binding(cmnd_path);
             var bind_param = new Binding(buff_path);
             btn.SetBinding(Button.CommandProperty, bind_cmnd);
             btn.SetBinding(Button.CommandParameterProperty, bind_param);
+            // Text
+            var bind_text = new Binding(buff_path + ".ChangeState.Value");
+            bind_text.Converter = new TxGuiTxSendFixColNameConverter();
+            btn.SetBinding(Button.ContentProperty, bind_text);
 
             return btn;
         }
@@ -497,7 +479,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeButtonLoadStore(TxBackupBuffer buffer, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeButtonLoadStore(TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
 
             var bind_store = new Binding(path + ".OnClickStore");
@@ -507,10 +489,9 @@ namespace SerialDebugger.Comm
             btn_store.Width = Button3Width[0];
             btn_store.SetBinding(Button.CommandProperty, bind_store);
 
-            var btn = new Button();
-            btn.Content = text;
+            var btn = MakeTxSendFixButton(path, "OnClickTxBufferSend", 0, col);
             btn.Margin = new Thickness(2, 1, 2, 1);
-            btn.Width = Button3Width[1];
+            btn.Padding = new Thickness(5, 0, 5, 0);
 
             var bind_save = new Binding(path + ".OnClickSave");
             var btn_save = new Button();

@@ -85,7 +85,8 @@ namespace SerialDebugger.Comm
             Script,     // スクリプト生成
             Checksum,   // チェックサム
 
-            Refer,      // 参照
+            // 特殊Selecter
+            Refer,      // 参照:既存TxFieldの内容を流用する。値は個別に保持する
         };
         public InputModeType InputType { get; private set; }
 
@@ -190,6 +191,14 @@ namespace SerialDebugger.Comm
         public Dictionary<UInt64, int> SelectsValueCheckTable;
         public ReactiveCommand OnMouseDown { get; set; }
 
+        public enum ChangeStates
+        {
+            Fixed,      // 確定済み
+            Changed,    // 変更あり,未確定
+            Updating,   // 変更あり,送信バッファ反映中
+        }
+        public ReactivePropertySlim<ChangeStates> ChangeState { get; set; }
+
         /// <summary>
         /// チェックサムノード用コンストラクタ
         /// </summary>
@@ -241,11 +250,14 @@ namespace SerialDebugger.Comm
             Value
                 .Subscribe(x =>
                 {
+                    // ComboBox入力更新
                     var index = GetSelectsIndex(x);
                     if (index != -1)
                     {
                         SelectIndexSelects.Value = index;
                     }
+                    // 変更状態更新
+                    ChangeState.Value = ChangeStates.Changed;
                 })
                 .AddTo(Disposables);
             //
@@ -271,6 +283,9 @@ namespace SerialDebugger.Comm
                 DoDragDropField(e as System.Windows.Input.MouseButtonEventArgs);
             });
             OnMouseDown.AddTo(Disposables);
+            // 値変更を送信バッファに反映したかどうか管理する
+            ChangeState = new ReactivePropertySlim<ChangeStates>(ChangeStates.Fixed);
+            ChangeState.AddTo(Disposables);
             //
             InputType = type;
         }
@@ -390,6 +405,8 @@ namespace SerialDebugger.Comm
         private async Task MakeSelectModeAsync(Selecter selecter)
         {
             int index;
+
+            // 特殊SelecterのためにSelecterの指定を優先する
             var inputtype = InputType;
             if (!(selecter is null))
             {
@@ -596,11 +613,13 @@ namespace SerialDebugger.Comm
 
         public void MakeSelectModeRefer()
         {
-            //
+            // InputTypeは参照先TxFieldと同じとするので更新しない
+            // InputType = InputModeType.Refer;
+            // 空のオブジェクトを持っているので解放しておく
             Selects.Dispose();
-            //
-            //InputType = InputModeType.Refer;
+            // Selectsは参照を取得して流用する
             Selects = selecter.FieldRef.Selects;
+            // SelectIndexは個別に持つ必要があるので値をコピー
             SelectIndexSelects.Value = selecter.FieldRef.SelectIndexSelects.Value;
             SelectsValueCheckTable = selecter.FieldRef.SelectsValueCheckTable;
             SelectsValueMax = selecter.FieldRef.SelectsValueMax;

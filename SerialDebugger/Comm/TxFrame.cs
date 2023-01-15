@@ -41,6 +41,10 @@ namespace SerialDebugger.Comm
         /// 送信バッファ数
         /// </summary>
         public int BackupBufferLength { get; set; } = 0;
+        /// <summary>
+        /// TxFrame全体の変更状況
+        /// </summary>
+        public ReactivePropertySlim<TxField.ChangeStates> ChangeState { get; set; }
 
         // checksum
         public bool HasChecksum { get; set; } = false;
@@ -61,8 +65,13 @@ namespace SerialDebugger.Comm
                 .ObserveElementObservableProperty(x => x.SelectIndexSelects).Subscribe(x =>
                 {
                     Update(x.Instance);
-                })
-                .AddTo(Disposables);
+                });
+            Fields
+                .ObserveElementObservableProperty(x => x.ChangeState).Subscribe(x =>
+                {
+                    ChangeState.Value = TxField.ChangeStates.Changed;
+                });
+            Fields.AddTo(Disposables);
             TxBuffer = new ReactiveCollection<byte>();
             TxBuffer.AddTo(Disposables);
             BackupBuffer = new ReactiveCollection<TxBackupBuffer>();
@@ -95,6 +104,9 @@ namespace SerialDebugger.Comm
                 }
             });
             BackupBuffer.AddTo(Disposables);
+            //
+            ChangeState = new ReactivePropertySlim<TxField.ChangeStates>();
+            ChangeState.AddTo(Disposables);
         }
 
         public void Add(TxField field)

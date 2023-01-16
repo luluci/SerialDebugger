@@ -132,7 +132,7 @@ namespace SerialDebugger.Settings
                 var value = json.Values[i];
                 var bk_field = buffer.Fields[i];
                 bk_field.SetValue(value);
-                f.UpdateBuffer(field, value, buffer.Buffer);
+                f.UpdateBuffer(field, value, buffer.TxBuffer);
             }
             
             // チェックサム
@@ -140,9 +140,9 @@ namespace SerialDebugger.Settings
             {
                 var i = f.ChecksumIndex;
                 var field = f.Fields[i];
-                var value = f.CalcChecksum(buffer.Buffer);
+                var value = f.CalcChecksum(buffer.TxBuffer);
                 buffer.Fields[i].Value.Value = value;
-                f.UpdateBuffer(field, value, buffer.Buffer);
+                f.UpdateBuffer(field, value, buffer.TxBuffer);
             }
 
             return buffer;

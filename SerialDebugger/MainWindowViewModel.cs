@@ -303,68 +303,35 @@ namespace SerialDebugger
 
         private void SerialTxBufferFix(Comm.TxFrame frame)
         {
-            int prev_pos = 0;
-            foreach (var field in frame.Fields)
+            if (serialHandler.Data is null)
             {
-                if (field.ChangeState.Value == Comm.TxField.ChangeStates.Changed)
+                foreach (var field in frame.Fields)
                 {
-                    if (!(serialHandler.Data is null))
-                    {
-                        var begin = field.BytePos;
-                        var end = field.BytePos + field.ByteSize;
-                        int pos = begin;
-                        for (; pos < end; pos++)
-                        {
-                            if (prev_pos != pos)
-                            {
-                                serialHandler.Data.TxBuffer[frame.Id][field.Id].Buffer[1][pos] = frame.TxBuffer[pos];
-                            }
-                        }
-                        prev_pos = pos;
-                    }
-                    else
-                    {
-
-                    }
-
                     field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
                 }
+                //
+                frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
             }
-            //
-            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+            else
+            {
+                serialHandler.Data.UpdateTxBuffer(frame);
+            }
         }
         private void SerialTxBufferFix(Comm.TxBackupBuffer frame)
         {
-            int prev_pos = 0;
-            foreach (var field in frame.Fields)
+            if (serialHandler.Data is null)
             {
-                if (field.ChangeState.Value == Comm.TxField.ChangeStates.Changed)
+                foreach (var field in frame.Fields)
                 {
-                    if (!(serialHandler.Data is null))
-                    {
-                        var begin = field.BytePos;
-                        var end = field.BytePos + field.ByteSize;
-                        int pos = begin;
-                        for (; pos < end; pos++)
-                        {
-                            if (prev_pos != pos)
-                            {
-                                // BackupBufferはインデックス1～の割り当て
-                                serialHandler.Data.TxBuffer[1+frame.Id][field.Id].Buffer[1][pos] = frame.Buffer[pos];
-                            }
-                        }
-                        prev_pos = pos;
-                    }
-                    else
-                    {
-
-                    }
-
                     field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
                 }
+                //
+                frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
             }
-            //
-            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+            else
+            {
+                serialHandler.Data.UpdateTxBuffer(frame);
+            }
         }
 
 

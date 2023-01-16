@@ -15,7 +15,26 @@ namespace SerialDebugger.Comm
 {
     using Logger = SerialDebugger.Log.Log;
 
-    class TxFrame : BindableBase, IDisposable
+    interface ITxFrame
+    {
+        int Id { get; }
+        // 
+        string Name { get; }
+        /// <summary>
+        /// 送信フレーム: TxField集合体
+        /// </summary>
+        ReactiveCollection<TxField> Fields { get; set; }
+        /// <summary>
+        /// 送信バイトシーケンス
+        /// </summary>
+        ReactiveCollection<byte> TxBuffer { get; set; }
+        /// <summary>
+        /// TxFrame全体の変更状況
+        /// </summary>
+        ReactivePropertySlim<TxField.ChangeStates> ChangeState { get; set; }
+    }
+
+    class TxFrame : BindableBase, ITxFrame, IDisposable
     {
         public int Id { get; }
         // 
@@ -90,7 +109,7 @@ namespace SerialDebugger.Comm
                 // 送信バイトシーケンスコピー
                 for (int i=0; i<TxBuffer.Count; i++)
                 {
-                    buffer.Buffer[i] = TxBuffer[i];
+                    buffer.TxBuffer[i] = TxBuffer[i];
                 }
                 // 表示文字列コピー
                 for (int i=0; i<Fields.Count; i++)

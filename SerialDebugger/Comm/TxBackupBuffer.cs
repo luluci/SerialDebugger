@@ -11,7 +11,7 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Comm
 {
-    class TxBackupBuffer : BindableBase, IDisposable
+    class TxBackupBuffer : BindableBase, ITxFrame, IDisposable
     {
         // 
         public int Id { get; }
@@ -24,7 +24,7 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// 送信データバイトシーケンス
         /// </summary>
-        public List<byte> Buffer { get; set; }
+        public ReactiveCollection<byte> TxBuffer { get; set; }
 
         public ReactiveCommand OnClickSave { get; set; }
         public ReactiveCommand OnClickStore { get; set; }
@@ -61,7 +61,12 @@ namespace SerialDebugger.Comm
                     ChangeState.Value = TxField.ChangeStates.Changed;
                 });
             Fields.AddTo(Disposables);
-            Buffer = new List<byte>(frame.Length);
+            TxBuffer = new ReactiveCollection<byte>();
+            for (int i=0; i< frame.Length; i++)
+            {
+                TxBuffer.Add(0);
+            }
+            //
             OnClickSave = new ReactiveCommand();
             OnClickSave.AddTo(Disposables);
             OnClickStore = new ReactiveCommand();
@@ -104,7 +109,7 @@ namespace SerialDebugger.Comm
             // Buffer作成
             foreach (var value in frame.TxBuffer)
             {
-                Buffer.Add(value);
+                TxBuffer.Add(value);
             }
         }
 
@@ -115,7 +120,7 @@ namespace SerialDebugger.Comm
         private void Update(TxField field)
         {
             // 更新されたfieldをTxBufferに適用
-            FrameRef.UpdateBuffer(field.selecter.FieldRef, field.Value.Value, Buffer);
+            FrameRef.UpdateBuffer(field.selecter.FieldRef, field.Value.Value, TxBuffer);
             //// 更新メッセージ作成
             //var begin = field.selecter.FieldRef.BytePos;
             //var end = field.selecter.FieldRef.BytePos + field.selecter.FieldRef.ByteSize;
@@ -129,7 +134,7 @@ namespace SerialDebugger.Comm
             {
                 // チェックサム更新時はチェックサムfieldの更新により
                 // Updateがコールされるため、ここではメッセージ作成しない
-                Fields[FrameRef.ChecksumIndex].Value.Value = FrameRef.CalcChecksum(Buffer);
+                Fields[FrameRef.ChecksumIndex].Value.Value = FrameRef.CalcChecksum(TxBuffer);
             }
         }
 

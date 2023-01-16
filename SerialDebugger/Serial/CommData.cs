@@ -40,6 +40,7 @@ namespace SerialDebugger.Serial
 
     class CommData
     {
+        // [FrameID][TxBuffer:0, TxBackupBuffer:1~]
         public List<List<CommTxBuffer>> TxBuffer { get; set; }
 
         public CommData()
@@ -63,15 +64,61 @@ namespace SerialDebugger.Serial
                 // BackupBuffer: 1～
                 foreach (var bkbuff in frame.BackupBuffer)
                 {
-                    buff.Add(new CommTxBuffer(id, bkbuff.Buffer));
+                    buff.Add(new CommTxBuffer(id, bkbuff.TxBuffer));
                     id++;
                 }
             }
         }
 
-        public void UpdateTx()
+        public void UpdateTxBuffer(Comm.TxFrame frame)
         {
+            // 対象送信データバッファをロック
+            var buffer = TxBuffer[frame.Id][0];
+            lock (buffer)
+            {
+                // バッファをコピー
+                UpdateTxBufferImpl(frame, buffer);
+                //
+                buffer.HasUpdate = true;
+            }
+        }
+        public void UpdateTxBuffer(Comm.TxBackupBuffer frame)
+        {
+            var buffer = TxBuffer[frame.FrameRef.Id][1 + frame.Id];
+            lock (buffer)
+            {
+                // BackupBufferはインデックス1～の割り当て
+                UpdateTxBufferImpl(frame, buffer);
+                //
+                buffer.HasUpdate = true;
+            }
+        }
 
+
+        private void UpdateTxBufferImpl(Comm.ITxFrame frame, CommTxBuffer buffer)
+        {
+            int prev_pos = 0;
+            foreach (var field in frame.Fields)
+            {
+                if (field.ChangeState.Value == Comm.TxField.ChangeStates.Changed)
+                {
+                    var begin = field.BytePos;
+                    var end = field.BytePos + field.ByteSize;
+                    int pos = begin;
+                    for (; pos < end; pos++)
+                    {
+                        if (prev_pos != pos)
+                        {
+                            buffer.Buffer[1][pos] = frame.TxBuffer[pos];
+                        }
+                    }
+                    prev_pos = pos;
+
+                    field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                }
+            }
+            //
+            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
         }
     }
 }

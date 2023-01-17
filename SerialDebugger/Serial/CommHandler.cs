@@ -56,7 +56,9 @@ namespace SerialDebugger.Serial
                     {
                         case GuiMsgType.Send:
                             var send_msg = msg as GuiMsgSend;
-                            qComm2Gui.Enqueue(new CommMsgTxSend("test"));
+                            var buff = Data.TxBuffer[send_msg.FrameId][send_msg.FieldId].Buffer[0];
+                            
+                            qComm2Gui.Enqueue(new CommMsgTxSend(buff.ToArray()));
                             break;
 
                         case GuiMsgType.Quit:

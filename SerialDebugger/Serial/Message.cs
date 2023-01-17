@@ -84,16 +84,46 @@ namespace SerialDebugger.Serial
 
     class CommMsgTxSend : CommMsg
     {
-        public string TxSendData { get; }
+        public byte[] TxSendData { get; }
 
-        public CommMsgTxSend(string data) : base(CommMsgType.TxSend)
+        public CommMsgTxSend(byte[] data) : base(CommMsgType.TxSend)
         {
             TxSendData = data;
         }
 
         public new void Invoke()
         {
-            Log.Log.Add(TxSendData);
+            Log.Log.Add(MakeString());
+        }
+
+        private string MakeString()
+        {
+            int i = 0;
+            var str = new char[TxSendData.Length * 2];
+            foreach (var data in TxSendData)
+            {
+                byte hi = (byte)((data & 0xF0) >> 4);
+                str[i++] = GetAscii(hi);
+                byte lo = (byte)((data & 0x0F));
+                str[i++] = GetAscii(lo);
+            }
+            return new string(str);
+        }
+
+        private char GetAscii(byte value)
+        {
+            if (0x00 <= value && value <= 0x09)
+            {
+                return (char)(value + '0');
+            }
+            else if (0x0A <= value && value <= 0x0F)
+            {
+                return (char)(value + 'A');
+            }
+            else
+            {
+                return '?';
+            }
         }
     }
     

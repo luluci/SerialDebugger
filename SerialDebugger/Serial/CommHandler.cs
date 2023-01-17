@@ -12,9 +12,9 @@ namespace SerialDebugger.Serial
     class CommHandler
     {
         // Queue: GUI -> Comm
-        public ConcurrentQueue<int> qGui2Comm = new ConcurrentQueue<int>();
+        public ConcurrentQueue<GuiMsg> qGui2Comm = new ConcurrentQueue<GuiMsg>();
         // Queue: Comm -> GUI
-        public ConcurrentQueue<int> qComm2Gui = new ConcurrentQueue<int>();
+        public ConcurrentQueue<CommMsg> qComm2Gui = new ConcurrentQueue<CommMsg>();
 
         // Buffer
         public CommData Data { get; set; }
@@ -30,34 +30,46 @@ namespace SerialDebugger.Serial
             Data.InitTx(frames);
         }
 
-        public Task Run(SerialPort serial)
+        public Task Run(SerialPort serial, int polling)
         {
             return Task.Run(async () =>
             {
                 // シリアル処理開始
-                var result = await RunImpl(serial);
+                var result = await RunImpl(serial, polling);
                 // 終了したらデータ解放
                 Data = null;
                 return result;
             });
         }
 
-        private async Task<int> RunImpl(SerialPort serial)
+        private async Task<int> RunImpl(SerialPort serial, int polling)
         {
-            int i = 0;
+            bool is_loop = true;
 
-            while (true)
+            while (is_loop)
             {
-                i++;
-                if (i > 10)
+
+
+                if (qGui2Comm.TryDequeue(out GuiMsg msg))
                 {
-                    break;
+                    switch (msg.Type)
+                    {
+                        case GuiMsgType.Send:
+                            var send_msg = msg as GuiMsgSend;
+                            qComm2Gui.Enqueue(new CommMsgTxSend("test"));
+                            break;
+
+                        case GuiMsgType.Quit:
+                            is_loop = false;
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
 
 
-
-
-                await Task.Delay(1000);
+                await Task.Delay(polling);
             }
 
             return 0;

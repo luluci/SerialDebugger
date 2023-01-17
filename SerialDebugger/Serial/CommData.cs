@@ -51,6 +51,8 @@ namespace SerialDebugger.Serial
 
         public void InitTx(ICollection<Comm.TxFrame> frames)
         {
+            TxBuffer = new List<List<CommTxBuffer>>();
+
             foreach (var frame in frames)
             {
                 //

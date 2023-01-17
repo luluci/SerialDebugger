@@ -12,6 +12,7 @@ using Reactive.Bindings.Extensions;
 using System.Windows.Controls.Primitives;
 using System.Windows.Controls;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace SerialDebugger
 {
@@ -42,6 +43,9 @@ namespace SerialDebugger
         MainWindow window;
         UIElement BaseSerialTxOrig;
         public ReactivePropertySlim<string> BaseSerialTxMsg { get; set; }
+
+        //定期処理関連
+        DispatcherTimer dt;
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
@@ -110,6 +114,13 @@ namespace SerialDebugger
 
             // Log
             Log = Logger.GetLogData();
+
+            // 定期処理
+            dt = new DispatcherTimer(DispatcherPriority.Normal)
+            {
+                Interval = new TimeSpan(0, 0, 0, 0, 500),
+            };
+            dt.Tick += new EventHandler(TickEvent);
 
             // test
             OnClickTestSend = new ReactiveCommand();
@@ -213,6 +224,46 @@ namespace SerialDebugger
             }
         }
 
+        private async void TickEvent(object sender, EventArgs e)
+        {
+            // Queueをすべて処理
+            await ProcQueue();
+        }
+
+        private async void TickEventFinish()
+        {
+            // tick停止
+            dt.Stop();
+            // Queueをすべて処理
+            await ProcQueue();
+        }
+
+        private async Task ProcQueue()
+        {
+            try
+            {
+                while (!serialHandler.qComm2Gui.IsEmpty)
+                {
+                    // Msg処理
+                    if (serialHandler.qComm2Gui.TryDequeue(out Serial.CommMsg msg))
+                    {
+                        ProcMsg(msg);
+                    }
+                    // GUI解放
+                    await Task.Delay(1);
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void ProcMsg(Serial.CommMsg msg)
+        {
+            msg.Invoke();
+        }
+
         private void InitComm()
         {
             // 送信データをすべて確定する
@@ -251,10 +302,16 @@ namespace SerialDebugger
                         // COM切断を有効化
                         IsSerialOpen.Value = true;
                         TextSerialOpen.Value = "COM切断";
+                        // シリアル通信管理ハンドラ初期化
+                        serialHandler.Init(TxFrames);
+                        // シリアル通信スレッドメッセージポーリング処理開始
+                        dt.Start();
                         // シリアル通信管理ハンドラを別スレッドで起動
                         // スレッドが終了するまで待機
-                        serialHandler.Init(TxFrames);
-                        await serialHandler.Run(serialPort);
+                        await serialHandler.Run(serialPort, serialSetting.vm.PollingCycle.Value);
+                        // シリアル通信スレッドメッセージポーリング処理終了
+                        TickEventFinish();
+                        serialHandler = null;
                         IsSerialOpen.Value = false;
                         TextSerialOpen.Value = "COM接続";
                     }
@@ -262,6 +319,7 @@ namespace SerialDebugger
                 else
                 {
                     // スレッド終了メッセージ送信
+                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgQuit());
                 }
             }
             catch (Exception e)
@@ -283,6 +341,7 @@ namespace SerialDebugger
 
                 default:
                     // 送信
+                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgSend(frame.Id, 0));
                     break;
             }
         }
@@ -297,6 +356,7 @@ namespace SerialDebugger
 
                 default:
                     // 送信
+                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgSend(frame.FrameRef.Id, 1+frame.Id));
                     break;
             }
         }
@@ -305,6 +365,7 @@ namespace SerialDebugger
         {
             if (serialHandler.Data is null)
             {
+                // 通信スレッドが無いときはフラグを下すだけ
                 foreach (var field in frame.Fields)
                 {
                     field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
@@ -314,6 +375,8 @@ namespace SerialDebugger
             }
             else
             {
+                // 通信中は通信スレッド用バッファに変更を展開する
+                // 通信スレッド内で実送信バッファに転送する
                 serialHandler.Data.UpdateTxBuffer(frame);
             }
         }
@@ -321,6 +384,7 @@ namespace SerialDebugger
         {
             if (serialHandler.Data is null)
             {
+                // 通信スレッドが無いときはフラグを下すだけ
                 foreach (var field in frame.Fields)
                 {
                     field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
@@ -330,6 +394,8 @@ namespace SerialDebugger
             }
             else
             {
+                // 通信中は通信スレッド用バッファに変更を展開する
+                // 通信スレッド内で実送信バッファに転送する
                 serialHandler.Data.UpdateTxBuffer(frame);
             }
         }

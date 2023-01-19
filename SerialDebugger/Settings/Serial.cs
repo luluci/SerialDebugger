@@ -18,6 +18,7 @@ namespace SerialDebugger.Settings
         public bool Xon { get; set; } = false;
         public bool Dtr { get; set; } = false;
         public int TxTimeout { get; set; } = 500;
+        public int RxTimeout { get; set; } = 500;
         public int PollingCycle { get; set; } = 100;
 
         public Serial()
@@ -95,6 +96,11 @@ namespace SerialDebugger.Settings
             {
                 TxTimeout = json.TxTimeout;
             }
+            // TxTimeout
+            if (json.RxTimeout >= 0)
+            {
+                RxTimeout = json.RxTimeout;
+            }
             // PollingCycle
             if (json.PollingCycle >= 0)
             {
@@ -139,6 +145,10 @@ namespace SerialDebugger.Settings
             // WriteTimeout
             [JsonPropertyName("tx_timeout")]
             public int TxTimeout { get; set; } = -1;
+
+            // ReadTimeout
+            [JsonPropertyName("rx_timeout")]
+            public int RxTimeout { get; set; } = -1;
 
             // PollingCycle
             [JsonPropertyName("polling_cycle")]

@@ -48,6 +48,7 @@ namespace SerialDebugger.Serial
         public ReactivePropertySlim<int> DtrEnableListSelectIndex { get; set; }
         public ReactivePropertySlim<int> TxTimeout { get; set; }
         public ReactivePropertySlim<bool> TxTimeoutEnable { get; set; }
+        public ReactivePropertySlim<int> RxTimeout { get; set; }
         public ReactivePropertySlim<int> PollingCycle { get; set; }
         public ReactiveCommand OnClickReload { get; set; }
 
@@ -128,6 +129,8 @@ namespace SerialDebugger.Serial
             TxTimeout.AddTo(Disposables);
             TxTimeoutEnable = new ReactivePropertySlim<bool>(false);
             TxTimeoutEnable.AddTo(Disposables);
+            RxTimeout = new ReactivePropertySlim<int>(1000);
+            RxTimeout.AddTo(Disposables);
             PollingCycle = new ReactivePropertySlim<int>(100);
             PollingCycle.AddTo(Disposables);
 
@@ -210,6 +213,8 @@ namespace SerialDebugger.Serial
             TxTimeout.Value = serial.TxTimeout;
             TxTimeoutEnable.Value = serial.TxTimeout != -1;
             // RxTimeout
+            RxTimeout.Value = serial.RxTimeout;
+            //
             PollingCycle.Value = serial.PollingCycle;
         }
 

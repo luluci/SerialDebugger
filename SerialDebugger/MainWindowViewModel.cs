@@ -44,8 +44,10 @@ namespace SerialDebugger
         UIElement BaseSerialTxOrig;
         public ReactivePropertySlim<string> BaseSerialTxMsg { get; set; }
 
+        // シリアル通信管理変数
+        SerialPort serialPort;
         //定期処理関連
-        DispatcherTimer dt;
+        DispatcherTimer AutoTxTimer;
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
@@ -116,11 +118,11 @@ namespace SerialDebugger
             Log = Logger.GetLogData();
 
             // 定期処理
-            dt = new DispatcherTimer(DispatcherPriority.Normal)
+            AutoTxTimer = new DispatcherTimer(DispatcherPriority.Normal)
             {
                 Interval = new TimeSpan(0, 0, 0, 0, 500),
             };
-            dt.Tick += new EventHandler(TickEvent);
+            AutoTxTimer.Tick += new EventHandler(TickEvent);
 
             // test
             OnClickTestSend = new ReactiveCommand();
@@ -233,7 +235,7 @@ namespace SerialDebugger
         private async void TickEventFinish()
         {
             // tick停止
-            dt.Stop();
+            AutoTxTimer.Stop();
             // Queueをすべて処理
             await ProcQueue();
         }
@@ -291,42 +293,75 @@ namespace SerialDebugger
 
         private async Task SerialMain()
         {
+            if (!IsSerialOpen.Value)
+            {
+                await SerialStart();
+            }
+            else
+            {
+                SerialFinish();
+            }
+        }
+
+        private async Task SerialStart()
+        {
             try
             {
-                if (!IsSerialOpen.Value)
+                // シリアルポートを開く
+                serialPort = serialSetting.vm.GetSerialPort();
+                serialPort.Open();
+                // COM切断を有効化
+                IsSerialOpen.Value = true;
+                TextSerialOpen.Value = "COM切断";
+                // 自動送信定期処理タイマ開始
+                // 自動送信はGUIスレッド上で管理する。
+                AutoTxTimer.Start();
+
+                // シリアル通信管理ハンドラ初期化？
+                // serialHandler.Init(TxFrames);
+                // 受信解析定義転送？
+                // ツール上で変更しないなら他の場所でいい
+
+                // 受信解析定義があるときに受信解析ループを実行
+                if (false)
                 {
-                    using (var serialPort = serialSetting.vm.GetSerialPort())
+                    while (IsSerialOpen.Value)
                     {
-                        // シリアルポートを開く
-                        serialPort.Open();
-                        // COM切断を有効化
-                        IsSerialOpen.Value = true;
-                        TextSerialOpen.Value = "COM切断";
-                        // シリアル通信管理ハンドラ初期化
-                        serialHandler.Init(TxFrames);
-                        // シリアル通信スレッドメッセージポーリング処理開始
-                        dt.Start();
-                        // シリアル通信管理ハンドラを別スレッドで起動
-                        // スレッドが終了するまで待機
+                        // 受信解析, 一連の受信シーケンスが完了するまでawait
+                        // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
                         await serialHandler.Run(serialPort, serialSetting.vm.PollingCycle.Value);
-                        // シリアル通信スレッドメッセージポーリング処理終了
-                        TickEventFinish();
-                        serialHandler = null;
-                        IsSerialOpen.Value = false;
-                        TextSerialOpen.Value = "COM接続";
+                        // 処理結果を自動送信処理に通知
+                        // ...
                     }
                 }
-                else
-                {
-                    // スレッド終了メッセージ送信
-                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgQuit());
-                }
+                
             }
             catch (Exception e)
             {
                 IsSerialOpen.Value = false;
                 TextSerialOpen.Value = "COM接続";
-                Logger.Add($"COM Open Error: {e.Message}");
+                Logger.Add($"Error: {e.Message}");
+            }
+        }
+
+        private void SerialFinish()
+        {
+            try
+            {
+                // スレッド終了メッセージ送信
+                serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgQuit());
+                // シリアル通信スレッドメッセージポーリング処理終了
+                TickEventFinish();
+                //serialHandler = null;
+            }
+            catch (Exception e)
+            {
+                Logger.Add($"Error: {e.Message}");
+            }
+            finally
+            {
+                IsSerialOpen.Value = false;
+                TextSerialOpen.Value = "COM接続";
             }
         }
 
@@ -340,8 +375,8 @@ namespace SerialDebugger
                     break;
 
                 default:
-                    // 送信
-                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgSend(frame.Id, 0));
+                    // シリアル送信
+                    SerialWrite(frame.TxData);
                     break;
             }
         }
@@ -355,60 +390,55 @@ namespace SerialDebugger
                     break;
 
                 default:
-                    // 送信
-                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgSend(frame.FrameRef.Id, 1+frame.Id));
+                    // シリアル送信
+                    SerialWrite(frame.TxData);
                     break;
             }
         }
 
         private void SerialTxBufferFix(Comm.TxFrame frame)
         {
-            if (serialHandler.Data is null)
+            // バッファを送信データにコピー
+            frame.TxBuffer.CopyTo(frame.TxData, 0);
+            // 変更フラグを下す
+            foreach (var field in frame.Fields)
             {
-                // 通信スレッドが無いときはフラグを下すだけ
-                foreach (var field in frame.Fields)
-                {
-                    field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
-                }
-                //
-                frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
             }
-            else
-            {
-                // 通信中は通信スレッド用バッファに変更を展開する
-                // 通信スレッド内で実送信バッファに転送する
-                serialHandler.Data.UpdateTxBuffer(frame);
-            }
+            //
+            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
         }
         private void SerialTxBufferFix(Comm.TxBackupBuffer frame)
         {
-            if (serialHandler.Data is null)
+            // バッファを送信データにコピー
+            frame.TxBuffer.CopyTo(frame.TxData, 0);
+            // 変更フラグを下す
+            foreach (var field in frame.Fields)
             {
-                // 通信スレッドが無いときはフラグを下すだけ
-                foreach (var field in frame.Fields)
-                {
-                    field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
-                }
-                //
-                frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
             }
-            else
-            {
-                // 通信中は通信スレッド用バッファに変更を展開する
-                // 通信スレッド内で実送信バッファに転送する
-                serialHandler.Data.UpdateTxBuffer(frame);
-            }
+            //
+            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
         }
 
 
 
-        private void SerialWrite(ReactiveCollection<byte> buff)
+        private void SerialWrite(byte[] data)
         {
+            // 通信中のみ送信
             if (IsSerialOpen.Value)
             {
                 try
                 {
-                    //serialPort.Write(buff.ToArray(), 0, buff.Count);
+                    // 送信はGUIスレッドからのみ送信
+                    serialPort.Write(data, 0, data.Length);
+                    //
+                    Logger.Add($"Send: {data.ToString()}");
+                    /*
+                    await Task.Run(() => {
+                        serialPort.Write(buff.ToArray(), 0, buff.Count);
+                    });
+                     */
                 }
                 catch (Exception ex)
                 {

@@ -25,6 +25,8 @@ namespace SerialDebugger.Comm
         /// 送信データバイトシーケンス
         /// </summary>
         public ReactiveCollection<byte> TxBuffer { get; set; }
+        // 確定送信データ
+        public byte[] TxData { get; set; }
 
         public ReactiveCommand OnClickSave { get; set; }
         public ReactiveCommand OnClickStore { get; set; }
@@ -62,10 +64,6 @@ namespace SerialDebugger.Comm
                 });
             Fields.AddTo(Disposables);
             TxBuffer = new ReactiveCollection<byte>();
-            for (int i=0; i< frame.Length; i++)
-            {
-                TxBuffer.Add(0);
-            }
             //
             OnClickSave = new ReactiveCommand();
             OnClickSave.AddTo(Disposables);
@@ -111,6 +109,8 @@ namespace SerialDebugger.Comm
             {
                 TxBuffer.Add(value);
             }
+            // 送信データ作成
+            TxData = TxBuffer.ToArray();
         }
 
         /// <summary>

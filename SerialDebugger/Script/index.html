@@ -16,16 +16,21 @@
 			return { key:key, value:value }
 		}
 
-		const test_func_async = () => {
+		const test_func = () => {
 			let hoge = "str";
 			//hoge.sonzai_sinai_kannsuu();
 			return 0;
 		}
 
+		const debug = () => {
+			const val = test_func_async();
 
+		}
     </script>
 </head>
 <body>
     <script></script>
+
+	<button onclick="debug()">Debug</button>
 </body>
 </html>

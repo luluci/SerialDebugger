@@ -52,6 +52,8 @@ namespace SerialDebugger.Comm
         /// 送信バイトシーケンス
         /// </summary>
         public ReactiveCollection<byte> TxBuffer { get; set; }
+        // 確定送信データ
+        public byte[] TxData { get; set; }
         /// <summary>
         /// 送信データセーブ用バッファ
         /// </summary>
@@ -229,6 +231,8 @@ namespace SerialDebugger.Comm
                 //
                 UpdateChecksum(TxBuffer);
             }
+            // 送信データ作成
+            TxData = TxBuffer.ToArray();
         }
 
         /// <summary>

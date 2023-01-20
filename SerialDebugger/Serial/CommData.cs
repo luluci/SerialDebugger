@@ -20,7 +20,6 @@ namespace SerialDebugger.Serial
         public byte[][] Buffer { get; set; }
         // 排他管理
         public bool HasUpdate { get; set; }
-        private object BufferLocker = new object();
 
         public CommTxBuffer(int id, ICollection<byte> buff)
         {
@@ -42,6 +41,8 @@ namespace SerialDebugger.Serial
     {
         // [FrameID][TxBuffer:0, TxBackupBuffer:1~]
         public List<List<CommTxBuffer>> TxBuffer { get; set; }
+        public bool HasUpdate { get; set; }
+        private object LockHasUpdate = new object();
 
         public CommData()
         {
@@ -83,6 +84,13 @@ namespace SerialDebugger.Serial
                 //
                 buffer.HasUpdate = true;
             }
+            //lock (LockHasUpdate)
+            //{
+            //    HasUpdate = true;
+            //}
+            // 処理が終わったらバッファ全体の更新有無フラグを立てる
+            // lockはいらないはず…
+            HasUpdate = true;
         }
         public void UpdateTxBuffer(Comm.TxBackupBuffer frame)
         {
@@ -93,6 +101,7 @@ namespace SerialDebugger.Serial
                 UpdateTxBufferImpl(frame, buffer);
                 //
                 buffer.HasUpdate = true;
+                HasUpdate = true;
             }
         }
 

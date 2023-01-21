@@ -13,6 +13,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Threading;
+using System.Windows.Data;
 
 namespace SerialDebugger
 {
@@ -39,6 +40,10 @@ namespace SerialDebugger
         public ReactiveCommand OnClickTxBufferSend { get; set; }
         // Comm: AutoTx
         public ReactiveCollection<Comm.AutoTxJob> AutoTxJobs { get; set; }
+        public ReactivePropertySlim<int> AutoTxShortcutSelectedIndex { get; set; }
+        public ReactivePropertySlim<string> AutoTxShortcutButtonDisp { get; set; }
+        public ReactiveCommand OnClickAutoTxShortcut { get; set; }
+
         // Log
         public ReactiveCollection<string> Log { get; set; }
         // ベースGUI
@@ -51,6 +56,8 @@ namespace SerialDebugger
         SerialPort serialPort;
         //定期処理関連
         DispatcherTimer AutoTxTimer;
+        //
+        bool IsRxRunning = false;
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
@@ -120,6 +127,42 @@ namespace SerialDebugger
 
             // Log
             Log = Logger.GetLogData();
+
+            //
+            TxFrames = new ReactiveCollection<Comm.TxFrame>();
+            TxFrames.AddTo(Disposables);
+            AutoTxJobs = new ReactiveCollection<Comm.AutoTxJob>();
+            AutoTxJobs.AddTo(Disposables);
+            // 自動送信操作ショートカット
+            AutoTxShortcutButtonDisp = new ReactivePropertySlim<string>();
+            AutoTxShortcutButtonDisp.AddTo(Disposables);
+            AutoTxShortcutSelectedIndex = new ReactivePropertySlim<int>();
+            AutoTxShortcutSelectedIndex.Subscribe(x =>
+                {
+                    if (x < AutoTxJobs.Count)
+                    {
+                        if (AutoTxJobs[x].IsActive.Value)
+                        {
+                            AutoTxShortcutButtonDisp.Value = "停止";
+                        }
+                        else
+                        {
+                            AutoTxShortcutButtonDisp.Value = "Run";
+                        }
+                    }
+                })
+                .AddTo(Disposables);
+            OnClickAutoTxShortcut = new ReactiveCommand();
+            OnClickAutoTxShortcut.Subscribe(x =>
+                {
+                    if (AutoTxShortcutSelectedIndex.Value < AutoTxJobs.Count)
+                    {
+                        var job = AutoTxJobs[AutoTxShortcutSelectedIndex.Value];
+                        job.IsActive.Value = !job.IsActive.Value;
+                        AutoTxShortcutSelectedIndex.ForceNotify();
+                    }
+                })
+                .AddTo(Disposables);
 
             // 定期処理
             AutoTxTimer = new DispatcherTimer(DispatcherPriority.Normal);
@@ -213,6 +256,12 @@ namespace SerialDebugger
                 //    hoge = 0;
                 //});
                 AutoTxJobs = data.Comm.AutoTx;
+                {
+                    var bind = new Binding("AutoTxJobs");
+                    window.AutoTxShortcut.SetBinding(ComboBox.ItemsSourceProperty, bind);
+                    AutoTxShortcutSelectedIndex.Value = 0;
+                    AutoTxShortcutSelectedIndex.ForceNotify();
+                }
                 // 通信データ初期化
                 InitComm();
                 // GUI作成
@@ -229,10 +278,6 @@ namespace SerialDebugger
             else
             {
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
-                TxFrames = new ReactiveCollection<Comm.TxFrame>();
-                TxFrames.AddTo(Disposables);
-                AutoTxJobs = new ReactiveCollection<Comm.AutoTxJob>();
-                AutoTxJobs.AddTo(Disposables);
             }
         }
 
@@ -269,7 +314,7 @@ namespace SerialDebugger
             }
             else
             {
-                SerialFinish();
+                await SerialFinish();
             }
         }
 
@@ -300,6 +345,7 @@ namespace SerialDebugger
                 // 受信解析定義があるときに受信解析ループを実行
                 if (false)
                 {
+                    IsRxRunning = true;
                     while (IsSerialOpen.Value)
                     {
                         // 受信解析, 一連の受信シーケンスが完了するまでawait
@@ -308,26 +354,33 @@ namespace SerialDebugger
                         // 処理結果を自動送信処理に通知
                         // ...
                     }
+                    IsRxRunning = false;
                 }
                 
             }
             catch (Exception e)
             {
+                IsRxRunning = false;
                 IsSerialOpen.Value = false;
                 TextSerialOpen.Value = "COM接続";
                 Logger.Add($"Error: {e.Message}");
             }
         }
 
-        private void SerialFinish()
+        private async Task SerialFinish()
         {
             try
             {
-                // スレッド終了メッセージ送信
-                serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgQuit());
                 // シリアル通信スレッドメッセージポーリング処理終了
                 TickEventFinish();
-                //serialHandler = null;
+                // 
+                if (IsRxRunning)
+                {
+                    // スレッド終了メッセージ送信
+                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgQuit());
+                    //serialHandler = null;
+                    await IsSerialOpen;
+                }
             }
             catch (Exception e)
             {

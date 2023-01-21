@@ -79,6 +79,7 @@
     <Compile Include="Serial\CommData.cs" />
     <Compile Include="Serial\CommHandler.cs" />
     <Compile Include="Serial\Message.cs" />
+    <Compile Include="Serial\RxAnalyzer.cs" />
     <Compile Include="Serial\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>

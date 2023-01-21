@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Data;
+using System.Threading;
 
 namespace SerialDebugger
 {
@@ -58,6 +59,8 @@ namespace SerialDebugger
         DispatcherTimer AutoTxTimer;
         //
         bool IsRxRunning = false;
+        Serial.RxAnalyzer rxAnalyzer = new Serial.RxAnalyzer();
+        CancellationTokenSource tokenSource = new CancellationTokenSource();
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
@@ -343,27 +346,41 @@ namespace SerialDebugger
                 // ツール上で変更しないなら他の場所でいい
 
                 // 受信解析定義があるときに受信解析ループを実行
-                if (false)
+                if (true)
                 {
                     IsRxRunning = true;
                     while (IsSerialOpen.Value)
                     {
                         // 受信解析, 一連の受信シーケンスが完了するまでawait
                         // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
-                        await serialHandler.Run(serialPort, serialSetting.vm.PollingCycle.Value);
+                        var result = await rxAnalyzer.Run(serialPort, serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
+                        switch (result.Type)
+                        {
+                            case Serial.RxDataType.Timeout:
+                                break;
+
+                            default:
+                                break;
+                        }
                         // 処理結果を自動送信処理に通知
                         // ...
                     }
-                    IsRxRunning = false;
                 }
                 
             }
+            catch (OperationCanceledException e)
+            {
+                Logger.Add($"Comm Cancel: {e.Message}");
+            }
             catch (Exception e)
+            {
+                Logger.Add($"Error: {e.Message}");
+            }
+            finally
             {
                 IsRxRunning = false;
                 IsSerialOpen.Value = false;
                 TextSerialOpen.Value = "COM接続";
-                Logger.Add($"Error: {e.Message}");
             }
         }
 
@@ -377,8 +394,7 @@ namespace SerialDebugger
                 if (IsRxRunning)
                 {
                     // スレッド終了メッセージ送信
-                    serialHandler.qGui2Comm.Enqueue(new Serial.GuiMsgQuit());
-                    //serialHandler = null;
+                    tokenSource.Cancel();
                     await IsSerialOpen;
                 }
             }

@@ -122,11 +122,8 @@ namespace SerialDebugger
             Log = Logger.GetLogData();
 
             // 定期処理
-            AutoTxTimer = new DispatcherTimer(DispatcherPriority.Normal)
-            {
-                Interval = new TimeSpan(0, 0, 0, 0, 500),
-            };
-            AutoTxTimer.Tick += new EventHandler(TickEvent);
+            AutoTxTimer = new DispatcherTimer(DispatcherPriority.Normal);
+            AutoTxTimer.Tick += new EventHandler(AutoTxHandler);
 
             // test
             OnClickTestSend = new ReactiveCommand();
@@ -216,6 +213,9 @@ namespace SerialDebugger
                 //    hoge = 0;
                 //});
                 AutoTxJobs = data.Comm.AutoTx;
+                // 通信データ初期化
+                InitComm();
+                // GUI作成
                 var tx = Comm.TxGui.Make(data);
                 var autotx = Comm.AutoTxGui.Make(data);
                 // GUI反映
@@ -223,8 +223,6 @@ namespace SerialDebugger
                 window.BaseSerialTx.Children.Add(tx);
                 window.BaseSerialAutoTx.Children.Clear();
                 window.BaseSerialAutoTx.Children.Add(autotx);
-                // 通信データ初期化
-                InitComm();
                 // COMポート設定更新
                 serialSetting.vm.SetSerialSetting(data.Serial);
             }
@@ -236,46 +234,6 @@ namespace SerialDebugger
                 AutoTxJobs = new ReactiveCollection<Comm.AutoTxJob>();
                 AutoTxJobs.AddTo(Disposables);
             }
-        }
-
-        private async void TickEvent(object sender, EventArgs e)
-        {
-            // Queueをすべて処理
-            await ProcQueue();
-        }
-
-        private async void TickEventFinish()
-        {
-            // tick停止
-            AutoTxTimer.Stop();
-            // Queueをすべて処理
-            await ProcQueue();
-        }
-
-        private async Task ProcQueue()
-        {
-            try
-            {
-                while (!serialHandler.qComm2Gui.IsEmpty)
-                {
-                    // Msg処理
-                    if (serialHandler.qComm2Gui.TryDequeue(out Serial.CommMsg msg))
-                    {
-                        ProcMsg(msg);
-                    }
-                    // GUI解放
-                    await Task.Delay(1);
-                }
-            }
-            catch
-            {
-
-            }
-        }
-
-        private void ProcMsg(Serial.CommMsg msg)
-        {
-            msg.Invoke();
         }
 
         private void InitComm()
@@ -325,9 +283,14 @@ namespace SerialDebugger
                 // COM切断を有効化
                 IsSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM切断";
-                // 自動送信定期処理タイマ開始
+                // 自動送信設定
+                // 自動送信定義があるとき自動送信定期処理タイマ開始
                 // 自動送信はGUIスレッド上で管理する。
-                AutoTxTimer.Start();
+                if (AutoTxJobs.Count > 0)
+                {
+                    AutoTxTimer.Interval = new TimeSpan(0, 0, 0, 0, serialSetting.vm.PollingCycle.Value);
+                    AutoTxTimer.Start();
+                }
 
                 // シリアル通信管理ハンドラ初期化？
                 // serialHandler.Init(TxFrames);
@@ -376,6 +339,33 @@ namespace SerialDebugger
                 TextSerialOpen.Value = "COM接続";
             }
         }
+
+
+        private void AutoTxHandler(object sender, EventArgs e)
+        {
+            // 自動送信定期処理
+            foreach (var job in AutoTxJobs)
+            {
+                // 有効ジョブを実行
+                if (job.IsActive.Value)
+                {
+                    var msec = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                    job.Exec(serialPort, TxFrames, (int)msec);
+                }
+            }
+        }
+        
+        private void TickEventFinish()
+        {
+            // 自動送信定期処理タイマ終了
+            if (AutoTxTimer.IsEnabled)
+            {
+                AutoTxTimer.Stop();
+            }
+        }
+        
+
+
 
         private void SerialTxBufferSendFix(Comm.TxFrame frame)
         {
@@ -432,8 +422,6 @@ namespace SerialDebugger
             //
             frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
         }
-
-
 
         private void SerialWrite(byte[] data)
         {

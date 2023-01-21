@@ -33,6 +33,7 @@ namespace SerialDebugger.Comm
         /// 待機時間(milli sec)
         /// </summary>
         public ReactivePropertySlim<int> WaitTime { get; private set; }
+        public int WaitTimeBegin { get; set; }
 
         public ReactivePropertySlim<string> RxFrameName { get; private set; }
         public int RxAnalyzeIndex { get; private set; }
@@ -63,6 +64,7 @@ namespace SerialDebugger.Comm
             var action = new AutoTxAction(id)
             {
                 Type = AutoTxActionType.Wait,
+                WaitTimeBegin = -1,
             };
             action.WaitTime = new ReactivePropertySlim<int>(wait);
             action.WaitTime.AddTo(action.Disposables);

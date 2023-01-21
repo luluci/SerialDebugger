@@ -78,7 +78,7 @@ namespace SerialDebugger.Settings
                 }
             }
             //
-            j.Build();
+            j.Build(Tx);
 
             return j;
         }

@@ -141,7 +141,7 @@ namespace SerialDebugger.Comm
     }
 
     /// <summary>
-    /// 送信バイトシーケンス列に表示する文字列を作成する
+    /// 変更Fieldあり時の背景色
     /// </summary>
     internal class TxGuiTxSendFixBGColorConverter : IValueConverter
     {

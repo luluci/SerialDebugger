@@ -33,15 +33,18 @@ namespace SerialDebugger
         public ReadOnlyReactivePropertySlim<bool> IsEnableSerialSetting { get; set; }
         Popup popup;
         public Serial.CommHandler serialHandler;
-        // Comm
+        // Comm: Tx
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
         public ReactiveCommand OnClickTxBufferSend { get; set; }
+        // Comm: AutoTx
+        public ReactiveCollection<Comm.AutoTxJob> AutoTxJobs { get; set; }
         // Log
         public ReactiveCollection<string> Log { get; set; }
         // ベースGUI
         MainWindow window;
         UIElement BaseSerialTxOrig;
+        UIElement BaseSerialAutoTxOrig;
         public ReactivePropertySlim<string> BaseSerialTxMsg { get; set; }
 
         // シリアル通信管理変数
@@ -57,6 +60,7 @@ namespace SerialDebugger
             this.window = window;
             // 初期表示のGridは動的に入れ替えるので最初に参照を取得しておく
             BaseSerialTxOrig = window.BaseSerialTx.Children[0];
+            BaseSerialAutoTxOrig = window.BaseSerialAutoTx.Children[0];
             BaseSerialTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
             BaseSerialTxMsg.AddTo(Disposables);
 
@@ -171,8 +175,10 @@ namespace SerialDebugger
         {
             // 現在表示中のGUIを破棄
             window.BaseSerialTx.Children.Clear();
+            window.BaseSerialAutoTx.Children.Clear();
             BaseSerialTxMsg.Value = "設定ファイル読み込み中。。";
             window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
+            window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
 
             try
             {
@@ -209,10 +215,14 @@ namespace SerialDebugger
                 //    int hoge;
                 //    hoge = 0;
                 //});
-                var grid = Comm.TxGui.Make(data);
+                AutoTxJobs = data.Comm.AutoTx;
+                var tx = Comm.TxGui.Make(data);
+                var autotx = Comm.AutoTxGui.Make(data);
                 // GUI反映
                 window.BaseSerialTx.Children.Clear();
-                window.BaseSerialTx.Children.Add(grid);
+                window.BaseSerialTx.Children.Add(tx);
+                window.BaseSerialAutoTx.Children.Clear();
+                window.BaseSerialAutoTx.Children.Add(autotx);
                 // 通信データ初期化
                 InitComm();
                 // COMポート設定更新
@@ -223,6 +233,8 @@ namespace SerialDebugger
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
                 TxFrames = new ReactiveCollection<Comm.TxFrame>();
                 TxFrames.AddTo(Disposables);
+                AutoTxJobs = new ReactiveCollection<Comm.AutoTxJob>();
+                AutoTxJobs.AddTo(Disposables);
             }
         }
 

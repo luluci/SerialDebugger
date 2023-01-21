@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using System.Reactive.Disposables;
@@ -19,18 +18,24 @@ namespace SerialDebugger.Settings
     class Comm : BindableBase, IDisposable
     {
         public ReactiveCollection<TxFrame> Tx { get; set; }
+        public Dictionary<string, int> TxNameDict { get; set; }
         // rx_autoresp
         // tx_autosend
+        public ReactiveCollection<AutoTxJob> AutoTx { get; set; }
 
         public Comm()
         {
             Tx = new ReactiveCollection<TxFrame>();
             Tx.AddTo(Disposables);
+            TxNameDict = new Dictionary<string, int>();
+
+            AutoTx = new ReactiveCollection<AutoTxJob>();
+            AutoTx.AddTo(Disposables);
         }
 
         public async Task AnalyzeJsonAsync(Json.Comm json)
         {
-            if (json is null || json.Tx is null)
+            if (json is null || json.Tx is null || json.Tx.Frames is null)
             {
                 throw new Exception("txキーが定義されていません");
             }
@@ -39,9 +44,106 @@ namespace SerialDebugger.Settings
             int i = 0;
             foreach (var frame in json.Tx.Frames)
             {
-                Tx.Add(await MakeTxFrameAsync(i, frame));
+                var f = await MakeTxFrameAsync(i, frame);
+                Tx.Add(f);
+                TxNameDict.Add(f.Name, f.Id);
                 i++;
             }
+
+
+            // AutoTx作成
+            if (!(json.AutoTx is null) && !(json.AutoTx.Jobs is null))
+            {
+                int id = 0;
+                foreach (var job in json.AutoTx.Jobs)
+                {
+                    AutoTx.Add(MakeAutoTxJob(id, job));
+                    id++;
+                }
+            }
+        }
+
+        private AutoTxJob MakeAutoTxJob(int id, Json.CommAutoTxJob job)
+        {
+            // Job作成
+            var j = new AutoTxJob(id, job.Name, job.Active);
+            // Action解析
+            if (!(job.Actions is null))
+            {
+                int i = 0;
+                foreach (var action in job.Actions)
+                {
+                    j.Actions.Add(MakeAutoTxAction(i, action));
+                    i++;
+                }
+            }
+            //
+            j.Build();
+
+            return j;
+        }
+
+        private AutoTxAction MakeAutoTxAction(int id, Json.CommAutoTxAction action)
+        {
+            switch (action.Type)
+            {
+                case "Send":
+                    return MakeAutoTxActionSend(id, action);
+
+                case "Wait":
+                    return MakeAutoTxActionWait(id, action);
+
+                case "Recv":
+                    throw new Exception("unimplemented!");
+
+                case "Jump":
+                    return MakeAutoTxActionJump(id, action);
+
+                case "Script":
+                    throw new Exception("unimplemented!");
+
+                default:
+                    throw new Exception($"Undefined AutoTx Action Type: {action.Type}");
+            }
+        }
+        private AutoTxAction MakeAutoTxActionSend(int id, Json.CommAutoTxAction action)
+        {
+            if (action.TxFrameName == string.Empty)
+            {
+                throw new Exception("AutoTx: Action: Send: 送信対象となるframe名(tx_frame_name)を指定してください。");
+            }
+            if (action.TxFrameBuffIndex == -1)
+            {
+                throw new Exception("AutoTx: Action: Send: 送信対象となるframeバッファ(tx_frame_buff_index)を指定してください。");
+            }
+
+            // FrameNameが存在しないときの例外処理は上流に任せる
+            var frame_idx = TxNameDict[action.TxFrameName];
+            var act = AutoTxAction.MakeSendAction(id, action.TxFrameName, frame_idx, action.TxFrameBuffIndex);
+
+            return act;
+        }
+        private AutoTxAction MakeAutoTxActionWait(int id, Json.CommAutoTxAction action)
+        {
+            if (action.WaitTime == -1)
+            {
+                throw new Exception("AutoTx: Action: Wait: 待機時間(WaitTime)を指定してください。");
+            }
+
+            var act = AutoTxAction.MakeWaitAction(id, action.WaitTime);
+
+            return act;
+        }
+        private AutoTxAction MakeAutoTxActionJump(int id, Json.CommAutoTxAction action)
+        {
+            if (action.JumpTo == -1)
+            {
+                throw new Exception("AutoTx: Action: Jump: JumpToを指定してください。");
+            }
+
+            var act = AutoTxAction.MakeJumpAction(id, action.JumpTo);
+
+            return act;
         }
 
 
@@ -368,160 +470,4 @@ namespace SerialDebugger.Settings
         #endregion
     }
 
-    partial class Json
-    {
-
-        public class Comm
-        {
-            // 送信設定
-            [JsonPropertyName("tx")]
-            public CommTx Tx { get; set; }
-
-            // rx_autoresp
-            // tx_autosend
-        }
-
-        public class CommTx
-        {
-            [JsonPropertyName("frames")]
-            public IList<CommTxFrame> Frames { get; set; }
-        }
-
-        public class CommTxFrame
-        {
-            [JsonPropertyName("name")]
-            public string Name { get; set; } = string.Empty;
-
-            [JsonPropertyName("fields")]
-            public IList<CommTxField> Fields { get; set; }
-
-            [JsonPropertyName("backup_buffer_size")]
-            public int BackupBufferSize { get; set; } = 0;
-
-            [JsonPropertyName("backup_buffers")]
-            public IList<CommTxBackupBuffer> BackupBuffers { get; set; }
-        }
-
-        public class CommTxField
-        {
-            [JsonPropertyName("name")]
-            public string Name { get; set; } = string.Empty;
-
-            [JsonPropertyName("multi_name")]
-            public IList<CommTxFieldMultiName> MultiNames { get; set; }
-
-            [JsonPropertyName("bit_size")]
-            public int BitSize { get; set; } = 0;
-
-            [JsonPropertyName("value")]
-            public UInt64 Value { get; set; } = 0;
-
-            [JsonPropertyName("type")]
-            public string Type { get; set; } = string.Empty;
-
-            [JsonPropertyName("unit")]
-            public CommTxFieldUnit Unit { get; set; }
-
-            [JsonPropertyName("dict")]
-            public IList<CommTxFieldDict> Dict { get; set; }
-
-            [JsonPropertyName("time")]
-            public CommTxFieldTime Time { get; set; }
-
-            [JsonPropertyName("script")]
-            public CommTxFieldScript Script { get; set; }
-
-            [JsonPropertyName("checksum")]
-            public CommTxFieldChecksum Checksum { get; set; }
-        }
-
-        public class CommTxFieldMultiName
-        {
-            [JsonPropertyName("name")]
-            public string Name { get; set; } = string.Empty;
-
-            [JsonPropertyName("bit_size")]
-            public int BitSize { get; set; } = 0;
-        }
-
-        public class CommTxFieldUnit
-        {
-            [JsonPropertyName("unit")]
-            public string Unit { get; set; } = string.Empty;
-
-            [JsonPropertyName("lsb")]
-            public double Lsb { get; set; } = 0;
-
-            [JsonPropertyName("disp_max")]
-            public double DispMax { get; set; } = 0;
-
-            [JsonPropertyName("disp_min")]
-            public double DispMin { get; set; } = 0;
-
-            [JsonPropertyName("value_min")]
-            public UInt64 ValueMin { get; set; } = 0;
-
-            [JsonPropertyName("format")]
-            public string Format { get; set; } = string.Empty;
-        }
-
-        public class CommTxFieldDict
-        {
-            [JsonPropertyName("value")]
-            public UInt64 Value { get; set; } = 0;
-
-            [JsonPropertyName("disp")]
-            public string Disp { get; set; } = string.Empty;
-        }
-
-        public class CommTxFieldTime
-        {
-            [JsonPropertyName("elapse")]
-            public double Elapse { get; set; } = 0;
-
-            [JsonPropertyName("begin")]
-            public string Begin { get; set; } = string.Empty;
-
-            [JsonPropertyName("end")]
-            public string End { get; set; } = string.Empty;
-
-            [JsonPropertyName("value_min")]
-            public UInt64 ValueMin { get; set; } = 0;
-        }
-
-        public class CommTxFieldScript
-        {
-            [JsonPropertyName("mode")]
-            public string Mode { get; set; } = string.Empty;
-
-            [JsonPropertyName("count")]
-            public int Count { get; set; } = 0;
-
-            [JsonPropertyName("script")]
-            public string Script { get; set; } = string.Empty;
-
-        }
-
-        public class CommTxFieldChecksum
-        {
-            [JsonPropertyName("begin")]
-            public int Begin { get; set; } = 0;
-
-            [JsonPropertyName("end")]
-            public int End { get; set; } = 0;
-
-            [JsonPropertyName("method")]
-            public string Method { get; set; } = string.Empty;
-        }
-
-        public class CommTxBackupBuffer
-        {
-            [JsonPropertyName("name")]
-            public string Name { get; set; } = string.Empty;
-            
-            [JsonPropertyName("value")]
-            public IList<UInt64> Values { get; set; }
-        }
-
-    }
 }

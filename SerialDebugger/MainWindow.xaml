@@ -49,9 +49,15 @@
                         <TextBlock HorizontalAlignment="Left" Height="32" Margin="63,53,0,0" TextWrapping="Wrap" Text="未実装" VerticalAlignment="Top" Width="83"/>
                     </Grid>
                 </TabItem>
-                <TabItem Header="自動操作">
-                    <Grid Background="#FFE5E5E5">
-                        <TextBlock HorizontalAlignment="Left" Height="34" Margin="56,32,0,0" TextWrapping="Wrap" Text="未実装" VerticalAlignment="Top" Width="121"/>
+                <TabItem Header="自動送信">
+                    <Grid>
+                        <ScrollViewer VerticalScrollBarVisibility="Visible">
+                            <Grid x:Name="BaseSerialAutoTx" Margin="10,0,10,0">
+                                <Grid>
+                                    <TextBlock Text="{Binding BaseSerialTxMsg.Value}" Margin="0,10,0,0"/>
+                                </Grid>
+                            </Grid>
+                        </ScrollViewer>
                     </Grid>
                 </TabItem>
             </TabControl>

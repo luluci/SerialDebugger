@@ -31,6 +31,7 @@ namespace SerialDebugger
         public ReactivePropertySlim<bool> IsSerialOpen { get; set; }
         public ReactivePropertySlim<string> TextSerialOpen { get; set; }
         public ReactiveCommand OnClickSerialOpen { get; set; }
+        public ReactivePropertySlim<bool> IsEnableSerialOpen { get; set; }
         public ReactiveCommand OnClickSerialSetting { get; set; }
         public ReadOnlyReactivePropertySlim<bool> IsEnableSerialSetting { get; set; }
         Popup popup;
@@ -60,7 +61,7 @@ namespace SerialDebugger
         //
         bool IsRxRunning = false;
         Serial.RxAnalyzer rxAnalyzer = new Serial.RxAnalyzer();
-        CancellationTokenSource tokenSource = new CancellationTokenSource();
+        CancellationTokenSource tokenSource;
 
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
@@ -88,6 +89,8 @@ namespace SerialDebugger
                     await SerialMain();
                 })
                 .AddTo(Disposables);
+            IsEnableSerialOpen = new ReactivePropertySlim<bool>(true);
+            IsEnableSerialOpen.AddTo(Disposables);
             // 設定ボタン
             IsEnableSerialSetting = IsSerialOpen
                 .Inverse()
@@ -260,10 +263,18 @@ namespace SerialDebugger
                 //});
                 AutoTxJobs = data.Comm.AutoTx;
                 {
+                    // Binding先インスタンスを切り替えたため、再接続しないとGUIに反映されない
+                    // 新インスタンスにBinding設定
                     var bind = new Binding("AutoTxJobs");
                     window.AutoTxShortcut.SetBinding(ComboBox.ItemsSourceProperty, bind);
                     AutoTxShortcutSelectedIndex.Value = 0;
                     AutoTxShortcutSelectedIndex.ForceNotify();
+                    // AutoTxイベント購読
+                    AutoTxJobs.ObserveElementObservableProperty(x => x.IsActive).Subscribe(XmlDataProvider =>
+                    {
+                        // 
+                        AutoTxShortcutSelectedIndex.ForceNotify();
+                    });
                 }
                 // 通信データ初期化
                 InitComm();
@@ -290,22 +301,12 @@ namespace SerialDebugger
             // TxFrame
             foreach (var frame in TxFrames)
             {
-                foreach (var field in frame.Fields)
-                {
-                    field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
-                }
+                SerialTxBufferSendFix(frame);
                 // BackupBuffer
                 foreach (var bk_buff in frame.BackupBuffer)
                 {
-                    foreach (var field in bk_buff.Fields)
-                    {
-                        field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
-                    }
-                    //
-                    bk_buff.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                    SerialTxBufferSendFix(bk_buff);
                 }
-                //
-                frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
             }
         }
 
@@ -317,7 +318,7 @@ namespace SerialDebugger
             }
             else
             {
-                await SerialFinish();
+                SerialFinish();
             }
         }
 
@@ -345,28 +346,32 @@ namespace SerialDebugger
                 // 受信解析定義転送？
                 // ツール上で変更しないなら他の場所でいい
 
-                // 受信解析定義があるときに受信解析ループを実行
-                if (true)
+                // 必ず受信タスクを動かす
+                // COM切断時はタスクキャンセルを実行し、受信タスクが終了したら各種後始末を行う。
+                tokenSource = new CancellationTokenSource();
+                IsRxRunning = true;
+                while (IsRxRunning)
                 {
-                    IsRxRunning = true;
-                    while (IsSerialOpen.Value)
+                    // 受信解析, 一連の受信シーケンスが完了するまでawait
+                    // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
+                    var result = await rxAnalyzer.Run(serialPort, serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
+                    switch (result.Type)
                     {
-                        // 受信解析, 一連の受信シーケンスが完了するまでawait
-                        // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
-                        var result = await rxAnalyzer.Run(serialPort, serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
-                        switch (result.Type)
-                        {
-                            case Serial.RxDataType.Timeout:
-                                break;
+                        case Serial.RxDataType.Cancel:
+                            // 実際はOperationCanceledExceptionをcatchする
+                            IsRxRunning = false;
+                            break;
 
-                            default:
-                                break;
-                        }
-                        // 処理結果を自動送信処理に通知
-                        // ...
+                        case Serial.RxDataType.Timeout:
+                            Logger.Add($"Comm Timeout: {Logger.Byte2Str(result.Data)}");
+                            break;
+
+                        default:
+                            break;
                     }
+                    // 処理結果を自動送信処理に通知
+                    // ...
                 }
-                
             }
             catch (OperationCanceledException e)
             {
@@ -378,34 +383,35 @@ namespace SerialDebugger
             }
             finally
             {
+                //
+                tokenSource.Dispose();
+                // COMポート終了
+                serialPort.Close();
+                serialPort = null;
+                // GUI処理
                 IsRxRunning = false;
                 IsSerialOpen.Value = false;
+                IsEnableSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM接続";
             }
         }
 
-        private async Task SerialFinish()
+        private void SerialFinish()
         {
             try
             {
                 // シリアル通信スレッドメッセージポーリング処理終了
                 TickEventFinish();
+                // スレッド終了メッセージ送信
+                tokenSource.Cancel();
                 // 
-                if (IsRxRunning)
-                {
-                    // スレッド終了メッセージ送信
-                    tokenSource.Cancel();
-                    await IsSerialOpen;
-                }
+                IsRxRunning = false;
+                IsEnableSerialOpen.Value = false;
+                TextSerialOpen.Value = "切断中";
             }
             catch (Exception e)
             {
                 Logger.Add($"Error: {e.Message}");
-            }
-            finally
-            {
-                IsSerialOpen.Value = false;
-                TextSerialOpen.Value = "COM接続";
             }
         }
 
@@ -502,7 +508,7 @@ namespace SerialDebugger
                     // 送信はGUIスレッドからのみ送信
                     serialPort.Write(data, 0, data.Length);
                     //
-                    Logger.Add($"Send: {data.ToString()}");
+                    Logger.Add($"Send: {Logger.Byte2Str(data)}");
                     /*
                     await Task.Run(() => {
                         serialPort.Write(buff.ToArray(), 0, buff.Count);

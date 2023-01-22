@@ -27,7 +27,7 @@ namespace SerialDebugger.Log
             {
                 Impl.Log.RemoveAt(0);
             }
-            Impl.Log.Add(log);
+            Impl.Log.Add($"{GetTimestamp()} : {log}");
             MainWindow.log_scrl.ScrollToBottom();
         }
 
@@ -74,6 +74,21 @@ namespace SerialDebugger.Log
         {
             return Impl.Log.Last();
         }
+
+        static public string GetTimestamp()
+        {
+            return GetTimestamp(DateTime.Now);
+        }
+        static public string GetTimestamp(DateTime time)
+        {
+            return time.ToString("yyyy/MM/dd/HH:mm:ss.FFFF");
+        }
+
+        static public string Byte2Str(byte[] data)
+        {
+            return BitConverter.ToString(data);
+        }
+
     }
 
     class LogImpl : BindableBase, IDisposable

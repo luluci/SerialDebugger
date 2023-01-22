@@ -12,6 +12,8 @@ using System.IO.Ports;
 
 namespace SerialDebugger.Comm
 {
+    using Logger = Log.Log;
+
     class AutoTxJob : BindableBase, IDisposable
     {
         public int Id { get; }
@@ -84,31 +86,38 @@ namespace SerialDebugger.Comm
 
         public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, int msec)
         {
-            switch (Actions[ActiveActionIndex].Type)
+            bool check = true;
+            while (check)
             {
-                case AutoTxActionType.Send:
-                    ExecSend(serial, TxFrames);
-                    NextAction();
-                    break;
+                check = false;
 
-                case AutoTxActionType.Wait:
-                    var result = ExecWait(msec);
-                    if (result)
-                    {
-                        NextAction();
-                    }
-                    break;
+                switch (Actions[ActiveActionIndex].Type)
+                {
+                    case AutoTxActionType.Send:
+                        ExecSend(serial, TxFrames);
+                        check = NextAction();
+                        break;
 
-                case AutoTxActionType.Jump:
-                    ExecJump();
-                    break;
+                    case AutoTxActionType.Wait:
+                        var result = ExecWait(msec);
+                        if (result)
+                        {
+                            check = NextAction();
+                        }
+                        break;
 
-                default:
-                    throw new Exception("undefined type.");
+                    case AutoTxActionType.Jump:
+                        ExecJump();
+                        check = true;
+                        break;
+
+                    default:
+                        throw new Exception("undefined type.");
+                }
             }
         }
 
-        private void NextAction()
+        private bool NextAction()
         {
             // 現在Action終了
             Actions[ActiveActionIndex].IsActive.Value = false;
@@ -122,23 +131,40 @@ namespace SerialDebugger.Comm
             }
             // Actionをすべて実行してJobを終了したときも先頭Actionを有効にしておく。
             Actions[ActiveActionIndex].IsActive.Value = true;
+
+            // 次Actionチェック
+            if (IsActive.Value)
+            {
+                switch (Actions[ActiveActionIndex].Type)
+                {
+                    case AutoTxActionType.Wait:
+                        return true;
+
+                    default:
+                        return false;
+                }
+            }
+            return false;
         }
 
         private void ExecSend(SerialPort serial, IList<Comm.TxFrame> TxFrames)
         {
             var action = Actions[ActiveActionIndex];
+            var buff_idx = action.TxFrameBuffIndex.Value;
             // バッファ選択
             byte[] buff;
-            if (action.TxFrameBuffIndex.Value == 0)
+            if (buff_idx == 0)
             {
                 buff = TxFrames[action.TxFrameIndex].TxData;
             }
             else
             {
-                buff = TxFrames[action.TxFrameIndex].BackupBuffer[action.TxFrameBuffIndex.Value].TxData;
+                buff = TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx-1].TxData;
             }
             // バッファ送信
             serial.Write(buff, 0, buff.Length);
+
+            Logger.Add($"Auto Send: {Logger.Byte2Str(buff)}");
         }
 
         private bool ExecWait(int msec)
@@ -168,7 +194,7 @@ namespace SerialDebugger.Comm
             Actions[ActiveActionIndex].IsActive.Value = false;
             // JumpToに移行
             ActiveActionIndex = Actions[ActiveActionIndex].JumpTo.Value;
-            // Actionをすべて実行してJobを終了したときも先頭Actionを有効にしておく。
+            // Actionを有効にする
             Actions[ActiveActionIndex].IsActive.Value = true;
         }
 

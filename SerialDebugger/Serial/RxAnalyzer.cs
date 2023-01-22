@@ -111,16 +111,17 @@ namespace SerialDebugger.Serial
                 }
 
                 // タイムアウト判定
-                var now_time = DateTime.Now;
-                var diff_time = now_time - RxLastTime;
-                var diff_ms = diff_time.Ticks / TimeSpan.TicksPerMillisecond;
-                if (diff_ms >= timeout)
+                // 何かしらのデータ受信後、指定時間経過でタイムアウトする
+                if (RxBuffOffset > 0)
                 {
-                    if (RxBuffOffset > 0)
+                    var now_time = DateTime.Now;
+                    var diff_time = now_time - RxLastTime;
+                    var diff_ms = diff_time.Ticks / TimeSpan.TicksPerMillisecond;
+                    if (diff_ms >= timeout)
                     {
                         byte[] data = new byte[RxBuffOffset];
                         Buffer.BlockCopy(RxBuff, 0, data, 0, RxBuffOffset);
-
+                        return RxData.MakeTimeout(data);
                     }
                 }
 

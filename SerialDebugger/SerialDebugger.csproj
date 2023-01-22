@@ -70,6 +70,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Behavior.cs" />
     <Compile Include="Comm\AutoTxAction.cs" />
     <Compile Include="Comm\AutoTxGui.cs" />
     <Compile Include="Comm\AutoTxGuiConverter.cs" />

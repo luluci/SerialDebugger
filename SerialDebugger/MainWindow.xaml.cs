@@ -59,5 +59,14 @@ namespace SerialDebugger
                 Logger.AddException(ex, "初期化時エラー:");
             }
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            var window = sender as Window;
+
+            //ViewModelがインターフェイスを実装していたらメソッドを実行する
+            if (window.DataContext is IClosing)
+                e.Cancel = (window.DataContext as IClosing).OnClosing();
+        }
     }
 }

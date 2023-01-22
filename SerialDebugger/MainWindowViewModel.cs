@@ -21,7 +21,7 @@ namespace SerialDebugger
     using Logger = Log.Log;
     using Setting = Settings.Settings;
 
-    class MainWindowViewModel : BindableBase, IDisposable
+    class MainWindowViewModel : BindableBase, IDisposable, IClosing
     {
         // Settings
         public ReactiveCollection<Settings.SettingInfo> Settings { get; set; }
@@ -553,6 +553,14 @@ namespace SerialDebugger
             }
         }
 
+        #region IClosing Support
+        bool IClosing.OnClosing()
+        {
+            if (IsSerialOpen.Value) return true;
+
+            return false;
+        }
+        #endregion
 
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();
@@ -590,6 +598,7 @@ namespace SerialDebugger
             // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
             // GC.SuppressFinalize(this);
         }
+
         #endregion
     }
 }

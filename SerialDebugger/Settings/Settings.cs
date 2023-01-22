@@ -27,6 +27,7 @@ namespace SerialDebugger.Settings
         // 設定読み込み遅延処理
         public bool IsLoaded { get; set; } = false;
         // 設定内容
+        public Output Output { get; set; } = new Output();
         public Gui Gui { get; set; } = new Gui();
         public Serial Serial { get; set; } = new Serial();
         public Comm Comm { get; set; } = new Comm();
@@ -50,6 +51,7 @@ namespace SerialDebugger.Settings
         static public async Task LoadAsync(SettingInfo info)
         {
             await Impl.LoadAsync(info);
+            Data = info;
         }
 
         static public void Select(int idx)
@@ -151,6 +153,8 @@ namespace SerialDebugger.Settings
 
         private async Task MakeSettingAsync(Json.Settings json, SettingInfo info)
         {
+            // Output
+            info.Output.AnalyzeJson(json.Output);
             // GUI
             info.Gui.AnalyzeJson(json.Gui);
             // Serial
@@ -205,6 +209,10 @@ namespace SerialDebugger.Settings
         {
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
+
+            // Output設定
+            [JsonPropertyName("output")]
+            public Output Output { get; set; }
 
             // GUI設定
             [JsonPropertyName("gui")]

@@ -1,6 +1,14 @@
 {
 	"name": "テストパターン_Edit_1",
 	
+	"output": {
+		"drag_drop": {
+			"name_begin"        :     "Field:",
+			"inner_name_begin"  :     "InnerField:\\r\\n",
+			"value_format": "Input"
+		}
+	},
+	
 	"gui": {
 		"column_order":
 			{

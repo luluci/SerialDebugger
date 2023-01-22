@@ -13,6 +13,8 @@ using System.Windows.Controls;
 
 namespace SerialDebugger.Comm
 {
+    using Setting = Settings.Settings;
+
     class TxField : BindableBase, IDisposable
     {
         // 
@@ -315,30 +317,92 @@ namespace SerialDebugger.Comm
 
         public string MakeDragDropStr()
         {
+            // DragDrop設定参照取得
+            var dd = Setting.Data.Output.DragDrop;
             var value = Value.Value;
             var str = new StringBuilder();
-            str.AppendLine("<table>");
-            str.AppendLine("  <tbody>");
-            // html生成
-            str.AppendLine($"    <tr>");
-            str.AppendLine($"      <td>{Name}</td>");
-            str.AppendLine($"      <td>{value}</td>");
-            str.AppendLine($"    </tr>");
-            for (int i=0; i<InnerFields.Count; i++)
+
+            // DragDrop設定が無いときのデフォルト
+            if (dd is null)
             {
-                // 該当データ計算
-                var inf = InnerFields[i];
-                var mask = ((UInt64)1 << inf.BitSize) - 1;
-                // html生成
-                str.AppendLine($"    <tr>");
-                str.AppendLine($"      <td>{inf.Name}</td>");
-                str.AppendLine($"      <td>{value & mask}</td>");
-                str.AppendLine($"    </tr>");
-                // 後処理
-                value >>= inf.BitSize;
+                return $"{Name}={$"0x{value:X}"}";
             }
-            str.AppendLine("  </tbody>");
-            str.AppendLine("</table>");
+
+            // DragDrop設定があるとき
+            // Body: 全体
+            if (!(dd.Body is null) && !(dd.Body.Begin is null)) str.Append(dd.Body.Begin);
+
+            // Name/Value
+            if (!(dd.Name is null) || !(dd.Value is null))
+            {
+                if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
+
+                // Name
+                if (!(dd.Name is null))
+                {
+                    if (!(dd.Name.Begin is null)) str.Append(dd.Name.Begin);
+                    str.Append(Name);
+                    if (!(dd.Name.End is null)) str.Append(dd.Name.End);
+                }
+                // Value
+                if (!(dd.Value is null))
+                {
+                    if (!(dd.Value.Begin is null)) str.Append(dd.Value.Begin);
+
+                    switch (dd.ValueFormat)
+                    {
+                        case Settings.Output.DragDropValueFormat.Input:
+                            str.Append(GetDisp());
+                            break;
+
+                        default:
+                            str.Append($"0x{value:X}");
+                            break;
+                    }
+
+                    if (!(dd.Value.End is null)) str.Append(dd.Value.End);
+                }
+
+                if (!(dd.Item is null) && !(dd.Item.End is null)) str.Append(dd.Item.End);
+            }
+
+            // InnerName/Value
+            if (InnerFields.Count > 1)
+            {
+                if (!(dd.InnerName is null) || !(dd.InnerValue is null))
+                {
+                    for (int i = 0; i < InnerFields.Count; i++)
+                    {
+                        // 該当データ計算
+                        var inner = InnerFields[i];
+                        var mask = ((UInt64)1 << inner.BitSize) - 1;
+                        // html生成
+                        if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
+
+                        // Name
+                        if (!(dd.InnerName is null))
+                        {
+                            if (!(dd.InnerName.Begin is null)) str.Append(dd.InnerName.Begin);
+                            str.Append(inner.Name);
+                            if (!(dd.InnerName.End is null)) str.Append(dd.InnerName.End);
+                        }
+                        // Value
+                        if (!(dd.InnerValue is null))
+                        {
+                            if (!(dd.InnerValue.Begin is null)) str.Append(dd.InnerValue.Begin);
+                            str.Append($"0x{(value & mask):X}");
+                            if (!(dd.InnerValue.End is null)) str.Append(dd.InnerValue.End);
+                        }
+
+                        if (!(dd.Item is null) && !(dd.Item.End is null)) str.Append(dd.Item.End);
+                        // 後処理
+                        value >>= inner.BitSize;
+                    }
+                }
+            }
+
+            if (!(dd.Body is null) && !(dd.Body.End is null)) str.Append(dd.Body.End);
+
             return str.ToString();
         }
 
@@ -394,11 +458,11 @@ namespace SerialDebugger.Comm
                 case TxField.InputModeType.Unit:
                 case TxField.InputModeType.Time:
                 case TxField.InputModeType.Script:
-                    return $"{Selects[index].Disp} ({value:X}h)";
+                    return Selects[index].Disp;
                 case TxField.InputModeType.Edit:
                 case TxField.InputModeType.Fix:
                 default:
-                    return $"{value:X}h";
+                    return $"0x{value:X}";
             }
         }
 

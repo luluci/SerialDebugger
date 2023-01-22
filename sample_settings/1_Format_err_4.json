@@ -1,0 +1,42 @@
+{
+	"name": "テストパターン_Error_4",
+	
+	"comm": {
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_Auto_A",
+					"active": false,
+					"actions": [
+						{ "type": "Wait", "wait_time": 100 },
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 0 },
+						{ "type": "Jump", "jump_to": 3 }
+					]
+				},
+				{
+					"name": "Job_Auto_B",
+					"active": false,
+					"actions": [
+						{ "type": "Wait", "wait_time": 100 },
+						{ "type": "Jump", "jump_to": 3 }
+					]
+				}
+			]
+		},
+	
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_1",
+					"fields": [
+						{
+							"name": "field1_1",
+							"bit_size": 8,
+							"value": 1
+						}
+					]
+				}
+			]
+		}
+	}
+}

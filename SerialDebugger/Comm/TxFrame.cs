@@ -10,9 +10,11 @@ using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System.Windows;
 using System.Collections.ObjectModel;
+using System.Windows.Controls;
 
 namespace SerialDebugger.Comm
 {
+    using Setting = Settings.Settings;
     using Logger = SerialDebugger.Log.Log;
 
     interface ITxFrame
@@ -95,6 +97,11 @@ namespace SerialDebugger.Comm
                 .ObserveElementObservableProperty(x => x.ChangeState).Subscribe(x =>
                 {
                     ChangeState.Value = TxField.ChangeStates.Changed;
+                });
+            Fields
+                .ObserveElementObservableProperty(x => x.OnMouseDown).Subscribe((x) =>
+                {
+                    DoDragDrop(x.Instance, x.Value as System.Windows.Input.MouseButtonEventArgs);
                 });
             Fields.AddTo(Disposables);
             TxBuffer = new ReactiveCollection<byte>();
@@ -340,6 +347,128 @@ namespace SerialDebugger.Comm
             }
 
             return sum;
+        }
+
+        public void DoDragDrop(TxField field, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            DragDrop.DoDragDrop(e.Source as TextBlock, MakeDragDropStr(field), DragDropEffects.Copy);
+        }
+
+        public string MakeDragDropStr(TxField field)
+        {
+            // DragDrop設定参照取得
+            var dd = Setting.Data.Output.DragDrop;
+            var value = field.Value.Value;
+            var str = new StringBuilder();
+
+            // DragDrop設定が無いときのデフォルト
+            if (dd is null)
+            {
+                string def_value;
+                switch (dd.ValueFormat)
+                {
+                    case Settings.Output.DragDropValueFormat.Input:
+                        def_value = field.GetDisp();
+                        break;
+
+                    default:
+                        def_value = $"0x{value:X}";
+                        break;
+                }
+
+                return $"{Name}/{field.Name}/{def_value}";
+            }
+
+            // DragDrop設定があるとき
+            // Body: 全体
+            if (!(dd.Body is null) && !(dd.Body.Begin is null)) str.Append(dd.Body.Begin);
+
+            // Name/Value
+            if (!(dd.FrameName is null) || !(dd.FieldName is null) || !(dd.FieldValue is null))
+            {
+                if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
+
+                // FrameName
+                if (!(dd.FrameName is null))
+                {
+                    if (!(dd.FrameName.Begin is null)) str.Append(dd.FrameName.Begin);
+                    str.Append(Name);
+                    if (!(dd.FrameName.End is null)) str.Append(dd.FrameName.End);
+                }
+                // Name
+                if (!(dd.FieldName is null))
+                {
+                    if (!(dd.FieldName.Begin is null)) str.Append(dd.FieldName.Begin);
+                    str.Append(field.Name);
+                    if (!(dd.FieldName.End is null)) str.Append(dd.FieldName.End);
+                }
+                // Value
+                if (!(dd.FieldValue is null))
+                {
+                    if (!(dd.FieldValue.Begin is null)) str.Append(dd.FieldValue.Begin);
+
+                    switch (dd.ValueFormat)
+                    {
+                        case Settings.Output.DragDropValueFormat.Input:
+                            str.Append(field.GetDisp());
+                            break;
+
+                        default:
+                            str.Append($"0x{value:X}");
+                            break;
+                    }
+
+                    if (!(dd.FieldValue.End is null)) str.Append(dd.FieldValue.End);
+                }
+
+                if (!(dd.Item is null) && !(dd.Item.End is null)) str.Append(dd.Item.End);
+            }
+
+            // InnerName/Value
+            if (field.InnerFields.Count > 1)
+            {
+                if (!(dd.FrameName is null) || !(dd.FieldInnerName is null) || !(dd.FieldInnerValue is null))
+                {
+                    for (int i = 0; i < field.InnerFields.Count; i++)
+                    {
+                        // 該当データ計算
+                        var inner = field.InnerFields[i];
+                        var mask = ((UInt64)1 << inner.BitSize) - 1;
+                        // html生成
+                        if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
+
+                        // FrameName
+                        if (!(dd.FrameName is null))
+                        {
+                            if (!(dd.FrameName.Begin is null)) str.Append(dd.FrameName.Begin);
+                            str.Append(Name);
+                            if (!(dd.FrameName.End is null)) str.Append(dd.FrameName.End);
+                        }
+                        // Name
+                        if (!(dd.FieldInnerName is null))
+                        {
+                            if (!(dd.FieldInnerName.Begin is null)) str.Append(dd.FieldInnerName.Begin);
+                            str.Append(inner.Name);
+                            if (!(dd.FieldInnerName.End is null)) str.Append(dd.FieldInnerName.End);
+                        }
+                        // Value
+                        if (!(dd.FieldInnerValue is null))
+                        {
+                            if (!(dd.FieldInnerValue.Begin is null)) str.Append(dd.FieldInnerValue.Begin);
+                            str.Append($"0x{(value & mask):X}");
+                            if (!(dd.FieldInnerValue.End is null)) str.Append(dd.FieldInnerValue.End);
+                        }
+
+                        if (!(dd.Item is null) && !(dd.Item.End is null)) str.Append(dd.Item.End);
+                        // 後処理
+                        value >>= inner.BitSize;
+                    }
+                }
+            }
+
+            if (!(dd.Body is null) && !(dd.Body.End is null)) str.Append(dd.Body.End);
+
+            return str.ToString();
         }
 
         #region IDisposable Support

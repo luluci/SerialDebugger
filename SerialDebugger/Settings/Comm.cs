@@ -108,7 +108,7 @@ namespace SerialDebugger.Settings
         }
         private AutoTxAction MakeAutoTxActionSend(int id, Json.CommAutoTxAction action)
         {
-            if (action.TxFrameName == string.Empty)
+            if (Object.ReferenceEquals(action.TxFrameName,string.Empty))
             {
                 throw new Exception("AutoTx: Action: Send: 送信対象となるframe名(tx_frame_name)を指定してください。");
             }
@@ -214,7 +214,7 @@ namespace SerialDebugger.Settings
         {
             // Buffer名称作成
             string name = json.Name;
-            if (name == string.Empty)
+            if (Object.ReferenceEquals(name, string.Empty))
             {
                 name = $"buffer[{idx}]";
             }
@@ -286,7 +286,7 @@ namespace SerialDebugger.Settings
             }
             // Nameチェック
             // Checksumの場合はmulti_nameは許可しない
-            if (field.Name is null)
+            if (Object.ReferenceEquals(field.Name, string.Empty))
             {
                 throw new Exception("Checksumノードはname,bit_sizeを指定してください。");
             }
@@ -400,7 +400,7 @@ namespace SerialDebugger.Settings
                 // name設定
                 // nameがnullのときはmulti_nameの最初のnameを使用
                 var name = field.Name;
-                if (name is null)
+                if (Object.ReferenceEquals(name, string.Empty))
                 {
                     name = multi_name[0].Name;
                 }
@@ -412,7 +412,7 @@ namespace SerialDebugger.Settings
             {
                 // multi_nameが指定されていないときはnameとbitsizeを使用
                 // データチェック, nameとbitsizeの両方が有効である必要がある
-                if (field.Name is null)
+                if (Object.ReferenceEquals(field.Name, string.Empty))
                 {
                     throw new Exception("nameかmulti_nameのどちらかを指定してください。");
                 }

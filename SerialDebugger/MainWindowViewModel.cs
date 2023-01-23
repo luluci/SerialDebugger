@@ -23,6 +23,9 @@ namespace SerialDebugger
 
     class MainWindowViewModel : BindableBase, IDisposable, IClosing
     {
+        // Title
+        static string ToolTitle = "SerialDebugger";
+        public ReactivePropertySlim<string> WindowTitle { get; set; }
         // Settings
         public ReactiveCollection<Settings.SettingInfo> Settings { get; set; }
         public ReactivePropertySlim<int> SettingsSelectIndex { get; set; }
@@ -35,7 +38,7 @@ namespace SerialDebugger
         public ReactiveCommand OnClickSerialSetting { get; set; }
         public ReadOnlyReactivePropertySlim<bool> IsEnableSerialSetting { get; set; }
         Popup popup;
-        public Serial.CommHandler serialHandler;
+        //public Serial.CommHandler serialHandler;
         // Comm: Tx
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
@@ -75,9 +78,11 @@ namespace SerialDebugger
             BaseSerialTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
             BaseSerialTxMsg.AddTo(Disposables);
 
+            //
+            WindowTitle = new ReactivePropertySlim<string>("SerialDebugger");
             // Serial
             serialSetting = new Serial.Settings();
-            serialHandler = new Serial.CommHandler();
+            //serialHandler = new Serial.CommHandler();
             // Serial Open
             IsSerialOpen = new ReactivePropertySlim<bool>(false);
             IsSerialOpen.AddTo(Disposables);
@@ -145,7 +150,7 @@ namespace SerialDebugger
             AutoTxShortcutSelectedIndex = new ReactivePropertySlim<int>();
             AutoTxShortcutSelectedIndex.Subscribe(x =>
                 {
-                    if (x < AutoTxJobs.Count)
+                    if (0 <= x && x < AutoTxJobs.Count)
                     {
                         if (AutoTxJobs[x].IsActive.Value)
                         {
@@ -155,6 +160,10 @@ namespace SerialDebugger
                         {
                             AutoTxShortcutButtonDisp.Value = "Run";
                         }
+                    }
+                    else
+                    {
+                        AutoTxShortcutButtonDisp.Value = "-";
                     }
                 })
                 .AddTo(Disposables);
@@ -236,6 +245,7 @@ namespace SerialDebugger
             catch (Exception ex)
             {
                 //MessageBox.Show($"Setting File Load Error: {ex.Message}");
+                WindowTitle.Value = $"{ToolTitle}";
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
                 Logger.AddException(ex, "設定ファイル読み込みエラー:");
             }
@@ -253,6 +263,7 @@ namespace SerialDebugger
             if (data.Comm.Tx.Count > 0)
             {
                 // GUI作成
+                WindowTitle.Value = $"{ToolTitle} [{data.Name}]";
                 window.Width = data.Gui.Window.Width;
                 window.Height = data.Gui.Window.Height;
                 TxFrames = data.Comm.Tx;
@@ -291,6 +302,7 @@ namespace SerialDebugger
             }
             else
             {
+                WindowTitle.Value = $"{ToolTitle}";
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
             }
         }

@@ -28,10 +28,11 @@ namespace SerialDebugger.Settings
         {
             public DragDropNode Body { get; set; }
             public DragDropNode Item { get; set; }
-            public DragDropNode Name { get; set; }
-            public DragDropNode Value { get; set; }
-            public DragDropNode InnerName { get; set; }
-            public DragDropNode InnerValue { get; set; }
+            public DragDropNode FrameName { get; set; }
+            public DragDropNode FieldName { get; set; }
+            public DragDropNode FieldValue { get; set; }
+            public DragDropNode FieldInnerName { get; set; }
+            public DragDropNode FieldInnerValue { get; set; }
             public DragDropValueFormat ValueFormat { get; set; } = DragDropValueFormat.Hex;
 
             public DragDropInfo()
@@ -42,82 +43,102 @@ namespace SerialDebugger.Settings
             public void AnalyzeJson(Json.OutputDragDrop json)
             {
                 // Body修飾
-                if (!(json.BodyBegin is null) || !(json.BodyEnd is null))
+                if (!(json.Body is null))
                 {
                     Body = new DragDropNode();
-                }
-                if (!(json.BodyBegin is null))
-                {
-                    Body.Begin = json.BodyBegin;
-                }
-                if (!(json.BodyEnd is null))
-                {
-                    Body.End = json.BodyEnd;
+
+                    if (!(json.Body.Begin is null))
+                    {
+                        Body.Begin = json.Body.Begin;
+                    }
+                    if (!(json.Body.End is null))
+                    {
+                        Body.End = json.Body.End;
+                    }
                 }
                 // Item修飾
-                if (!(json.ItemBegin is null) || !(json.ItemEnd is null))
+                if (!(json.Item is null))
                 {
                     Item = new DragDropNode();
+
+                    if (!(json.Item.Begin is null))
+                    {
+                        Item.Begin = json.Item.Begin;
+                    }
+                    if (!(json.Item.End is null))
+                    {
+                        Item.End = json.Item.End;
+                    }
                 }
-                if (!(json.ItemBegin is null))
+                // FrameName修飾
+                if (!(json.FrameName is null))
                 {
-                    Item.Begin = json.ItemBegin;
+                    FrameName = new DragDropNode();
+
+                    if (!(json.FrameName.Begin is null))
+                    {
+                        FrameName.Begin = json.FrameName.Begin;
+                    }
+                    if (!(json.FrameName.End is null))
+                    {
+                        FrameName.End = json.FrameName.End;
+                    }
                 }
-                if (!(json.ItemEnd is null))
+                // FieldName修飾
+                if (!(json.FieldName is null))
                 {
-                    Item.End = json.ItemEnd;
-                }
-                // Name修飾
-                if (!(json.NameBegin is null) || !(json.NameEnd is null))
-                {
-                    Name = new DragDropNode();
-                }
-                if (!(json.NameBegin is null))
-                {
-                    Name.Begin = json.NameBegin;
-                }
-                if (!(json.NameEnd is null))
-                {
-                    Name.End = json.NameEnd;
+                    FieldName = new DragDropNode();
+
+                    if (!(json.FieldName.Begin is null))
+                    {
+                        FieldName.Begin = json.FieldName.Begin;
+                    }
+                    if (!(json.FieldName.End is null))
+                    {
+                        FieldName.End = json.FieldName.End;
+                    }
                 }
                 // Value修飾
-                if (!(json.ValueBegin is null) || !(json.ValueEnd is null))
+                if (!(json.FieldValue is null))
                 {
-                    Value = new DragDropNode();
-                }
-                if (!(json.ValueBegin is null))
-                {
-                    Value.Begin = json.ValueBegin;
-                }
-                if (!(json.ValueEnd is null))
-                {
-                    Value.End = json.ValueEnd;
+                    FieldValue = new DragDropNode();
+
+                    if (!(json.FieldValue.Begin is null))
+                    {
+                        FieldValue.Begin = json.FieldValue.Begin;
+                    }
+                    if (!(json.FieldValue.End is null))
+                    {
+                        FieldValue.End = json.FieldValue.End;
+                    }
                 }
                 // InnerName修飾
-                if (!(json.InnerNameBegin is null) || !(json.InnerNameEnd is null))
+                if (!(json.FieldInnerName is null))
                 {
-                    InnerName = new DragDropNode();
-                }
-                if (!(json.InnerNameBegin is null))
-                {
-                    InnerName.Begin = json.InnerNameBegin;
-                }
-                if (!(json.InnerNameEnd is null))
-                {
-                    InnerName.End = json.InnerNameEnd;
+                    FieldInnerName = new DragDropNode();
+
+                    if (!(json.FieldInnerName.Begin is null))
+                    {
+                        FieldInnerName.Begin = json.FieldInnerName.Begin;
+                    }
+                    if (!(json.FieldInnerName.End is null))
+                    {
+                        FieldInnerName.End = json.FieldInnerName.End;
+                    }
                 }
                 // InnerValue修飾
-                if (!(json.ValueBegin is null) || !(json.ValueEnd is null))
+                if (!(json.FieldInnerValue is null))
                 {
-                    InnerValue = new DragDropNode();
-                }
-                if (!(json.ValueBegin is null))
-                {
-                    InnerValue.Begin = json.InnerValueBegin;
-                }
-                if (!(json.ValueEnd is null))
-                {
-                    InnerValue.End = json.InnerValueEnd;
+                    FieldInnerValue = new DragDropNode();
+
+                    if (!(json.FieldInnerValue.Begin is null))
+                    {
+                        FieldInnerValue.Begin = json.FieldInnerValue.Begin;
+                    }
+                    if (!(json.FieldInnerValue.End is null))
+                    {
+                        FieldInnerValue.End = json.FieldInnerValue.End;
+                    }
                 }
                 // ValueFormat
                 if (!(json.ValueFormat is null))
@@ -166,44 +187,39 @@ namespace SerialDebugger.Settings
             public OutputDragDrop DragDrop { get; set; }
         }
 
+        public class OutputDragDropTag
+        {
+            [JsonPropertyName("begin")]
+            public string Begin { get; set; } = null;
+
+            [JsonPropertyName("end")]
+            public string End { get; set; } = null;
+
+        }
+
         public class OutputDragDrop
         {
-            [JsonPropertyName("body_begin")]
-            public string BodyBegin { get; set; } = null;
+            [JsonPropertyName("body")]
+            public OutputDragDropTag Body { get; set; } = null;
 
-            [JsonPropertyName("body_end")]
-            public string BodyEnd { get; set; } = null;
+            [JsonPropertyName("item")]
+            public OutputDragDropTag Item { get; set; } = null;
 
-            [JsonPropertyName("item_begin")]
-            public string ItemBegin { get; set; } = null;
+            [JsonPropertyName("frame_name")]
+            public OutputDragDropTag FrameName { get; set; } = null;
 
-            [JsonPropertyName("item_end")]
-            public string ItemEnd { get; set; } = null;
+            [JsonPropertyName("field_name")]
+            public OutputDragDropTag FieldName { get; set; } = null;
 
-            [JsonPropertyName("name_begin")]
-            public string NameBegin { get; set; } = null;
+            [JsonPropertyName("field_value")]
+            public OutputDragDropTag FieldValue { get; set; } = null;
 
-            [JsonPropertyName("name_end")]
-            public string NameEnd { get; set; } = null;
+            [JsonPropertyName("field_inner_name")]
+            public OutputDragDropTag FieldInnerName { get; set; } = null;
 
-            [JsonPropertyName("value_begin")]
-            public string ValueBegin { get; set; } = null;
-
-            [JsonPropertyName("value_end")]
-            public string ValueEnd { get; set; } = null;
-
-            [JsonPropertyName("inner_name_begin")]
-            public string InnerNameBegin { get; set; } = null;
-
-            [JsonPropertyName("inner_name_end")]
-            public string InnerNameEnd { get; set; } = null;
-
-            [JsonPropertyName("inner_value_begin")]
-            public string InnerValueBegin { get; set; } = null;
-
-            [JsonPropertyName("inner_value_end")]
-            public string InnerValueEnd { get; set; } = null;
-
+            [JsonPropertyName("field_inner_value")]
+            public OutputDragDropTag FieldInnerValue { get; set; } = null;
+            
             [JsonPropertyName("value_format")]
             public string ValueFormat { get; set; } = null;
         }

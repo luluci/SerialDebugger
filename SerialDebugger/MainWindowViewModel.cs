@@ -56,6 +56,7 @@ namespace SerialDebugger
         UIElement BaseSerialTxOrig;
         UIElement BaseSerialAutoTxOrig;
         public ReactivePropertySlim<string> BaseSerialTxMsg { get; set; }
+        public ReactivePropertySlim<string> BaseSerialAutoTxMsg { get; set; }
 
         // シリアル通信管理変数
         SerialPort serialPort;
@@ -77,6 +78,8 @@ namespace SerialDebugger
             BaseSerialAutoTxOrig = window.BaseSerialAutoTx.Children[0];
             BaseSerialTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
             BaseSerialTxMsg.AddTo(Disposables);
+            BaseSerialAutoTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
+            BaseSerialAutoTxMsg.AddTo(Disposables);
 
             //
             WindowTitle = new ReactivePropertySlim<string>("SerialDebugger");
@@ -222,6 +225,7 @@ namespace SerialDebugger
             else
             {
                 BaseSerialTxMsg.Value = "有効な設定ファイルが存在しません。";
+                BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
                 Logger.Add("有効な設定ファイルが存在しません。");
             }
         }
@@ -232,6 +236,7 @@ namespace SerialDebugger
             window.BaseSerialTx.Children.Clear();
             window.BaseSerialAutoTx.Children.Clear();
             BaseSerialTxMsg.Value = "設定ファイル読み込み中。。";
+            BaseSerialAutoTxMsg.Value = "設定ファイル読み込み中。。";
             window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
             window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
 
@@ -247,6 +252,7 @@ namespace SerialDebugger
                 //MessageBox.Show($"Setting File Load Error: {ex.Message}");
                 WindowTitle.Value = $"{ToolTitle}";
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
                 Logger.AddException(ex, "設定ファイル読み込みエラー:");
             }
         }
@@ -259,19 +265,36 @@ namespace SerialDebugger
             {
                 await Setting.LoadAsync(data);
             }
-            // 有効な通信フォーマットがあればツールに取り込む
+            // GUI作成
+            WindowTitle.Value = $"{ToolTitle} [{data.Name}]";
+            window.Width = data.Gui.Window.Width;
+            window.Height = data.Gui.Window.Height;
+            // COMポート設定更新
+            serialSetting.vm.SetSerialSetting(data.Serial);
+            // Tx設定
             if (data.Comm.Tx.Count > 0)
             {
-                // GUI作成
-                WindowTitle.Value = $"{ToolTitle} [{data.Name}]";
-                window.Width = data.Gui.Window.Width;
-                window.Height = data.Gui.Window.Height;
                 TxFrames = data.Comm.Tx;
                 //TxFrames.ObserveElementObservableProperty(x => x.UpdateMsg).Subscribe(x =>
                 //{
                 //    int hoge;
                 //    hoge = 0;
                 //});
+                // 通信データ初期化
+                InitComm();
+                // GUI作成
+                var tx = Comm.TxGui.Make(data);
+                // GUI反映
+                window.BaseSerialTx.Children.Clear();
+                window.BaseSerialTx.Children.Add(tx);
+            }
+            else
+            {
+                BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+            }
+            // AutoTx設定
+            if (data.Comm.AutoTx.Count > 0)
+            {
                 AutoTxJobs = data.Comm.AutoTx;
                 {
                     // Binding先インスタンスを切り替えたため、再接続しないとGUIに反映されない
@@ -287,23 +310,15 @@ namespace SerialDebugger
                         AutoTxShortcutSelectedIndex.ForceNotify();
                     });
                 }
-                // 通信データ初期化
-                InitComm();
                 // GUI作成
-                var tx = Comm.TxGui.Make(data);
                 var autotx = Comm.AutoTxGui.Make(data);
                 // GUI反映
-                window.BaseSerialTx.Children.Clear();
-                window.BaseSerialTx.Children.Add(tx);
                 window.BaseSerialAutoTx.Children.Clear();
                 window.BaseSerialAutoTx.Children.Add(autotx);
-                // COMポート設定更新
-                serialSetting.vm.SetSerialSetting(data.Serial);
             }
             else
             {
-                WindowTitle.Value = $"{ToolTitle}";
-                BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                BaseSerialAutoTxMsg.Value = "有効な自動送信設定が存在しません。";
             }
         }
 

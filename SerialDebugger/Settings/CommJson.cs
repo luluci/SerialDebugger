@@ -46,6 +46,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("type")]
             public string Type { get; set; } = string.Empty;
 
+            [JsonPropertyName("delay_log")]
+            public bool DelayLog { get; set; } = false;
+
 
             [JsonPropertyName("tx_frame_name")]
             public string TxFrameName { get; set; } = string.Empty;

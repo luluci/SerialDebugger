@@ -24,6 +24,8 @@ namespace SerialDebugger.Comm
     {
         public int Id { get; }
         public AutoTxActionType Type { get; private set; }
+        public ReactivePropertySlim<bool> IsActive { get; set; }
+        public bool IsDelayLog { get; set; }
 
         public ReactivePropertySlim<string> TxFrameName { get; private set; }
         public int TxFrameIndex { get; private set; }
@@ -44,8 +46,6 @@ namespace SerialDebugger.Comm
 
         public ReactivePropertySlim<string> ScriptName { get; private set; }
 
-        public ReactivePropertySlim<bool> IsActive { get; set; }
-
 
         public AutoTxAction(int id)
         {
@@ -61,23 +61,25 @@ namespace SerialDebugger.Comm
         /// <param name="id"></param>
         /// <param name="wait"></param>
         /// <returns></returns>
-        public static AutoTxAction MakeWaitAction(int id, int wait)
+        public static AutoTxAction MakeWaitAction(int id, int wait, bool delay_log)
         {
             var action = new AutoTxAction(id)
             {
                 Type = AutoTxActionType.Wait,
                 WaitTimeBegin = -1,
+                IsDelayLog = delay_log,
             };
             action.WaitTime = new ReactivePropertySlim<int>(wait);
             action.WaitTime.AddTo(action.Disposables);
 
             return action;
         }
-        public static AutoTxAction MakeJumpAction(int id, int jumpto)
+        public static AutoTxAction MakeJumpAction(int id, int jumpto, bool delay_log)
         {
             var action = new AutoTxAction(id)
             {
                 Type = AutoTxActionType.Jump,
+                IsDelayLog = delay_log,
             };
             action.JumpTo = new ReactivePropertySlim<int>(jumpto);
             action.JumpTo.AddTo(action.Disposables);
@@ -85,11 +87,12 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeSendAction(int id, string tx_frame_name, int tx_frame_idx, int buff_idx, int buff_offset, int buff_length)
+        public static AutoTxAction MakeSendAction(int id, string tx_frame_name, int tx_frame_idx, int buff_idx, int buff_offset, int buff_length, bool delay_log)
         {
             var action = new AutoTxAction(id)
             {
-                Type = AutoTxActionType.Send
+                Type = AutoTxActionType.Send,
+                IsDelayLog = delay_log,
             };
             action.TxFrameName = new ReactivePropertySlim<string>(tx_frame_name);
             action.TxFrameName.AddTo(action.Disposables);
@@ -102,11 +105,12 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeRecvAction(int id, string rx_name, int rx_idx)
+        public static AutoTxAction MakeRecvAction(int id, string rx_name, int rx_idx, bool delay_log)
         {
             var action = new AutoTxAction(id)
             {
                 Type = AutoTxActionType.Recv,
+                IsDelayLog = delay_log,
             };
             action.RxFrameName = new ReactivePropertySlim<string>(rx_name);
             action.RxFrameName.AddTo(action.Disposables);
@@ -115,11 +119,12 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeScriptAction(int id, string script_func)
+        public static AutoTxAction MakeScriptAction(int id, string script_func, bool delay_log)
         {
             var action = new AutoTxAction(id)
             {
                 Type = AutoTxActionType.Script,
+                IsDelayLog = delay_log,
             };
             action.ScriptName = new ReactivePropertySlim<string>(script_func);
             action.ScriptName.AddTo(action.Disposables);

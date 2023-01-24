@@ -67,6 +67,20 @@ namespace SerialDebugger.Comm
                     {
                         throw new Exception("AutoTx: SendAction: TxFrameBuffIndex.");
                     }
+                    // Offset/Length
+                    var frame = TxFrames[action.TxFrameIndex];
+                    if (action.TxFrameOffset == -1)
+                    {
+                        action.TxFrameOffset = 0;
+                    }
+                    if (action.TxFrameLength == -1)
+                    {
+                        action.TxFrameLength = frame.Length;
+                    }
+                    if (action.TxFrameOffset >= frame.Length || (action.TxFrameOffset + action.TxFrameLength) > frame.Length)
+                    {
+                        throw new Exception("AutoTx: SendAction: TxFrameOffset/TxFrameLength.");
+                    }
                     break;
 
                 case AutoTxActionType.Wait:

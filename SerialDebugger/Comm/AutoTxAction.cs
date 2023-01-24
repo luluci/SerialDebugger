@@ -27,6 +27,8 @@ namespace SerialDebugger.Comm
 
         public ReactivePropertySlim<string> TxFrameName { get; private set; }
         public int TxFrameIndex { get; private set; }
+        public int TxFrameOffset { get; set; }
+        public int TxFrameLength { get; set; }
         public ReactivePropertySlim<int> TxFrameBuffIndex { get; private set; }
 
         /// <summary>
@@ -83,7 +85,7 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeSendAction(int id, string tx_frame_name, int tx_frame_idx, int buff_idx)
+        public static AutoTxAction MakeSendAction(int id, string tx_frame_name, int tx_frame_idx, int buff_idx, int buff_offset, int buff_length)
         {
             var action = new AutoTxAction(id)
             {
@@ -92,6 +94,8 @@ namespace SerialDebugger.Comm
             action.TxFrameName = new ReactivePropertySlim<string>(tx_frame_name);
             action.TxFrameName.AddTo(action.Disposables);
             action.TxFrameIndex = tx_frame_idx;
+            action.TxFrameOffset = buff_offset;
+            action.TxFrameLength = buff_length;
             action.TxFrameBuffIndex = new ReactivePropertySlim<int>(buff_idx);
             action.TxFrameBuffIndex.AddTo(action.Disposables);
 

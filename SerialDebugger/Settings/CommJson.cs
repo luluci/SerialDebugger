@@ -53,6 +53,12 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("tx_frame_buff_index")]
             public int TxFrameBuffIndex { get; set; } = -1;
 
+            [JsonPropertyName("tx_frame_buff_offset")]
+            public int TxFrameBuffOffset { get; set; } = -1;
+
+            [JsonPropertyName("tx_frame_buff_length")]
+            public int TxFrameBuffLength { get; set; } = -1;
+
 
             [JsonPropertyName("wait_time")]
             public int WaitTime { get; set; } = -1;

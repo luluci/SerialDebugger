@@ -96,7 +96,7 @@ namespace SerialDebugger.Settings
             {
                 TxTimeout = json.TxTimeout;
             }
-            // TxTimeout
+            // RxTimeout
             if (json.RxTimeout >= 0)
             {
                 RxTimeout = json.RxTimeout;

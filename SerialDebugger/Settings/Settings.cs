@@ -149,6 +149,8 @@ namespace SerialDebugger.Settings
                 // json読み込み
                 await MakeSettingAsync(json, info);
             }
+            //
+            info.IsLoaded = true;
         }
 
         private async Task MakeSettingAsync(Json.Settings json, SettingInfo info)

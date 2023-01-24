@@ -52,6 +52,7 @@ namespace SerialDebugger.Settings
 
 
             // AutoTx作成
+            // Txの作成後に実施する
             if (!(json.AutoTx is null) && !(json.AutoTx.Jobs is null))
             {
                 int id = 0;
@@ -119,7 +120,7 @@ namespace SerialDebugger.Settings
 
             // FrameNameが存在しないときの例外処理は上流に任せる
             var frame_idx = TxNameDict[action.TxFrameName];
-            var act = AutoTxAction.MakeSendAction(id, action.TxFrameName, frame_idx, action.TxFrameBuffIndex);
+            var act = AutoTxAction.MakeSendAction(id, action.TxFrameName, frame_idx, action.TxFrameBuffIndex, action.TxFrameBuffOffset, action.TxFrameBuffLength);
 
             return act;
         }

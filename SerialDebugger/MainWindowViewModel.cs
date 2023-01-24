@@ -328,11 +328,11 @@ namespace SerialDebugger
             // TxFrame
             foreach (var frame in TxFrames)
             {
-                SerialTxBufferSendFix(frame);
+                SerialTxBufferFix(frame);
                 // BackupBuffer
                 foreach (var bk_buff in frame.BackupBuffer)
                 {
-                    SerialTxBufferSendFix(bk_buff);
+                    SerialTxBufferFix(bk_buff);
                 }
             }
         }

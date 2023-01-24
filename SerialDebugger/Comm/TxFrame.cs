@@ -384,7 +384,7 @@ namespace SerialDebugger.Comm
             if (!(dd.Body is null) && !(dd.Body.Begin is null)) str.Append(dd.Body.Begin);
 
             // Name/Value
-            if (!(dd.FrameName is null) || !(dd.FieldName is null) || !(dd.FieldValue is null))
+            if (!(dd.FieldName is null) || !(dd.FieldValue is null))
             {
                 if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
 
@@ -427,7 +427,7 @@ namespace SerialDebugger.Comm
             // InnerName/Value
             if (field.InnerFields.Count > 1)
             {
-                if (!(dd.FrameName is null) || !(dd.FieldInnerName is null) || !(dd.FieldInnerValue is null))
+                if (!(dd.FieldInnerName is null) || !(dd.FieldInnerValue is null))
                 {
                     for (int i = 0; i < field.InnerFields.Count; i++)
                     {

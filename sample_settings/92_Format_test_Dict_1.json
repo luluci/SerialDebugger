@@ -3,8 +3,21 @@
 	
 	"output": {
 		"drag_drop": {
-			"name_begin"        :     "Field:",
-			"inner_name_begin"  :     "InnerField:\r\n",
+			"frame_name": {
+				"begin" : "Frame:"
+			},
+			"field_name": {
+				"begin" : "Field:"
+			},
+			"field_value": {
+				"end"   : "\n"
+			},
+			"field_inner_name": {
+				"begin" : "InnerField:"
+			},
+			"field_inner_value": {
+				"end"   : "\n"
+			},
 			"value_format": "Input"
 		}
 	},

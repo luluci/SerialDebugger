@@ -13,12 +13,16 @@ using System.IO.Ports;
 namespace SerialDebugger.Comm
 {
     using Logger = Log.Log;
-
+    
     class AutoTxJob : BindableBase, IDisposable
     {
         public int Id { get; }
         public ReactivePropertySlim<string> Name { get; }
         public ReactivePropertySlim<bool> IsActive { get; set; }
+        public bool IsDelayLog { get; set; }
+        public (DateTime, AutoTxActionType, object)[] LogBuffer;
+        public int LogBufferHead;
+        public int LogBufferTail;
 
         public ReactiveCollection<AutoTxAction> Actions { get; set; }
 
@@ -34,6 +38,7 @@ namespace SerialDebugger.Comm
             IsActive.AddTo(Disposables);
             Actions = new ReactiveCollection<AutoTxAction>();
             Actions.AddTo(Disposables);
+            IsDelayLog = false;
         }
 
         public void Add(AutoTxAction action)
@@ -55,6 +60,11 @@ namespace SerialDebugger.Comm
             {
                 Actions[0].IsActive.Value = true;
             }
+
+            // ログバッファ初期化
+            LogBuffer = new (DateTime, AutoTxActionType, object)[Actions.Count];
+            LogBufferTail = 0;
+            LogBufferHead = 0;
         }
 
         private void CheckAction(IList<Comm.TxFrame> TxFrames, AutoTxAction action)
@@ -96,6 +106,20 @@ namespace SerialDebugger.Comm
                 default:
                     throw new Exception("undefined type.");
             }
+        }
+
+        public void Log()
+        {
+            int i = LogBufferTail;
+            while (i != LogBufferHead)
+            {
+                var log = LogBuffer[i];
+                Logger.Add(log.Item1, $"Auto Send: {Logger.Byte2Str(log.Item3 as byte[])} (delay)");
+
+                i++;
+            }
+            LogBufferHead = 0;
+            LogBufferTail = LogBufferHead;
         }
 
         public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, int msec)
@@ -142,6 +166,7 @@ namespace SerialDebugger.Comm
             {
                 ActiveActionIndex = 0;
                 IsActive.Value = false;
+                IsDelayLog = false;
             }
             // Actionをすべて実行してJobを終了したときも先頭Actionを有効にしておく。
             Actions[ActiveActionIndex].IsActive.Value = true;
@@ -166,19 +191,35 @@ namespace SerialDebugger.Comm
             var action = Actions[ActiveActionIndex];
             var buff_idx = action.TxFrameBuffIndex.Value;
             // バッファ選択
-            byte[] buff;
+            byte[] buff = new byte[action.TxFrameLength];
             if (buff_idx == 0)
             {
-                buff = TxFrames[action.TxFrameIndex].TxData;
+                Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
             }
             else
             {
-                buff = TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx-1].TxData;
+                Buffer.BlockCopy(TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
             }
             // バッファ送信
             serial.Write(buff, 0, buff.Length);
 
-            Logger.Add($"Auto Send: {Logger.Byte2Str(buff)}");
+            // ログ追加
+            LogBuffer[LogBufferHead] = (DateTime.Now, AutoTxActionType.Send, buff);
+            LogBufferHead++;
+            if (LogBufferHead >= LogBuffer.Length)
+            {
+                LogBufferHead = 0;
+            }
+            if (LogBufferHead == LogBufferTail)
+            {
+                LogBufferTail++;
+            }
+            if (LogBufferTail >= LogBuffer.Length)
+            {
+                LogBufferHead = 0;
+            }
+            // ログ遅延出力チェック
+            IsDelayLog = action.IsDelayLog;
         }
 
         private bool ExecWait(int msec)
@@ -198,6 +239,8 @@ namespace SerialDebugger.Comm
                     action.WaitTimeBegin = -1;
                 }
             }
+            // ログ遅延出力チェック
+            IsDelayLog = action.IsDelayLog;
 
             return result;
         }
@@ -210,6 +253,9 @@ namespace SerialDebugger.Comm
             ActiveActionIndex = Actions[ActiveActionIndex].JumpTo.Value;
             // Actionを有効にする
             Actions[ActiveActionIndex].IsActive.Value = true;
+            // ログ遅延出力チェック
+            // 暫定:Jumpで強制ログ出力
+            IsDelayLog = false;
         }
 
         #region IDisposable Support

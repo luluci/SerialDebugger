@@ -23,11 +23,16 @@ namespace SerialDebugger.Log
 
         static public void Add(string log)
         {
+            Add(DateTime.Now, log);
+        }
+
+        static public void Add(DateTime date, string log)
+        {
             if (Impl.Log.Count >= Impl.LogMax)
             {
                 Impl.Log.RemoveAt(0);
             }
-            Impl.Log.Add($"{GetTimestamp()} : {log}");
+            Impl.Log.Add($"{GetTimestamp(date)} : {log}");
             MainWindow.log_scrl.ScrollToBottom();
         }
 

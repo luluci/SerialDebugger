@@ -454,6 +454,10 @@ namespace SerialDebugger
                     var msec = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
                     job.Exec(serialPort, TxFrames, (int)msec);
                 }
+                if (!job.IsDelayLog)
+                {
+                    job.Log();
+                }
             }
         }
         

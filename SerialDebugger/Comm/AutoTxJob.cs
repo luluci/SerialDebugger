@@ -19,10 +19,10 @@ namespace SerialDebugger.Comm
         public int Id { get; }
         public ReactivePropertySlim<string> Name { get; }
         public ReactivePropertySlim<bool> IsActive { get; set; }
-        public bool IsDelayLog { get; set; }
         public (DateTime, AutoTxActionType, object)[] LogBuffer;
         public int LogBufferHead;
         public int LogBufferTail;
+        public Utility.CycleTimer CycleTimer;
 
         public ReactiveCollection<AutoTxAction> Actions { get; set; }
 
@@ -31,14 +31,21 @@ namespace SerialDebugger.Comm
         public AutoTxJob(int id, string name, bool active = false)
         {
             Id = id;
+            CycleTimer = new Utility.CycleTimer();
 
             Name = new ReactivePropertySlim<string>(name);
             Name.AddTo(Disposables);
             IsActive = new ReactivePropertySlim<bool>(active);
+            IsActive.Subscribe((x) =>
+            {
+                if (x)
+                {
+                    CycleTimer.Start();
+                }
+            });
             IsActive.AddTo(Disposables);
             Actions = new ReactiveCollection<AutoTxAction>();
             Actions.AddTo(Disposables);
-            IsDelayLog = false;
         }
 
         public void Add(AutoTxAction action)
@@ -107,22 +114,8 @@ namespace SerialDebugger.Comm
                     throw new Exception("undefined type.");
             }
         }
-
-        public void Log()
-        {
-            int i = LogBufferTail;
-            while (i != LogBufferHead)
-            {
-                var log = LogBuffer[i];
-                Logger.Add(log.Item1, $"Auto Send: {Logger.Byte2Str(log.Item3 as byte[])} (delay)");
-
-                i++;
-            }
-            LogBufferHead = 0;
-            LogBufferTail = LogBufferHead;
-        }
-
-        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, int msec)
+        
+        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames)
         {
             bool check = true;
             while (check)
@@ -133,13 +126,16 @@ namespace SerialDebugger.Comm
                 {
                     case AutoTxActionType.Send:
                         ExecSend(serial, TxFrames);
+                        // 次のActionに移行
                         check = NextAction();
                         break;
 
                     case AutoTxActionType.Wait:
-                        var result = ExecWait(msec);
+                        // 時間経過判定
+                        var result = ExecWait();
                         if (result)
                         {
+                            // 時間経過していたら次のActionに移行
                             check = NextAction();
                         }
                         break;
@@ -166,21 +162,20 @@ namespace SerialDebugger.Comm
             {
                 ActiveActionIndex = 0;
                 IsActive.Value = false;
-                IsDelayLog = false;
             }
-            // Actionをすべて実行してJobを終了したときも先頭Actionを有効にしておく。
-            Actions[ActiveActionIndex].IsActive.Value = true;
 
-            // 次Actionチェック
+            // 
+            var next_action = Actions[ActiveActionIndex];
+            // Actionをすべて実行してJobを終了したときも先頭Actionを有効にしておく。
+            next_action.IsActive.Value = true;
+
             if (IsActive.Value)
             {
-                switch (Actions[ActiveActionIndex].Type)
+                // 次Actionチェック
+                // 即時実行判定
+                if (next_action.Immediate)
                 {
-                    case AutoTxActionType.Wait:
-                        return true;
-
-                    default:
-                        return false;
+                    return true;
                 }
             }
             return false;
@@ -191,57 +186,47 @@ namespace SerialDebugger.Comm
             var action = Actions[ActiveActionIndex];
             var buff_idx = action.TxFrameBuffIndex.Value;
             // バッファ選択
-            byte[] buff = new byte[action.TxFrameLength];
+            byte[] buff;
             if (buff_idx == 0)
             {
-                Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
+                //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
+                buff = TxFrames[action.TxFrameIndex].TxData;
             }
             else
             {
-                Buffer.BlockCopy(TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
+                //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
+                buff = TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData;
             }
             // バッファ送信
-            serial.Write(buff, 0, buff.Length);
-
-            // ログ追加
-            LogBuffer[LogBufferHead] = (DateTime.Now, AutoTxActionType.Send, buff);
-            LogBufferHead++;
-            if (LogBufferHead >= LogBuffer.Length)
-            {
-                LogBufferHead = 0;
-            }
-            if (LogBufferHead == LogBufferTail)
-            {
-                LogBufferTail++;
-            }
-            if (LogBufferTail >= LogBuffer.Length)
-            {
-                LogBufferHead = 0;
-            }
-            // ログ遅延出力チェック
-            IsDelayLog = action.IsDelayLog;
+            serial.Write(buff, action.TxFrameOffset, action.TxFrameLength);
+            // 処理終了からの時間を計測
+            CycleTimer.Start();
+            // Log出力
+            Logger.Add($"Auto Send: {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
         }
 
-        private bool ExecWait(int msec)
+        private bool ExecWait()
         {
             bool result = false;
 
             var action = Actions[ActiveActionIndex];
-            if (action.WaitTimeBegin == -1)
+            if (action.Immediate)
             {
-                action.WaitTimeBegin = msec;
+                // 即時実行の場合はスレッドを止める
+                CycleTimer.WaitThread(action.WaitTime.Value);
+                CycleTimer.Start();
+                result = true;
             }
             else
             {
-                if (msec - action.WaitTimeBegin >= action.WaitTime.Value)
+                // 即時実行でない場合はポーリング周期で時間計測
+                if (CycleTimer.WaitForMsec(action.WaitTime.Value) <= 0)
                 {
+                    CycleTimer.Start();
                     result = true;
-                    action.WaitTimeBegin = -1;
                 }
             }
-            // ログ遅延出力チェック
-            IsDelayLog = action.IsDelayLog;
-
+            
             return result;
         }
 
@@ -253,9 +238,6 @@ namespace SerialDebugger.Comm
             ActiveActionIndex = Actions[ActiveActionIndex].JumpTo.Value;
             // Actionを有効にする
             Actions[ActiveActionIndex].IsActive.Value = true;
-            // ログ遅延出力チェック
-            // 暫定:Jumpで強制ログ出力
-            IsDelayLog = false;
         }
 
         #region IDisposable Support

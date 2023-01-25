@@ -62,6 +62,7 @@ namespace SerialDebugger
         SerialPort serialPort;
         //定期処理関連
         DispatcherTimer AutoTxTimer;
+        bool IsAutoTxRunning = false;
         //
         bool IsRxRunning = false;
         Serial.RxAnalyzer rxAnalyzer = new Serial.RxAnalyzer();
@@ -443,26 +444,43 @@ namespace SerialDebugger
         }
 
 
-        private void AutoTxHandler(object sender, EventArgs e)
+        private async void AutoTxHandler(object sender, EventArgs e)
         {
-            // 自動送信定期処理
-            foreach (var job in AutoTxJobs)
+            AutoTxTimer.Stop();
+            IsAutoTxRunning = true;
+            var timer = new Utility.CycleTimer();
+            var cycle = serialSetting.vm.PollingCycle.Value;
+
+            try
             {
-                // 有効ジョブを実行
-                if (job.IsActive.Value)
+                while (IsAutoTxRunning)
                 {
-                    var msec = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-                    job.Exec(serialPort, TxFrames, (int)msec);
-                }
-                if (!job.IsDelayLog)
-                {
-                    job.Log();
+                    timer.Start();
+
+                    // 自動送信定期処理
+                    foreach (var job in AutoTxJobs)
+                    {
+                        // 有効ジョブを実行
+                        if (job.IsActive.Value)
+                        {
+                            job.Exec(serialPort, TxFrames);
+                        }
+                    }
+
+                    await timer.WaitAsync(cycle);
                 }
             }
+            catch (Exception exc)
+            {
+                Logger.AddException(exc);
+            }
+
         }
         
         private void TickEventFinish()
         {
+            IsAutoTxRunning = false;
+
             // 自動送信定期処理タイマ終了
             if (AutoTxTimer.IsEnabled)
             {

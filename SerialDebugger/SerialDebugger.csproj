@@ -88,6 +88,7 @@
     <Compile Include="Settings\Output.cs" />
     <Compile Include="Settings\Serial.cs" />
     <Compile Include="Settings\Settings.cs" />
+    <Compile Include="Utility\CycleTimer.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

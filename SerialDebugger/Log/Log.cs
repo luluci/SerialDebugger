@@ -93,6 +93,10 @@ namespace SerialDebugger.Log
         {
             return BitConverter.ToString(data);
         }
+        static public string Byte2Str(byte[] data, int offset, int length)
+        {
+            return BitConverter.ToString(data, offset, length);
+        }
 
     }
 

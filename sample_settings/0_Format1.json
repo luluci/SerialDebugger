@@ -91,14 +91,25 @@
 					]
 				},
 				{
-					"name": "Job_Auto_B",
+					"name": "Job_Auto_B_polling",
 					"active": false,
 					"actions": [
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 0, "tx_frame_buff_length": 3, "delay_log": false },
-						{ "type": "Wait", "wait_time": 8, "delay_log": false },
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 2, "tx_frame_buff_length": 3, "delay_log": false },
-						{ "type": "Wait", "wait_time": 300, "delay_log": false},
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 4, "tx_frame_buff_length": 3, "delay_log": false }
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 0, "tx_frame_buff_length": 3, "immediate": false },
+						{ "type": "Wait", "wait_time": 8, "immediate": false },
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 2, "tx_frame_buff_length": 3, "immediate": false },
+						{ "type": "Wait", "wait_time": 300, "immediate": false},
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 4, "tx_frame_buff_length": 3, "immediate": false }
+					]
+				},
+				{
+					"name": "Job_Auto_B_immediate",
+					"active": false,
+					"actions": [
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 0, "tx_frame_buff_length": 3, "immediate": true },
+						{ "type": "Wait", "wait_time": 8, "immediate": true },
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 2, "tx_frame_buff_length": 3, "immediate": true },
+						{ "type": "Wait", "wait_time": 300, "immediate": true},
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_offset": 4, "tx_frame_buff_length": 3, "immediate": true }
 					]
 				},
 				{

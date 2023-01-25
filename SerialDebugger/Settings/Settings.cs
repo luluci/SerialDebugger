@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using System.Reactive.Disposables;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System.IO;
@@ -17,6 +16,7 @@ using System.Windows;
 
 namespace SerialDebugger.Settings
 {
+    using Utility;
     using Logger = SerialDebugger.Log.Log;
 
     class SettingInfo

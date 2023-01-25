@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Reactive.Disposables;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
@@ -15,6 +14,8 @@ using System.Windows;
 
 namespace SerialDebugger.Settings
 {
+    using Utility;
+
     class Comm : BindableBase, IDisposable
     {
         public ReactiveCollection<TxFrame> Tx { get; set; }

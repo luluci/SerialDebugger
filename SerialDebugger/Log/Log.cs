@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Reactive.Disposables;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Log
 {
+    using Utility;
+
     static class Log
     {
         static private LogImpl Impl = new LogImpl();

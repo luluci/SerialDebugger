@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 using System.IO.Ports;
 using System.Reactive.Disposables;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Serial
 {
+    using Utility;
     using Setting = SerialDebugger.Settings.Settings;
 
     public class SettingsViewModel : BindableBase, IDisposable

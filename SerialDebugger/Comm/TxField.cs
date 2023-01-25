@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Reactive.Disposables;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System.Windows;
@@ -13,6 +12,8 @@ using System.Windows.Controls;
 
 namespace SerialDebugger.Comm
 {
+    using Utility;
+
     class TxField : BindableBase, IDisposable
     {
         // 

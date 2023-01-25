@@ -88,6 +88,7 @@
     <Compile Include="Settings\Output.cs" />
     <Compile Include="Settings\Serial.cs" />
     <Compile Include="Settings\Settings.cs" />
+    <Compile Include="Utility\BindableBase.cs" />
     <Compile Include="Utility\CycleTimer.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -141,9 +142,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2">
       <Version>1.0.1462.37</Version>
-    </PackageReference>
-    <PackageReference Include="Prism.Core">
-      <Version>8.1.97</Version>
     </PackageReference>
     <PackageReference Include="ReactiveProperty.WPF">
       <Version>8.2.0</Version>

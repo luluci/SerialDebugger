@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 using System.IO.Ports;
 using System.Reactive.Disposables;
-using Prism.Mvvm;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using System.Windows.Controls.Primitives;
@@ -18,6 +17,7 @@ using System.Threading;
 
 namespace SerialDebugger
 {
+    using Utility;
     using Logger = Log.Log;
     using Setting = Settings.Settings;
 

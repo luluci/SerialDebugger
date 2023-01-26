@@ -472,6 +472,7 @@ namespace SerialDebugger
             }
             catch (Exception exc)
             {
+                IsAutoTxRunning = false;
                 Logger.AddException(exc);
             }
 

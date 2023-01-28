@@ -398,7 +398,7 @@ namespace SerialDebugger.Comm
                         }
                         else
                         {
-                            // このパスはTxFieldの指定がきっかりバイト単位でないときに入る
+                            // このパスはFieldの指定がきっかりバイト単位でないときに入る
                             // 端数ビットを埋める
                             // 残りビット数
                             bit_rest = bitlength - bit;
@@ -600,7 +600,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeNameGui(TxField field, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeNameGui(Field field, string path, string text, int row, int col, int rowspan = -1, int colspan = -1)
         {
             //
             var tb = new TextBlock();
@@ -733,7 +733,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeTextBlockBindStyle2(TxField field, string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeTextBlockBindStyle2(Field field, string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
             var bind = new Binding(path);
@@ -786,20 +786,20 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeInputGui(TxField field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeInputGui(Field field, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             switch (field.InputType)
             {
-                case TxField.InputModeType.Dict:
-                case TxField.InputModeType.Unit:
-                case TxField.InputModeType.Time:
-                case TxField.InputModeType.Script:
+                case Field.InputModeType.Dict:
+                case Field.InputModeType.Unit:
+                case Field.InputModeType.Time:
+                case Field.InputModeType.Script:
                     return MakeInputGuiSelecter(field, field, path, row, col, rowspan, colspan);
-                case TxField.InputModeType.Edit:
+                case Field.InputModeType.Edit:
                     return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
-                case TxField.InputModeType.Checksum:
+                case Field.InputModeType.Checksum:
                     return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
-                case TxField.InputModeType.Fix:
+                case Field.InputModeType.Fix:
                 default:
                     return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
             }
@@ -877,7 +877,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeInputGuiSelecter(TxField field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeInputGuiSelecter(Field field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             UIElement gui_ptr;
             // 2行(2bit)以上の領域があれば直接編集GUI追加
@@ -954,20 +954,20 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeBackupBufferGui(TxField field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeBackupBufferGui(Field field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             switch (field.selecter.FieldRef.InputType)
             {
-                case TxField.InputModeType.Dict:
-                case TxField.InputModeType.Unit:
-                case TxField.InputModeType.Time:
-                case TxField.InputModeType.Script:
+                case Field.InputModeType.Dict:
+                case Field.InputModeType.Unit:
+                case Field.InputModeType.Time:
+                case Field.InputModeType.Script:
                     return MakeInputGuiSelecter(field.selecter.FieldRef, field, path, row, col, rowspan, colspan);
-                case TxField.InputModeType.Edit:
+                case Field.InputModeType.Edit:
                     return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
-                case TxField.InputModeType.Checksum:
+                case Field.InputModeType.Checksum:
                     return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
-                case TxField.InputModeType.Fix:
+                case Field.InputModeType.Fix:
                 default:
                     return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
             }

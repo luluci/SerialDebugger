@@ -26,7 +26,7 @@ namespace SerialDebugger.Comm
             // 16進数表示
             return $"{temp:X2}h";
             /*
-            var field = (TxField)value;
+            var field = (Field)value;
             // 16進数表示
             return $"{field.Value.Value:X}h";
             */
@@ -71,7 +71,7 @@ namespace SerialDebugger.Comm
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var val = (UInt64)value;
-            var field = (TxField)parameter;
+            var field = (Field)parameter;
             if ((val & mask) != 0)
             {
                 return Brushes.Salmon;
@@ -103,7 +103,7 @@ namespace SerialDebugger.Comm
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             UInt64 temp = Convert.ToUInt64((string)value, 16);
-            var field = parameter as TxField;
+            var field = parameter as Field;
             if ((field.Min <= temp) && (temp <= field.Max))
             {
                 return temp;
@@ -123,11 +123,11 @@ namespace SerialDebugger.Comm
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            //var temp = ((ReactivePropertySlim<TxField.ChangeStates>)value).Value;
-            var temp = (TxField.ChangeStates)value;
+            //var temp = ((ReactivePropertySlim<Field.ChangeStates>)value).Value;
+            var temp = (Field.ChangeStates)value;
             switch (temp)
             {
-                case TxField.ChangeStates.Changed:
+                case Field.ChangeStates.Changed:
                     return "確定";
                 default:
                     return "送信";
@@ -151,11 +151,11 @@ namespace SerialDebugger.Comm
 
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            //var temp = ((ReactivePropertySlim<TxField.ChangeStates>)value).Value;
-            var temp = (TxField.ChangeStates)value;
+            //var temp = ((ReactivePropertySlim<Field.ChangeStates>)value).Value;
+            var temp = (Field.ChangeStates)value;
             switch (temp)
             {
-                case TxField.ChangeStates.Changed:
+                case Field.ChangeStates.Changed:
                     return ChangedColor;
                 default:
                     return FixedColor;

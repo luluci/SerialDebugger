@@ -496,7 +496,7 @@ namespace SerialDebugger
         {
             switch (frame.ChangeState.Value)
             {
-                case Comm.TxField.ChangeStates.Changed:
+                case Comm.Field.ChangeStates.Changed:
                     // 変更内容をシリアル通信データに反映
                     SerialTxBufferFix(frame);
                     break;
@@ -511,7 +511,7 @@ namespace SerialDebugger
         {
             switch (frame.ChangeState.Value)
             {
-                case Comm.TxField.ChangeStates.Changed:
+                case Comm.Field.ChangeStates.Changed:
                     // 変更内容をシリアル通信データに反映
                     SerialTxBufferFix(frame);
                     break;
@@ -530,10 +530,10 @@ namespace SerialDebugger
             // 変更フラグを下す
             foreach (var field in frame.Fields)
             {
-                field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                field.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
             }
             //
-            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+            frame.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
         }
         private void SerialTxBufferFix(Comm.TxBackupBuffer frame)
         {
@@ -542,10 +542,10 @@ namespace SerialDebugger
             // 変更フラグを下す
             foreach (var field in frame.Fields)
             {
-                field.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+                field.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
             }
             //
-            frame.ChangeState.Value = Comm.TxField.ChangeStates.Fixed;
+            frame.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
         }
 
         private void SerialWrite(byte[] data)

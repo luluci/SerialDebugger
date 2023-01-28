@@ -21,7 +21,7 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// 表示データ
         /// </summary>
-        public ReactiveCollection<TxField> Fields { get; set; }
+        public ReactiveCollection<Field> Fields { get; set; }
         /// <summary>
         /// 送信データバイトシーケンス
         /// </summary>
@@ -35,7 +35,7 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// TxBackupBuffer全体の変更状況
         /// </summary>
-        public ReactivePropertySlim<TxField.ChangeStates> ChangeState { get; set; }
+        public ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
         //
         //public ReactivePropertySlim<Serial.UpdateTxBuffMsg> UpdateMsg { get; set; }
 
@@ -47,7 +47,7 @@ namespace SerialDebugger.Comm
 
             //UpdateMsg = new ReactivePropertySlim<Serial.UpdateTxBuffMsg>();
             //UpdateMsg.AddTo(Disposables);
-            Fields = new ReactiveCollection<TxField>();
+            Fields = new ReactiveCollection<Field>();
             Fields
                 .ObserveElementObservableProperty(x => x.Value).Subscribe(x =>
                 {
@@ -61,7 +61,7 @@ namespace SerialDebugger.Comm
             Fields
                 .ObserveElementObservableProperty(x => x.ChangeState).Subscribe(x =>
                 {
-                    ChangeState.Value = TxField.ChangeStates.Changed;
+                    ChangeState.Value = Field.ChangeStates.Changed;
                 });
             Fields.AddTo(Disposables);
             TxBuffer = new ReactiveCollection<byte>();
@@ -71,7 +71,7 @@ namespace SerialDebugger.Comm
             OnClickStore = new ReactiveCommand();
             OnClickStore.AddTo(Disposables);
             //
-            ChangeState = new ReactivePropertySlim<TxField.ChangeStates>();
+            ChangeState = new ReactivePropertySlim<Field.ChangeStates>();
             ChangeState.AddTo(Disposables);
 
             // Fields作成
@@ -79,24 +79,24 @@ namespace SerialDebugger.Comm
             for (int i = 0; i < frame.Fields.Count; i++)
             {
                 // field展開
-                // TxFieldからID,Name,Value,InputTypeを継承する
+                // FieldからID,Name,Value,InputTypeを継承する
                 var field = frame.Fields[i];
-                var bk_field = new TxField(
+                var bk_field = new Field(
                     field.Id,
                     field.Name,
                     field.InnerFields.ToArray(),
                     field.Value.Value,
                     field.InputType,
-                    new TxField.Selecter(field)
+                    new Field.Selecter(field)
                 );
                 // ComboBoxで入力するInputTypeでは
                 // Selectsの参照を取得しておき表示に流用する
                 switch (field.InputType)
                 {
-                    case TxField.InputModeType.Dict:
-                    case TxField.InputModeType.Unit:
-                    case TxField.InputModeType.Time:
-                    case TxField.InputModeType.Script:
+                    case Field.InputModeType.Dict:
+                    case Field.InputModeType.Unit:
+                    case Field.InputModeType.Time:
+                    case Field.InputModeType.Script:
                         bk_field.MakeSelectModeRefer();
                         break;
 
@@ -118,7 +118,7 @@ namespace SerialDebugger.Comm
         /// Fieldsが更新されたとき、送信バイトシーケンスに反映する
         /// </summary>
         /// <param name="field"></param>
-        private void Update(TxField field)
+        private void Update(Field field)
         {
             // 更新されたfieldをTxBufferに適用
             FrameRef.UpdateBuffer(field.selecter.FieldRef, field.Value.Value, TxBuffer);

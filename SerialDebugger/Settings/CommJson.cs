@@ -92,7 +92,7 @@ namespace SerialDebugger.Settings
             public string Name { get; set; } = string.Empty;
 
             [JsonPropertyName("fields")]
-            public IList<CommTxField> Fields { get; set; }
+            public IList<CommField> Fields { get; set; }
 
             [JsonPropertyName("backup_buffer_size")]
             public int BackupBufferSize { get; set; } = 0;
@@ -101,13 +101,13 @@ namespace SerialDebugger.Settings
             public IList<CommTxBackupBuffer> BackupBuffers { get; set; }
         }
 
-        public class CommTxField
+        public class CommField
         {
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
 
             [JsonPropertyName("multi_name")]
-            public IList<CommTxFieldMultiName> MultiNames { get; set; }
+            public IList<CommFieldMultiName> MultiNames { get; set; }
 
             [JsonPropertyName("bit_size")]
             public int BitSize { get; set; } = 0;
@@ -119,22 +119,22 @@ namespace SerialDebugger.Settings
             public string Type { get; set; } = string.Empty;
 
             [JsonPropertyName("unit")]
-            public CommTxFieldUnit Unit { get; set; }
+            public CommFieldUnit Unit { get; set; }
 
             [JsonPropertyName("dict")]
-            public IList<CommTxFieldDict> Dict { get; set; }
+            public IList<CommFieldDict> Dict { get; set; }
 
             [JsonPropertyName("time")]
-            public CommTxFieldTime Time { get; set; }
+            public CommFieldTime Time { get; set; }
 
             [JsonPropertyName("script")]
-            public CommTxFieldScript Script { get; set; }
+            public CommFieldScript Script { get; set; }
 
             [JsonPropertyName("checksum")]
-            public CommTxFieldChecksum Checksum { get; set; }
+            public CommFieldChecksum Checksum { get; set; }
         }
 
-        public class CommTxFieldMultiName
+        public class CommFieldMultiName
         {
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
@@ -143,7 +143,7 @@ namespace SerialDebugger.Settings
             public int BitSize { get; set; } = 0;
         }
 
-        public class CommTxFieldUnit
+        public class CommFieldUnit
         {
             [JsonPropertyName("unit")]
             public string Unit { get; set; } = string.Empty;
@@ -164,7 +164,7 @@ namespace SerialDebugger.Settings
             public string Format { get; set; } = string.Empty;
         }
 
-        public class CommTxFieldDict
+        public class CommFieldDict
         {
             [JsonPropertyName("value")]
             public UInt64 Value { get; set; } = 0;
@@ -173,7 +173,7 @@ namespace SerialDebugger.Settings
             public string Disp { get; set; } = string.Empty;
         }
 
-        public class CommTxFieldTime
+        public class CommFieldTime
         {
             [JsonPropertyName("elapse")]
             public double Elapse { get; set; } = 0;
@@ -188,7 +188,7 @@ namespace SerialDebugger.Settings
             public UInt64 ValueMin { get; set; } = 0;
         }
 
-        public class CommTxFieldScript
+        public class CommFieldScript
         {
             [JsonPropertyName("mode")]
             public string Mode { get; set; } = string.Empty;
@@ -201,7 +201,7 @@ namespace SerialDebugger.Settings
 
         }
 
-        public class CommTxFieldChecksum
+        public class CommFieldChecksum
         {
             [JsonPropertyName("begin")]
             public int Begin { get; set; } = 0;

@@ -14,7 +14,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    class TxField : BindableBase, IDisposable
+    class Field : BindableBase, IDisposable
     {
         // 
         public int Id { get; }
@@ -87,7 +87,7 @@ namespace SerialDebugger.Comm
             Checksum,   // チェックサム
 
             // 特殊Selecter
-            Refer,      // 参照:既存TxFieldの内容を流用する。値は個別に保持する
+            Refer,      // 参照:既存Fieldの内容を流用する。値は個別に保持する
         };
         public InputModeType InputType { get; private set; }
 
@@ -113,7 +113,7 @@ namespace SerialDebugger.Comm
             public int Count { get; }
             public string Script { get; }
             // Refer
-            public TxField FieldRef { get; }
+            public Field FieldRef { get; }
 
             public Selecter((UInt64, string)[] dict)
             {
@@ -149,7 +149,7 @@ namespace SerialDebugger.Comm
                 Script = script;
             }
 
-            public Selecter(TxField field)
+            public Selecter(Field field)
             {
                 Type = InputModeType.Refer;
                 FieldRef = field;
@@ -208,14 +208,14 @@ namespace SerialDebugger.Comm
         /// <param name="value"></param>
         /// <param name="type"></param>
         /// <param name="selecter"></param>
-        public TxField(int id, ChecksumNode node)
+        public Field(int id, ChecksumNode node)
             : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, InputModeType.Checksum, null)
         {
             Checksum = node;
             IsChecksum = true;
         }
         
-        public TxField(int id, string name, InnerField[] innerFields, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
+        public Field(int id, string name, InnerField[] innerFields, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
             this.selecter = selecter;
             Id = id;
@@ -310,23 +310,23 @@ namespace SerialDebugger.Comm
             int index = -1;
             switch (InputType)
             {
-                case TxField.InputModeType.Dict:
-                case TxField.InputModeType.Script:
+                case Field.InputModeType.Dict:
+                case Field.InputModeType.Script:
                     if (SelectsValueCheckTable.TryGetValue(value, out index))
                     {
                         //SelectIndexSelects.Value = index;
                     }
                     break;
-                case TxField.InputModeType.Unit:
-                case TxField.InputModeType.Time:
+                case Field.InputModeType.Unit:
+                case Field.InputModeType.Time:
                     if (SelectsValueMin <= value && value <= SelectsValueMax)
                     {
                         index = (int)(value - SelectsValueMin);
                     }
                     break;
-                case TxField.InputModeType.Edit:
-                case TxField.InputModeType.Fix:
-                case TxField.InputModeType.Checksum:
+                case Field.InputModeType.Edit:
+                case Field.InputModeType.Fix:
+                case Field.InputModeType.Checksum:
                 default:
                     break;
             }
@@ -334,7 +334,7 @@ namespace SerialDebugger.Comm
         }
 
         /// <summary>
-        /// 自TxFieldの表示名を取得する
+        /// 自Fieldの表示名を取得する
         /// </summary>
         /// <returns></returns>
         public string GetDisp()
@@ -353,13 +353,13 @@ namespace SerialDebugger.Comm
         {
             switch (InputType)
             {
-                case TxField.InputModeType.Dict:
-                case TxField.InputModeType.Unit:
-                case TxField.InputModeType.Time:
-                case TxField.InputModeType.Script:
+                case Field.InputModeType.Dict:
+                case Field.InputModeType.Unit:
+                case Field.InputModeType.Time:
+                case Field.InputModeType.Script:
                     return Selects[index].Disp;
-                case TxField.InputModeType.Edit:
-                case TxField.InputModeType.Fix:
+                case Field.InputModeType.Edit:
+                case Field.InputModeType.Fix:
                 default:
                     return $"0x{value:X}";
             }
@@ -576,7 +576,7 @@ namespace SerialDebugger.Comm
 
         public void MakeSelectModeRefer()
         {
-            // InputTypeは参照先TxFieldと同じとするので更新しない
+            // InputTypeは参照先Fieldと同じとするので更新しない
             // InputType = InputModeType.Refer;
             // 空のオブジェクトを持っているので解放しておく
             Selects.Dispose();

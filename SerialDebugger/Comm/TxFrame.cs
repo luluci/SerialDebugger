@@ -23,9 +23,9 @@ namespace SerialDebugger.Comm
         // 
         string Name { get; }
         /// <summary>
-        /// 送信フレーム: TxField集合体
+        /// 送信フレーム: Field集合体
         /// </summary>
-        ReactiveCollection<TxField> Fields { get; set; }
+        ReactiveCollection<Field> Fields { get; set; }
         /// <summary>
         /// 送信バイトシーケンス
         /// </summary>
@@ -33,7 +33,7 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// TxFrame全体の変更状況
         /// </summary>
-        ReactivePropertySlim<TxField.ChangeStates> ChangeState { get; set; }
+        ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
     }
 
     class TxFrame : BindableBase, ITxFrame, IDisposable
@@ -42,9 +42,9 @@ namespace SerialDebugger.Comm
         // 
         public string Name { get; }
         /// <summary>
-        /// 送信フレーム: TxField集合体
+        /// 送信フレーム: Field集合体
         /// </summary>
-        public ReactiveCollection<TxField> Fields { get; set; }
+        public ReactiveCollection<Field> Fields { get; set; }
         /// <summary>
         /// 送信フレームバイト長
         /// </summary>
@@ -67,7 +67,7 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// TxFrame全体の変更状況
         /// </summary>
-        public ReactivePropertySlim<TxField.ChangeStates> ChangeState { get; set; }
+        public ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
         //
         //public ReactivePropertySlim<Serial.UpdateTxBuffMsg> UpdateMsg { get; set; }
 
@@ -82,7 +82,7 @@ namespace SerialDebugger.Comm
 
             //UpdateMsg = new ReactivePropertySlim<Serial.UpdateTxBuffMsg>();
             //UpdateMsg.AddTo(Disposables);
-            Fields = new ReactiveCollection<TxField>();
+            Fields = new ReactiveCollection<Field>();
             Fields
                 .ObserveElementObservableProperty(x => x.Value).Subscribe(x =>
                 {
@@ -96,7 +96,7 @@ namespace SerialDebugger.Comm
             Fields
                 .ObserveElementObservableProperty(x => x.ChangeState).Subscribe(x =>
                 {
-                    ChangeState.Value = TxField.ChangeStates.Changed;
+                    ChangeState.Value = Field.ChangeStates.Changed;
                 });
             Fields
                 .ObserveElementObservableProperty(x => x.OnMouseDown).Subscribe((x) =>
@@ -141,11 +141,11 @@ namespace SerialDebugger.Comm
             });
             BackupBuffer.AddTo(Disposables);
             //
-            ChangeState = new ReactivePropertySlim<TxField.ChangeStates>();
+            ChangeState = new ReactivePropertySlim<Field.ChangeStates>();
             ChangeState.AddTo(Disposables);
         }
 
-        public void Add(TxField field)
+        public void Add(Field field)
         {
             Fields.Add(field);
         }
@@ -246,7 +246,7 @@ namespace SerialDebugger.Comm
         /// Fieldsが更新されたとき、送信バイトシーケンスに反映する
         /// </summary>
         /// <param name="field"></param>
-        private void Update(TxField field)
+        private void Update(Field field)
         {
             // 更新されたfieldをTxBufferに適用
             UpdateBuffer(field, field.Value.Value, TxBuffer);
@@ -271,7 +271,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="field"></param>
         /// <param name="buffer"></param>
-        public void UpdateBuffer(TxField field, UInt64 value, IList<byte> buffer)
+        public void UpdateBuffer(Field field, UInt64 value, IList<byte> buffer)
         {
             UInt64 mask = field.Mask;
             UInt64 inv_mask = field.InvMask;
@@ -329,17 +329,17 @@ namespace SerialDebugger.Comm
             // method
             switch (cs.Checksum.Method)
             {
-                case TxField.ChecksumMethod.cmpl_2:
+                case Field.ChecksumMethod.cmpl_2:
                     // 2の補数
                     sum = ~sum + 1;
                     sum &= cs.Mask;
                     break;
-                case TxField.ChecksumMethod.cmpl_1:
+                case Field.ChecksumMethod.cmpl_1:
                     // 1の補数
                     sum = ~sum;
                     sum &= cs.Mask;
                     break;
-                case TxField.ChecksumMethod.None:
+                case Field.ChecksumMethod.None:
                 default:
                     // 総和
                     sum &= cs.Mask;
@@ -349,12 +349,12 @@ namespace SerialDebugger.Comm
             return sum;
         }
 
-        public void DoDragDrop(TxField field, System.Windows.Input.MouseButtonEventArgs e)
+        public void DoDragDrop(Field field, System.Windows.Input.MouseButtonEventArgs e)
         {
             DragDrop.DoDragDrop(e.Source as TextBlock, MakeDragDropStr(field), DragDropEffects.Copy);
         }
 
-        public string MakeDragDropStr(TxField field)
+        public string MakeDragDropStr(Field field)
         {
             // DragDrop設定参照取得
             var dd = Setting.Data.Output.DragDrop;

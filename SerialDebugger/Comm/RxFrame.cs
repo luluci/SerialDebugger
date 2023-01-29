@@ -28,6 +28,9 @@ namespace SerialDebugger.Comm
         public int Length { get; set; } = 0;
         public int BitLength { get; set; } = 0;
 
+        // 表示用バイト長
+        public int DispMaxLength { get; set; } = 0;
+
         public ReactiveCollection<RxPattern> Patterns { get; set; }
 
         public RxFrame(int id, string name)
@@ -63,6 +66,7 @@ namespace SerialDebugger.Comm
             int disp_len = 0;
             foreach (var f in Fields)
             {
+                f.Value.Value = 0;
                 // Field位置セット
                 f.BitPos = bit_pos;
                 f.BytePos = byte_pos;
@@ -100,6 +104,8 @@ namespace SerialDebugger.Comm
             {
                 Length++;
             }
+            //
+            DispMaxLength = Length;
         }
 
         public void BuildPattern()
@@ -230,6 +236,11 @@ namespace SerialDebugger.Comm
                     value = 0;
                     mask = 0;
                     bit_pos = 0;
+                }
+
+                if (DispMaxLength < pattern.Analyzer.Rules.Count)
+                {
+                    DispMaxLength = pattern.Analyzer.Rules.Count;
                 }
             }
 

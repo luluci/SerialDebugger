@@ -225,6 +225,7 @@ namespace SerialDebugger.Comm
             }
             // RxFrame GUI表示
             MakeBodyFrame(setting, grid, frame, frame_no);
+            MakeBodyPattern(setting, grid, frame, frame_no);
 
             /*
             {
@@ -332,6 +333,7 @@ namespace SerialDebugger.Comm
 
             return width;
         }
+
         private static void MakeBodyFrame(Settings.SettingInfo setting, Grid grid, RxFrame frame, int frame_no)
         {
             int bitlength = frame.Length * 8;
@@ -405,6 +407,78 @@ namespace SerialDebugger.Comm
                 {
                     bit_pos = 0;
                     byte_pos++;
+                }
+            }
+        }
+
+        private static void MakeBodyPattern(Settings.SettingInfo setting, Grid grid, RxFrame frame, int frame_no)
+        {
+            int bitlength = frame.DispMaxLength * 8;
+            int col_offset = 0;
+
+            // Pattern列作成
+            for (int ptn_idx = 0; ptn_idx < frame.Patterns.Count; ptn_idx++)
+            {
+                var pattern = frame.Patterns[ptn_idx];
+                col_offset = ColOrder[(int)SettingGui.Col.TxBuffer] + (3 * ptn_idx);
+                int col_bit = col_offset + 1;
+                int col_value = col_offset + 2;
+
+                // Pattern表示
+                int use_bit_no = 0;
+                int use_bit_pos = 0;
+                int bit_no = 0;
+                int bit_pos = 0;
+                for (int match_idx = 0; match_idx < pattern.Matches.Count; match_idx++)
+                {
+                    //
+                    var match = pattern.Matches[match_idx];
+                    // Bit列作成
+                    switch (match.Type)
+                    {
+                        case RxMatchType.Any:
+                        case RxMatchType.Value:
+                            for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
+                            {
+                                grid.Children.Add(Gui.MakeTextBlockBindStyle2(match.FieldRef, $"{bit_no + bit}", $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}].Value", bit, bit_pos + bit, col_bit));
+                            }
+                            use_bit_no = match.FieldRef.BitSize;
+                            use_bit_pos = match.FieldRef.BitSize;
+                            break;
+
+                        default:
+                        case RxMatchType.Timeout:
+                        case RxMatchType.Script:
+                            // バイト単位でまとめて表示
+                            grid.Children.Add(Gui.MakeTextBlockStyle1($"-", bit_pos, col_bit));
+                            use_bit_no = 0;
+                            use_bit_pos = 1;
+                            break;
+                    }
+                    // Pattern値表示
+                    string disp;
+                    switch (match.Type)
+                    {
+                        case RxMatchType.Any:
+                            disp = "<Any>";
+                            break;
+                        case RxMatchType.Value:
+                            disp = match.FieldRef.MakeDispByValue(match.Value);
+                            break;
+                        case RxMatchType.Timeout:
+                            disp = $"Timeout[{match.Msec} ms]";
+                            break;
+                        case RxMatchType.Script:
+                            disp = $"Script[{match.Script}]";
+                            break;
+                        default:
+                            disp = "未定義MatchType";
+                            break;
+                    }
+                    grid.Children.Add(MakeNameGui(match.FieldRef, $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}]", disp, bit_pos, col_value, use_bit_pos));
+                    //
+                    bit_no += use_bit_no;
+                    bit_pos += use_bit_pos;
                 }
             }
         }

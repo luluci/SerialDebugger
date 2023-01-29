@@ -365,6 +365,23 @@ namespace SerialDebugger.Comm
             }
         }
 
+        public string MakeDispByValue(UInt64 value)
+        {
+            switch (InputType)
+            {
+                case Field.InputModeType.Dict:
+                case Field.InputModeType.Unit:
+                case Field.InputModeType.Time:
+                case Field.InputModeType.Script:
+                    var index = GetSelectsIndex(value);
+                    return Selects[index].Disp;
+                case Field.InputModeType.Edit:
+                case Field.InputModeType.Fix:
+                default:
+                    return $"0x{value:X}";
+            }
+        }
+
         private async Task MakeSelectModeAsync(Selecter selecter)
         {
             int index;

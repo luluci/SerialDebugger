@@ -106,6 +106,7 @@ namespace SerialDebugger.Comm
             Fields.AddTo(Disposables);
             TxBuffer = new ReactiveCollection<byte>();
             TxBuffer.AddTo(Disposables);
+            TxData = new byte[0];
             BackupBuffer = new ReactiveCollection<TxBackupBuffer>();
             //BackupBuffer.ObserveElementObservableProperty(x => x.UpdateMsg).Subscribe(x =>
             // {

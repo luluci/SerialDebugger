@@ -51,6 +51,12 @@ namespace SerialDebugger.Settings
             {
                 var f = await MakeTxFrameAsync(i, frame);
                 Tx.Add(f);
+
+                if (TxNameDict.TryGetValue(f.Name, out int value))
+                {
+                    // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
+                    throw new Exception("tx.frame.nameに同じ名前が存在します。ユニークな名前を設定してください。");
+                }
                 TxNameDict.Add(f.Name, f.Id);
                 i++;
             }
@@ -64,6 +70,12 @@ namespace SerialDebugger.Settings
                 {
                     var f = await MakeRxFrameAsync(i, frame);
                     Rx.Add(f);
+
+                    if (RxNameDict.TryGetValue(f.Name, out int value))
+                    {
+                        // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
+                        throw new Exception("rx.frame.nameに同じ名前が存在します。ユニークな名前を設定してください。");
+                    }
                     RxNameDict.Add(f.Name, f.Id);
                     i++;
                 }

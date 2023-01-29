@@ -121,13 +121,16 @@ namespace SerialDebugger.Comm
                     var col_space = new ColumnDefinition();
                     grid.ColumnDefinitions.Add(col_space);
                     col_space.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.Spacer]);
-                    // bit/valueを表示
+                    // bit/input/valueを表示
                     var col_ptn_bit = new ColumnDefinition();
-                    var col_ptn_value = new ColumnDefinition();
+                    var col_ptn_disp = new ColumnDefinition();
+                    var col_ptn_byte = new ColumnDefinition();
                     grid.ColumnDefinitions.Add(col_ptn_bit);
-                    grid.ColumnDefinitions.Add(col_ptn_value);
+                    grid.ColumnDefinitions.Add(col_ptn_disp);
+                    grid.ColumnDefinitions.Add(col_ptn_byte);
                     col_ptn_bit.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.BitIndex]);
-                    col_ptn_value.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput]);
+                    col_ptn_disp.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput]);
+                    col_ptn_byte.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.TxBytes]);
                 }
                 
                 // 行作成
@@ -147,6 +150,7 @@ namespace SerialDebugger.Comm
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.Spacer];
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.BitIndex];
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput];
+                    width += setting.Gui.ColWidth[(int)SettingGui.Col.TxBytes];
                 }
             }
 
@@ -163,13 +167,15 @@ namespace SerialDebugger.Comm
             for (int i = 0; i < frame.Patterns.Count; i++)
             {
                 var pattern = frame.Patterns[i];
-                col_offset = ColOrder[(int)SettingGui.Col.TxBuffer] + (3 * i);
+                col_offset = ColOrder[(int)SettingGui.Col.TxBuffer] + (4 * i);
                 // 有効無効切り替えチェックボックス/表示ラベル
-                grid.Children.Add(MakeCheckboxEnable(pattern, $"RxFrames[{frame_no}].Patterns[{i}]", 0, col_offset+1, -1, 2));
+                grid.Children.Add(MakeCheckboxEnable(pattern, $"RxFrames[{frame_no}].Patterns[{i}]", 0, col_offset+1, -1, 3));
                 // column作成: bit
-                grid.Children.Add(Gui.MakeTextBlockStyle1("Bit", 1, col_offset+1));
+                grid.Children.Add(Gui.MakeTextBlockStyle1("Bit", 1, col_offset + 1));
                 // column作成: input
-                grid.Children.Add(Gui.MakeTextBlockStyle1("Pattern", 1, col_offset+2));
+                grid.Children.Add(Gui.MakeTextBlockStyle1("Pattern", 1, col_offset + 2));
+                // column作成: value
+                grid.Children.Add(Gui.MakeTextBlockStyle1("Match", 1, col_offset + 3));
             }
             
             return width;
@@ -199,11 +205,14 @@ namespace SerialDebugger.Comm
                     col_space.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.Spacer]);
                     // bit/valueを表示
                     var col_ptn_bit = new ColumnDefinition();
-                    var col_ptn_value = new ColumnDefinition();
+                    var col_ptn_disp = new ColumnDefinition();
+                    var col_ptn_byte = new ColumnDefinition();
                     grid.ColumnDefinitions.Add(col_ptn_bit);
-                    grid.ColumnDefinitions.Add(col_ptn_value);
+                    grid.ColumnDefinitions.Add(col_ptn_disp);
+                    grid.ColumnDefinitions.Add(col_ptn_byte);
                     col_ptn_bit.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.BitIndex]);
-                    col_ptn_value.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput]);
+                    col_ptn_disp.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput]);
+                    col_ptn_byte.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.TxBytes]);
                 }
                 // Rows
                 for (int bit = 0; bit < bitlength; bit++)
@@ -221,116 +230,13 @@ namespace SerialDebugger.Comm
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.Spacer];
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.BitIndex];
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput];
+                    width += setting.Gui.ColWidth[(int)SettingGui.Col.TxBytes];
                 }
             }
             // RxFrame GUI表示
             MakeBodyFrame(setting, grid, frame, frame_no);
             MakeBodyPattern(setting, grid, frame, frame_no);
-
-            /*
-            {
-                // 通信フレーム作成
-                int bit_rest = 0;
-                int bit_pos = 0;
-                int byte_pos = 0;
-                int field_pos = 0;
-                bool is_byte = false;
-                for (int bit = 0; bit < bitlength; bit++)
-                {
-                    // Byte列作成
-                    is_byte = ((bit % 8) == 0);
-                    if (bit_pos == 0)
-                    {
-                        grid.Children.Add(Gui.MakeTextBlockStyle1($"{byte_pos}", bit, setting.Gui.ColOrder[(int)SettingGui.Col.ByteIndex], 8));
-                    }
-                    // field情報作成
-                    if (bit_rest == 0)
-                    {
-                        if (field_pos < frame.Fields.Count)
-                        {
-                            var field = frame.Fields[field_pos];
-                            // Bit列作成
-                            if (is_byte && (field.BitSize % 8) == 0 && (field.InnerFields.Count == 1))
-                            {
-                                // バイト境界に配置、かつ、バイト単位データのとき、かつ、フィールド内で名前分割しないとき、
-                                // バイト単位でまとめて表示
-                                grid.Children.Add(Gui.MakeTextBlockStyle1($"-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.BitIndex], field.BitSize));
-                            }
-                            else
-                            {
-                                // その他は各ビット情報を出力
-                                for (int i = 0; i < field.BitSize; i++)
-                                {
-                                    grid.Children.Add(Gui.MakeTextBlockBindStyle2(field, $"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit + i, setting.Gui.ColOrder[(int)SettingGui.Col.BitIndex]));
-                                }
-                            }
-                            // Value列作成
-                            grid.Children.Add(Gui.MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldValue], field.BitSize));
-                            // Name列作成
-                            int inner_idx = 0;
-                            foreach (var inner in field.InnerFields)
-                            {
-                                grid.Children.Add(MakeNameGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", inner.Name, bit + inner_idx, setting.Gui.ColOrder[(int)SettingGui.Col.FieldName], inner.BitSize));
-                                inner_idx += inner.BitSize;
-                            }
-                            //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
-                            // Input列作成
-                            grid.Children.Add(Gui.MakeInputGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldInput], field.BitSize));
-                            // BackupBuffer列作成
-                            for (int i = 0; i < frame.BackupBufferLength; i++)
-                            {
-                                var bk_buffer = frame.BackupBuffer[i];
-                                var bk_field = bk_buffer.Fields[field_pos];
-                                grid.Children.Add(MakeBackupBufferGui(bk_field, bk_buffer, $"TxFrames[{frame_no}].BackupBuffer[{i}].Fields[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i, field.BitSize));
-                            }
-
-                            // 次周回設定処理
-                            field_pos++;
-                            bit_rest = field.BitSize;
-                        }
-                        else
-                        {
-                            // このパスはFieldの指定がきっかりバイト単位でないときに入る
-                            // 端数ビットを埋める
-                            // 残りビット数
-                            bit_rest = bitlength - bit;
-                            // Bit列作成
-                            for (int i = 0; i < bit_rest; i++)
-                            {
-                                grid.Children.Add(Gui.MakeTextBlockStyle1($"{bit + i}", bit + i, setting.Gui.ColOrder[(int)SettingGui.Col.BitIndex]));
-                            }
-                            // Value列作成
-                            grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldValue], bit_rest));
-                            // Name列作成
-                            grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldName], bit_rest));
-                            // Input列作成
-                            grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldInput], bit_rest));
-                            // BackupBuffer列作成
-                            for (int i = 0; i < frame.BackupBufferLength; i++)
-                            {
-                                grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i, bit_rest));
-                            }
-                        }
-                    }
-                    // 送信バイトシーケンス
-                    if (bit_pos == 0)
-                    {
-                        grid.Children.Add(Gui.MakeTextBlockBindStyle2($"TxFrames[{frame_no}].TxBuffer[{byte_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes], 8));
-                    }
-                    //
-                    bit_rest--;
-                    //
-                    bit_pos++;
-                    if (bit_pos >= 8)
-                    {
-                        bit_pos = 0;
-                        byte_pos++;
-                    }
-                }
-
-            }
-            */
-
+            
             return width;
         }
 
@@ -396,7 +302,7 @@ namespace SerialDebugger.Comm
                             grid.Children.Add(Gui.MakeTextBlockStyle1($"{bit + i}", bit + i, ColOrder[(int)SettingGui.Col.BitIndex]));
                         }
                         // Name列作成
-                        grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldName], bit_rest));
+                        grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, ColOrder[(int)SettingGui.Col.FieldName], bit_rest));
                     }
                 }
                 //
@@ -420,15 +326,17 @@ namespace SerialDebugger.Comm
             for (int ptn_idx = 0; ptn_idx < frame.Patterns.Count; ptn_idx++)
             {
                 var pattern = frame.Patterns[ptn_idx];
-                col_offset = ColOrder[(int)SettingGui.Col.TxBuffer] + (3 * ptn_idx);
+                col_offset = ColOrder[(int)SettingGui.Col.TxBuffer] + (4 * ptn_idx);
                 int col_bit = col_offset + 1;
-                int col_value = col_offset + 2;
+                int col_disp = col_offset + 2;
+                int col_byte = col_offset + 3;
 
                 // Pattern表示
                 int use_bit_no = 0;
                 int use_bit_pos = 0;
                 int bit_no = 0;
                 int bit_pos = 0;
+                int col_width = 1;
                 for (int match_idx = 0; match_idx < pattern.Matches.Count; match_idx++)
                 {
                     //
@@ -437,6 +345,13 @@ namespace SerialDebugger.Comm
                     switch (match.Type)
                     {
                         case RxMatchType.Any:
+                            for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
+                            {
+                                grid.Children.Add(Gui.MakeTextBlockStyleDisable($"{bit_no + bit}", bit_pos + bit, col_bit));
+                            }
+                            use_bit_no = match.FieldRef.BitSize;
+                            use_bit_pos = match.FieldRef.BitSize;
+                            break;
                         case RxMatchType.Value:
                             for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
                             {
@@ -461,24 +376,61 @@ namespace SerialDebugger.Comm
                     {
                         case RxMatchType.Any:
                             disp = "<Any>";
+                            col_width = 1;
                             break;
                         case RxMatchType.Value:
                             disp = match.FieldRef.MakeDispByValue(match.Value);
+                            col_width = 1;
                             break;
                         case RxMatchType.Timeout:
                             disp = $"Timeout[{match.Msec} ms]";
+                            col_width = 2;
                             break;
                         case RxMatchType.Script:
                             disp = $"Script[{match.Script}]";
+                            col_width = 2;
                             break;
                         default:
                             disp = "未定義MatchType";
                             break;
                     }
-                    grid.Children.Add(MakeNameGui(match.FieldRef, $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}]", disp, bit_pos, col_value, use_bit_pos));
+                    grid.Children.Add(MakeNameGui(match.FieldRef, $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}]", disp, bit_pos, col_disp, use_bit_pos, col_width));
                     //
                     bit_no += use_bit_no;
                     bit_pos += use_bit_pos;
+                }
+                // bit残りの表示ケア
+                int bit_rest = bit_no % 8;
+                if (bit_rest > 0)
+                {
+                    bit_rest = 8 - bit_rest;
+                    // bit表示
+                    for (int bit = 0; bit < bit_rest; bit++)
+                    {
+                        grid.Children.Add(Gui.MakeTextBlockStyleDisable($"{bit_no + bit}", bit_pos + bit, col_bit));
+                    }
+                    // Pattern値表示
+                    grid.Children.Add(Gui.MakeTextBlockStyle1("<any>", bit_pos, col_disp, bit_rest));
+                }
+                // Analyze/Match値表示
+                bit_pos = 0;
+                for (int idx = 0; idx < pattern.Analyzer.Rules.Count; idx++)
+                {
+                    var rule = pattern.Analyzer.Rules[idx];
+                    switch (rule.Type)
+                    {
+                        case RxAnalyzeRuleType.Value:
+                            string disp = $"0x{rule.Value:X2}";
+                            grid.Children.Add(Gui.MakeTextBlockStyle1(disp, bit_pos, col_byte, 8));
+                            bit_pos += 8;
+                            break;
+
+                        case RxAnalyzeRuleType.Script:
+                        case RxAnalyzeRuleType.Timeout:
+                        default:
+                            bit_pos++;
+                            break;
+                    }
                 }
             }
         }

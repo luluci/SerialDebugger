@@ -139,6 +139,35 @@ namespace SerialDebugger.Comm
         }
 
         /// <summary>
+        /// キャプション的な部分の部品
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        public static UIElement MakeTextBlockStyleDisable(string text, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            //
+            var tb = new TextBlock();
+            tb.Text = text;
+            tb.Background = SystemColors.ControlDarkBrush;
+            tb.TextAlignment = TextAlignment.Center;
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+        /// <summary>
         /// 強調キャプション的な部分の部品
         /// Frame名称
         /// </summary>

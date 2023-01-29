@@ -122,6 +122,7 @@
 					"patterns": [
 						{
 							"name": "Rx_Pattern_1",
+							"active": true,
 							"matches": [
 								{ "type": "any" },
 								{ "value": 2 },
@@ -143,6 +144,59 @@
 								{ "type": "timeout", "msec": 100 },
 								{ "msec": 100 },
 								{ "script": "func" }
+							]
+						}
+					]
+				},
+				{
+					"name": "Rx_Frame_2",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 20
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 16
+						},
+						{
+							"name": "field3",
+							"bit_size": 16,
+							"value": 1
+						},
+						{
+							"name": "field4",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "field5",
+							"bit_size": 3,
+							"value": 8
+						},
+						{
+							"name": "field6",
+							"bit_size": 2,
+							"value": 1
+						},
+						{
+							"name": "field7",
+							"bit_size": 8,
+							"value": 8
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_1",
+							"active": true,
+							"matches": [
+								{ "type": "any" },
+								{ "value": 2 },
+								{ "value": 3 },
+								{ "type": "any" },
+								{ "value": 3 }
 							]
 						}
 					]

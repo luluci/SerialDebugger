@@ -21,6 +21,8 @@ namespace SerialDebugger.Settings
         public ReactiveCollection<TxFrame> Tx { get; set; }
         public Dictionary<string, int> TxNameDict { get; set; }
         // rx_autoresp
+        public ReactiveCollection<RxFrame> Rx { get; set; }
+        public Dictionary<string, int> RxNameDict { get; set; }
         // tx_autosend
         public ReactiveCollection<AutoTxJob> AutoTx { get; set; }
 
@@ -29,7 +31,9 @@ namespace SerialDebugger.Settings
             Tx = new ReactiveCollection<TxFrame>();
             Tx.AddTo(Disposables);
             TxNameDict = new Dictionary<string, int>();
-
+            Rx = new ReactiveCollection<RxFrame>();
+            Rx.AddTo(Disposables);
+            RxNameDict = new Dictionary<string, int>();
             AutoTx = new ReactiveCollection<AutoTxJob>();
             AutoTx.AddTo(Disposables);
         }
@@ -51,9 +55,20 @@ namespace SerialDebugger.Settings
                 i++;
             }
 
+            // RxFrame作成
+            // TxFrame作成後に実施する
+            if (!(json.Rx is null) && !(json.Rx.Frames is null))
+            {
+                i = 0;
+                foreach (var frame in json.Rx.Frames)
+                {
+                    var f = await MakeRxFrameAsync(i, frame);
+                    i++;
+                }
+            }
 
             // AutoTx作成
-            // Txの作成後に実施する
+            // TxFrame, RxFrame作成後に実施する
             if (!(json.AutoTx is null) && !(json.AutoTx.Jobs is null))
             {
                 int id = 0;
@@ -64,6 +79,183 @@ namespace SerialDebugger.Settings
                 }
             }
         }
+
+
+        private async Task<RxFrame> MakeRxFrameAsync(int id, Json.CommRxFrame frame)
+        {
+            if (Object.ReferenceEquals(frame.Name, string.Empty))
+            {
+                throw new Exception("RxFrame: Nameを指定してください。");
+            }
+
+            // RxFrame作成
+            var f = new RxFrame(id, frame.Name);
+            if (!(frame.Fields is null))
+            {
+                int i = 0;
+                foreach (var field in frame.Fields)
+                {
+                    f.Fields.Add(await MakeFieldAsync(i, field));
+                    i++;
+                }
+                f.Build();
+
+                // PatternMatch作成
+                // Fieldsありのとき
+                i = 0;
+                foreach (var pattern in frame.Patterns)
+                {
+                    var p = MakeRxPattern(i, pattern);
+                    f.Patterns.Add(p);
+                    i++;
+                }
+                f.BuildPattern();
+            }
+
+            return f;
+        }
+
+        private RxPattern MakeRxPattern(int id, Json.CommRxPattern pattern)
+        {
+            if (Object.ReferenceEquals(pattern.Name, string.Empty))
+            {
+                throw new Exception("RxPattern: Nameを指定してください。");
+            }
+
+            var p = new RxPattern(id, pattern.Name);
+
+            // Match作成
+            if (!(pattern.Matches is null))
+            {
+                foreach (var match in pattern.Matches)
+                {
+                    var m = MakeRxMatch(match);
+                    p.Matches.Add(m);
+                }
+            }
+
+            return p;
+        }
+
+        private RxMatch MakeRxMatch(Json.CommRxMatch match)
+        {
+            // Type判定
+            RxMatchType type;
+            switch (match.Type)
+            {
+                case "value":
+                    type = RxMatchType.Value;
+                    break;
+                case "any":
+                    type = RxMatchType.Any;
+                    break;
+                case "timeout":
+                    type = RxMatchType.Timeout;
+                    break;
+                case "script":
+                    type = RxMatchType.Script;
+                    break;
+                default:
+                    type = MakeRxMatchType(match);
+                    break;
+            }
+            //
+            switch (type)
+            {
+                case RxMatchType.Any:
+                    return MakeRxMatchAny();
+
+                case RxMatchType.Value:
+                    return MakeRxMatchValue(match);
+
+                case RxMatchType.Timeout:
+                    return MakeRxMatchTimeout(match);
+
+                case RxMatchType.Script:
+                    return MakeRxMatchScript(match);
+
+                default:
+                    throw new Exception($"RxMatch: 不正なtype指定です: {type}");
+            }
+        }
+
+        private RxMatchType MakeRxMatchType(Json.CommRxMatch match)
+        {
+            // 空文字以外=何か入力してる場合は想定外の文字列なのでエラー
+            if (!Object.ReferenceEquals(match.Type, string.Empty))
+            {
+                throw new Exception($"RxMatch: 不正なtype指定です: {match.Type}");
+            }
+
+            if (!Object.ReferenceEquals(match.Script, string.Empty))
+            {
+                return RxMatchType.Script;
+            }
+
+            if (match.Msec >= 0)
+            {
+                return RxMatchType.Timeout;
+            }
+
+            if (match.Value >= 0)
+            {
+                return RxMatchType.Value;
+            }
+
+            return RxMatchType.Any;
+        }
+
+        private RxMatch MakeRxMatchAny()
+        {
+            return new RxMatch
+            {
+                Type = RxMatchType.Any,
+            };
+        }
+
+        private RxMatch MakeRxMatchValue(Json.CommRxMatch match)
+        {
+            if (match.Value < 0)
+            {
+                throw new Exception($"RxMatch: 不正なvalue指定です: {match.Value}");
+            }
+
+            return new RxMatch
+            {
+                Type = RxMatchType.Value,
+                Value = (UInt64)match.Value,
+            };
+        }
+
+        private RxMatch MakeRxMatchTimeout(Json.CommRxMatch match)
+        {
+            if (match.Msec < 0)
+            {
+                throw new Exception($"RxMatch: 不正なtimeout指定です: {match.Msec}");
+            }
+
+            return new RxMatch
+            {
+                Type = RxMatchType.Timeout,
+                Msec = match.Msec,
+            };
+        }
+
+        private RxMatch MakeRxMatchScript(Json.CommRxMatch match)
+        {
+            if (Object.ReferenceEquals(match.Script, string.Empty))
+            {
+                throw new Exception($"RxMatch: 不正なscript指定です: {match.Script}");
+            }
+
+            return new RxMatch
+            {
+                Type = RxMatchType.Script,
+                Script = match.Script,
+            };
+        }
+
+
 
         private AutoTxJob MakeAutoTxJob(int id, Json.CommAutoTxJob job)
         {
@@ -155,6 +347,11 @@ namespace SerialDebugger.Settings
         /// <param name="frame"></param>
         private async Task<TxFrame> MakeTxFrameAsync(int id, Json.CommTxFrame frame)
         {
+            if (Object.ReferenceEquals(frame.Name, string.Empty))
+            {
+                throw new Exception("TxFrame: Nameを指定してください。");
+            }
+
             // TxFrame作成
             var f = new TxFrame(id, frame.Name);
             if (!(frame.Fields is null))

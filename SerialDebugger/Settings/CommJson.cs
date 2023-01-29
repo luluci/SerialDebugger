@@ -16,6 +16,10 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("tx")]
             public CommTx Tx { get; set; }
 
+            // 受信解析設定
+            [JsonPropertyName("rx")]
+            public CommRx Rx { get; set; }
+
             // 自動送信
             [JsonPropertyName("auto_tx")]
             public CommAutoTx AutoTx { get; set; }
@@ -79,6 +83,53 @@ namespace SerialDebugger.Settings
             public string Script { get; set; } = string.Empty;
 
         }
+
+
+
+        public class CommRx
+        {
+            [JsonPropertyName("frames")]
+            public IList<CommRxFrame> Frames { get; set; }
+        }
+
+        public class CommRxFrame
+        {
+            [JsonPropertyName("name")]
+            public string Name { get; set; } = string.Empty;
+
+            [JsonPropertyName("fields")]
+            public IList<CommField> Fields { get; set; }
+
+            [JsonPropertyName("patterns")]
+            public IList<CommRxPattern> Patterns { get; set; }
+
+        }
+
+        public class CommRxPattern
+        {
+            [JsonPropertyName("name")]
+            public string Name { get; set; } = string.Empty;
+
+            [JsonPropertyName("matches")]
+            public IList<CommRxMatch> Matches { get; set; }
+        }
+
+        public class CommRxMatch
+        {
+            [JsonPropertyName("type")]
+            public string Type { get; set; } = string.Empty;
+
+            [JsonPropertyName("value")]
+            public int Value { get; set; } = -1;
+
+            [JsonPropertyName("msec")]
+            public int Msec { get; set; } = -1;
+
+            [JsonPropertyName("script")]
+            public string Script { get; set; } = string.Empty;
+        }
+
+
 
         public class CommTx
         {

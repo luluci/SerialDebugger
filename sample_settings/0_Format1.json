@@ -78,6 +78,77 @@
 	},
 	
 	"comm": {
+		"rx": {
+			"frames": [
+				{
+					"name": "Rx_Frame_1",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 20,
+							"value": 20
+						},
+						{
+							"name": "field2",
+							"bit_size": 16,
+							"value": 16
+						},
+						{
+							"name": "field3",
+							"bit_size": 1,
+							"value": 1
+						},
+						{
+							"name": "field4",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "field5",
+							"bit_size": 8,
+							"value": 8
+						},
+						{
+							"name": "field6",
+							"bit_size": 1,
+							"value": 1
+						},
+						{
+							"name": "field7",
+							"bit_size": 8,
+							"value": 8
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_1",
+							"matches": [
+								{ "type": "any" },
+								{ "value": 2 },
+								{ "value": 3 },
+								{ "type": "any" },
+								{ "value": 3 }
+							]
+						},
+						{
+							"name": "Rx_Pattern_*",
+							"matches": [
+								{ "type": "script", "script": "func" },
+								{ "type": "any" },
+								{ "type": "value", "value": 1 },
+								{ "value": 2 },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "timeout", "msec": 100 },
+								{ "msec": 100 },
+								{ "script": "func" }
+							]
+						}
+					]
+				}
+			]
+		},
 	
 		"auto_tx": {
 			"jobs": [

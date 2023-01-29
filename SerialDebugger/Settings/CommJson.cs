@@ -110,6 +110,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
 
+            [JsonPropertyName("active")]
+            public bool Active { get; set; } = false;
+
             [JsonPropertyName("matches")]
             public IList<CommRxMatch> Matches { get; set; }
         }

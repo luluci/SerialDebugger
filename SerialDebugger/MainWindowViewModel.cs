@@ -299,7 +299,7 @@ namespace SerialDebugger
                 // 通信データ初期化
                 InitComm();
                 // GUI作成
-                var tx = Comm.TxGui.Make(data);
+                var tx = Comm.TxGui.Make();
                 // GUI反映
                 window.BaseSerialTx.Children.Clear();
                 window.BaseSerialTx.Children.Add(tx);
@@ -313,6 +313,10 @@ namespace SerialDebugger
             {
                 RxFrames = data.Comm.Rx;
                 // GUI作成
+                var rx = Comm.RxGui.Make();
+                // GUI反映
+                window.BaseSerialRx.Children.Clear();
+                window.BaseSerialRx.Children.Add(rx);
             }
             else
             {

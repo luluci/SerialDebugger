@@ -63,6 +63,8 @@ namespace SerialDebugger.Settings
                 foreach (var frame in json.Rx.Frames)
                 {
                     var f = await MakeRxFrameAsync(i, frame);
+                    Rx.Add(f);
+                    RxNameDict.Add(f.Name, f.Id);
                     i++;
                 }
             }
@@ -122,7 +124,7 @@ namespace SerialDebugger.Settings
                 throw new Exception("RxPattern: Nameを指定してください。");
             }
 
-            var p = new RxPattern(id, pattern.Name);
+            var p = new RxPattern(id, pattern.Name, pattern.Active);
 
             // Match作成
             if (!(pattern.Matches is null))

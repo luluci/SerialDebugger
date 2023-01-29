@@ -101,7 +101,7 @@ namespace SerialDebugger.Comm
             new GuiBitColBgConverter(0x8000000000000000),
         };
 
-        static private Settings.SettingInfo setting;
+        static public Settings.SettingInfo setting;
 
         public static void Init(Settings.SettingInfo setting)
         {

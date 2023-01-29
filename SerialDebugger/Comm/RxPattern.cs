@@ -19,12 +19,12 @@ namespace SerialDebugger.Comm
         public string Name { get; }
 
         public ReactiveCollection<RxMatch> Matches { get; set; }
-
+        public ReactivePropertySlim<bool> IsActive { get; set; }
         // 受信アナライザー
         public RxAnalyzer Analyzer { get; set; }
 
 
-        public RxPattern(int id, string name)
+        public RxPattern(int id, string name, bool active)
         {
             // 基本情報
             Id = id;
@@ -32,6 +32,10 @@ namespace SerialDebugger.Comm
 
             Matches = new ReactiveCollection<RxMatch>();
             Matches.AddTo(Disposables);
+
+            IsActive = new ReactivePropertySlim<bool>(active);
+            IsActive.AddTo(Disposables);
+
             Analyzer = new RxAnalyzer();
         }
 

@@ -21,24 +21,21 @@ namespace SerialDebugger.Comm
     /// </summary>
     class TxGui
     {
-        static private Settings.SettingInfo setting;
-        public static Grid Make(Settings.SettingInfo setting)
+        public static Grid Make()
         {
-            TxGui.setting = setting;
-
             // ベースGrid作成
             Grid grid = new Grid();
 
             // 先頭要素を選択
-            var frames = setting.Comm.Tx;
+            var frames = Gui.setting.Comm.Tx;
 
             int frame_no = 0;
             double margin_l = 0;
             foreach (var frame in frames)
             {
                 var (grid1, grid2, grid3) = MakeBase((IAddChild)grid, margin_l);
-                var w = MakeHeader(setting, grid2, frame, frame_no);
-                w = MakeBody(setting, grid3, frame, frame_no);
+                var w = MakeHeader(Gui.setting, grid2, frame, frame_no);
+                w = MakeBody(Gui.setting, grid3, frame, frame_no);
 
                 //margin_l += (grid1.Width + 50);
                 margin_l += (w + 50);

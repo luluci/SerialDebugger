@@ -54,7 +54,7 @@
                     </Grid>
                 </TabItem>
                 <TabItem Header="受信解析">
-                    <Grid Background="#FFE5E5E5">
+                    <Grid>
                         <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
                             <Grid x:Name="BaseSerialRx" Margin="10,0,10,0">
                                 <Grid>

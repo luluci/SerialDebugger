@@ -75,9 +75,11 @@
     <Compile Include="Comm\AutoTxGui.cs" />
     <Compile Include="Comm\AutoTxGuiConverter.cs" />
     <Compile Include="Comm\AutoTxJob.cs" />
+    <Compile Include="Comm\Gui.cs" />
     <Compile Include="Comm\RxAnalyzer.cs" />
     <Compile Include="Comm\RxAnalyzeRule.cs" />
     <Compile Include="Comm\RxFrame.cs" />
+    <Compile Include="Comm\RxGui.cs" />
     <Compile Include="Comm\RxMatch.cs" />
     <Compile Include="Comm\RxPattern.cs" />
     <Compile Include="MainWindowViewModel.cs" />

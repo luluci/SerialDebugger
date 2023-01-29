@@ -18,7 +18,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// Value列に表示する文字列を作成する
     /// </summary>
-    internal class TxGuiValueColConverter : IValueConverter
+    internal class GuiValueColConverter : IValueConverter
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -41,7 +41,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// 送信バイトシーケンス列に表示する文字列を作成する
     /// </summary>
-    internal class TxGuiTxBufferColConverter : IValueConverter
+    internal class GuiTxBufferColConverter : IValueConverter
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -59,11 +59,11 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// Bit列背景色を決定する
     /// </summary>
-    internal class TxGuiBitColBgConverter : IValueConverter
+    internal class GuiBitColBgConverter : IValueConverter
     {
         private readonly UInt64 mask;
 
-        public TxGuiBitColBgConverter(UInt64 m)
+        public GuiBitColBgConverter(UInt64 m)
         {
             mask = m;
         }
@@ -91,7 +91,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// Select列:テキストボックスに表示する文字列を作成する
     /// </summary>
-    internal class TxGuiEditConverter : IValueConverter
+    internal class GuiEditConverter : IValueConverter
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -119,7 +119,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// 送信バイトシーケンス列に表示する文字列を作成する
     /// </summary>
-    internal class TxGuiTxSendFixNameConverter : IValueConverter
+    internal class GuiTxSendFixNameConverter : IValueConverter
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -143,7 +143,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// 変更Fieldあり時の背景色
     /// </summary>
-    internal class TxGuiTxSendFixBGColorConverter : IValueConverter
+    internal class GuiTxSendFixBGColorConverter : IValueConverter
     {
         public static SolidColorBrush ChangedColor = new SolidColorBrush(Color.FromArgb(0xFF, 0xEE, 0x44, 0x44));
         //public static SolidColorBrush FixedColor = SystemColors.ControlBrush;  // ボタン表面色

@@ -43,6 +43,8 @@ namespace SerialDebugger
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
         public ReactiveCommand OnClickTxBufferSend { get; set; }
+        // Comm: Rx
+        public ReactiveCollection<Comm.RxFrame> RxFrames { get; set; }
         // Comm: AutoTx
         public ReactiveCollection<Comm.AutoTxJob> AutoTxJobs { get; set; }
         public ReactivePropertySlim<int> AutoTxShortcutSelectedIndex { get; set; }
@@ -54,8 +56,10 @@ namespace SerialDebugger
         // ベースGUI
         MainWindow window;
         UIElement BaseSerialTxOrig;
+        UIElement BaseSerialRxOrig;
         UIElement BaseSerialAutoTxOrig;
         public ReactivePropertySlim<string> BaseSerialTxMsg { get; set; }
+        public ReactivePropertySlim<string> BaseSerialRxMsg { get; set; }
         public ReactivePropertySlim<string> BaseSerialAutoTxMsg { get; set; }
 
         // シリアル通信管理変数
@@ -76,9 +80,12 @@ namespace SerialDebugger
             this.window = window;
             // 初期表示のGridは動的に入れ替えるので最初に参照を取得しておく
             BaseSerialTxOrig = window.BaseSerialTx.Children[0];
+            BaseSerialRxOrig = window.BaseSerialRx.Children[0];
             BaseSerialAutoTxOrig = window.BaseSerialAutoTx.Children[0];
             BaseSerialTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
             BaseSerialTxMsg.AddTo(Disposables);
+            BaseSerialRxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
+            BaseSerialRxMsg.AddTo(Disposables);
             BaseSerialAutoTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
             BaseSerialAutoTxMsg.AddTo(Disposables);
 
@@ -146,6 +153,8 @@ namespace SerialDebugger
             //
             TxFrames = new ReactiveCollection<Comm.TxFrame>();
             TxFrames.AddTo(Disposables);
+            RxFrames = new ReactiveCollection<Comm.RxFrame>();
+            RxFrames.AddTo(Disposables);
             AutoTxJobs = new ReactiveCollection<Comm.AutoTxJob>();
             AutoTxJobs.AddTo(Disposables);
             // 自動送信操作ショートカット
@@ -226,6 +235,7 @@ namespace SerialDebugger
             else
             {
                 BaseSerialTxMsg.Value = "有効な設定ファイルが存在しません。";
+                BaseSerialRxMsg.Value = "有効な設定ファイルが存在しません。";
                 BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
                 Logger.Add("有効な設定ファイルが存在しません。");
             }
@@ -235,10 +245,13 @@ namespace SerialDebugger
         {
             // 現在表示中のGUIを破棄
             window.BaseSerialTx.Children.Clear();
+            window.BaseSerialRx.Children.Clear();
             window.BaseSerialAutoTx.Children.Clear();
-            BaseSerialTxMsg.Value = "設定ファイル読み込み中。。";
-            BaseSerialAutoTxMsg.Value = "設定ファイル読み込み中。。";
+            BaseSerialTxMsg.Value = "設定ファイル読み込み中...";
+            BaseSerialRxMsg.Value = "設定ファイル読み込み中...";
+            BaseSerialAutoTxMsg.Value = "設定ファイル読み込み中...";
             window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
+            window.BaseSerialRx.Children.Add(BaseSerialRxOrig);
             window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
 
             try
@@ -253,6 +266,7 @@ namespace SerialDebugger
                 //MessageBox.Show($"Setting File Load Error: {ex.Message}");
                 WindowTitle.Value = $"{ToolTitle}";
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
                 BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
                 Logger.AddException(ex, "設定ファイル読み込みエラー:");
             }
@@ -266,6 +280,7 @@ namespace SerialDebugger
             {
                 await Setting.LoadAsync(data);
             }
+            Comm.Gui.Init(data);
             // GUI作成
             WindowTitle.Value = $"{ToolTitle} [{data.Name}]";
             window.Width = data.Gui.Window.Width;
@@ -292,6 +307,16 @@ namespace SerialDebugger
             else
             {
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+            }
+            //
+            if (data.Comm.Rx.Count > 0)
+            {
+                RxFrames = data.Comm.Rx;
+                // GUI作成
+            }
+            else
+            {
+                BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
             }
             // AutoTx設定
             if (data.Comm.AutoTx.Count > 0)

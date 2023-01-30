@@ -69,7 +69,7 @@ namespace SerialDebugger
         bool IsAutoTxRunning = false;
         //
         bool IsRxRunning = false;
-        Serial.RxAnalyzer rxAnalyzer = new Serial.RxAnalyzer();
+        Serial.RxAnalyzer rxAnalyzer;
         CancellationTokenSource tokenSource;
 
         // Debug
@@ -230,7 +230,18 @@ namespace SerialDebugger
             if (Settings.Count > 0)
             {
                 SettingsSelectIndex.Value = 0;
-                await LoadTxAsync();
+                try
+                {
+                    await LoadTxAsync();
+                }
+                catch (Exception ex)
+                {
+                    WindowTitle.Value = $"{ToolTitle}";
+                    BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
+                    BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
+                    BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
+                    Logger.AddException(ex, "設定ファイル読み込みエラー:");
+                }
             }
             else
             {
@@ -386,6 +397,8 @@ namespace SerialDebugger
                 // シリアルポートを開く
                 serialPort = serialSetting.vm.GetSerialPort();
                 serialPort.Open();
+                // 解析クラス初期化
+                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames);
                 // COM切断を有効化
                 IsSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM切断";
@@ -397,12 +410,7 @@ namespace SerialDebugger
                     AutoTxTimer.Interval = new TimeSpan(0, 0, 0, 0, serialSetting.vm.PollingCycle.Value);
                     AutoTxTimer.Start();
                 }
-
-                // シリアル通信管理ハンドラ初期化？
-                // serialHandler.Init(TxFrames);
-                // 受信解析定義転送？
-                // ツール上で変更しないなら他の場所でいい
-
+                
                 // 必ず受信タスクを動かす
                 // COM切断時はタスクキャンセルを実行し、受信タスクが終了したら各種後始末を行う。
                 tokenSource = new CancellationTokenSource();
@@ -411,7 +419,7 @@ namespace SerialDebugger
                 {
                     // 受信解析, 一連の受信シーケンスが完了するまでawait
                     // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
-                    var result = await rxAnalyzer.Run(serialPort, serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
+                    var result = await rxAnalyzer.Run(serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
                     switch (result.Type)
                     {
                         case Serial.RxDataType.Cancel:

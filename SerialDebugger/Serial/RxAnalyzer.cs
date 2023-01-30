@@ -54,6 +54,12 @@ namespace SerialDebugger.Serial
         }
     }
 
+    class RxAnalyzeResult
+    {
+        public int FrameId { get; set; } = -1;
+        public int PatternId { get; set; } = -1;
+    }
+
     class RxAnalyzer
     {
         bool HasRecieve;
@@ -62,29 +68,50 @@ namespace SerialDebugger.Serial
         byte[] RxBuff = new byte[BuffSize];
         int RxBuffOffset;
 
-        public RxAnalyzer()
+        SerialPort serial;
+        public IList<Comm.RxFrame> RxFramesRef;
+
+        public List<RxAnalyzeResult> AnalyzeResultQueue;
+
+
+        public RxAnalyzer(SerialPort serial, IList<Comm.RxFrame> rxFrames)
         {
+            this.serial = serial;
+            RxFramesRef = rxFrames;
 
-        }
-
-
-        public Task<RxData> Run(SerialPort serial, int timeout, int polling, CancellationToken ct)
-        {
-            //
-            RxBuffOffset = 0;
             // 受信ハンドラ登録
             HasRecieve = false;
             serial.DataReceived += Serial_DataReceived;
             serial.ReadTimeout = 0;
+
+            // Queueサイズ計算
+            int queue_size = 0;
+            foreach (var frame in RxFramesRef)
+            {
+                queue_size += frame.Patterns.Count;
+            }
+            // Queue初期化
+            AnalyzeResultQueue = new List<RxAnalyzeResult>(queue_size);
+            for (int i=0; i<queue_size; i++)
+            {
+                AnalyzeResultQueue.Add(new RxAnalyzeResult());
+            }
+        }
+
+
+        public Task<RxData> Run(int timeout, int polling, CancellationToken ct)
+        {
+            //
+            RxBuffOffset = 0;
             // 受信タスク作成
             return Task.Run(async () =>
             {
                 // シリアル処理開始
-                return await RunImpl(serial, timeout, polling, ct);
+                return await RunImpl(timeout, polling, ct);
             }, ct);
         }
 
-        private async Task<RxData> RunImpl(SerialPort serial, int timeout, int polling, CancellationToken ct)
+        private async Task<RxData> RunImpl(int timeout, int polling, CancellationToken ct)
         {
             // 受信開始時間
             DateTime RxBeginTime;

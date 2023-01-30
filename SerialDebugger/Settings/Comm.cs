@@ -82,7 +82,7 @@ namespace SerialDebugger.Settings
                     if (RxNameDict.TryGetValue(f.Name, out int value))
                     {
                         // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
-                        throw new Exception("rx.frame.nameに同じ名前が存在します。ユニークな名前を設定してください。");
+                        throw new Exception($"rx.frame.nameに同じ名前({f.Name})が存在します。ユニークな名前を設定してください。");
                     }
                     RxNameDict.Add(f.Name, f.Id);
                     // Pattern参照情報作成
@@ -91,7 +91,7 @@ namespace SerialDebugger.Settings
                         if (RxPatternDict.TryGetValue(ptn.Name, out RxPatternInfo inf))
                         {
                             // Pattern.NameはAutoTxからの参照に使うためユニークである必要がある。
-                            throw new Exception("rx.frame.nameに同じ名前が存在します。ユニークな名前を設定してください。");
+                            throw new Exception($"rx.frame.pattern.nameに同じ名前({ptn.Name})が存在します。ユニークな名前を設定してください。");
                         }
                         RxPatternDict.Add(ptn.Name, new RxPatternInfo { FrameId = f.Id, PatternId = ptn.Id });
                     }

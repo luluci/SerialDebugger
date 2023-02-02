@@ -347,7 +347,7 @@ namespace SerialDebugger.Settings
 
             // FrameNameが存在しないときの例外処理は上流に任せる
             var frame_idx = TxNameDict[action.TxFrameName];
-            var act = AutoTxAction.MakeSendAction(id, action.TxFrameName, frame_idx, action.TxFrameBuffIndex, action.TxFrameBuffOffset, action.TxFrameBuffLength, action.Immediate);
+            var act = AutoTxAction.MakeSendAction(id, action.Alias, action.TxFrameName, frame_idx, action.TxFrameBuffIndex, action.TxFrameBuffOffset, action.TxFrameBuffLength, action.Immediate);
 
             return act;
         }
@@ -358,7 +358,7 @@ namespace SerialDebugger.Settings
                 throw new Exception("AutoTx: Action: Wait: 待機時間(WaitTime)を指定してください。");
             }
 
-            var act = AutoTxAction.MakeWaitAction(id, action.WaitTime, action.Immediate);
+            var act = AutoTxAction.MakeWaitAction(id, action.Alias, action.WaitTime, action.Immediate);
 
             return act;
         }
@@ -369,7 +369,7 @@ namespace SerialDebugger.Settings
                 throw new Exception("AutoTx: Action: Jump: JumpToを指定してください。");
             }
 
-            var act = AutoTxAction.MakeJumpAction(id, action.JumpTo, action.Immediate);
+            var act = AutoTxAction.MakeJumpAction(id, action.Alias, action.JumpTo, action.Immediate);
 
             return act;
         }

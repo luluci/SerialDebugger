@@ -8,6 +8,7 @@ namespace SerialDebugger.Comm
 {
     enum RxAnalyzeRuleType
     {
+        Any,
         Value,
         Timeout,
         Script
@@ -23,7 +24,17 @@ namespace SerialDebugger.Comm
 
         public RxAnalyzeRule(byte value, byte mask)
         {
-            Type = RxAnalyzeRuleType.Value;
+            // Type判定
+            // maskがゼロなら無条件マッチなのでAny
+            if (mask == 0)
+            {
+                Type = RxAnalyzeRuleType.Any;
+            }
+            else
+            {
+                Type = RxAnalyzeRuleType.Value;
+            }
+
             Value = value;
             Mask = mask;
         }

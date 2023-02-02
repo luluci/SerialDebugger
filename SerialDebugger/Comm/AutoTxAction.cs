@@ -24,6 +24,8 @@ namespace SerialDebugger.Comm
     class AutoTxAction : BindableBase, IDisposable
     {
         public int Id { get; }
+        public string Alias { get; private set; }
+
         public AutoTxActionType Type { get; private set; }
         public ReactivePropertySlim<bool> IsActive { get; set; }
         public bool Immediate { get; set; }
@@ -47,9 +49,10 @@ namespace SerialDebugger.Comm
         public ReactivePropertySlim<string> ScriptName { get; private set; }
 
 
-        public AutoTxAction(int id)
+        public AutoTxAction(int id, string alias)
         {
             Id = id;
+            Alias = alias;
 
             IsActive = new ReactivePropertySlim<bool>(false);
             IsActive.AddTo(Disposables);
@@ -61,9 +64,9 @@ namespace SerialDebugger.Comm
         /// <param name="id"></param>
         /// <param name="wait"></param>
         /// <returns></returns>
-        public static AutoTxAction MakeWaitAction(int id, int wait, bool immediate)
+        public static AutoTxAction MakeWaitAction(int id, string alias, int wait, bool immediate)
         {
-            var action = new AutoTxAction(id)
+            var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.Wait,
                 Immediate = immediate,
@@ -71,11 +74,17 @@ namespace SerialDebugger.Comm
             action.WaitTime = new ReactivePropertySlim<int>(wait);
             action.WaitTime.AddTo(action.Disposables);
 
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                action.Alias = $"Wait [{action.WaitTime} ms]";
+            }
+
             return action;
         }
-        public static AutoTxAction MakeJumpAction(int id, int jumpto, bool immediate)
+
+        public static AutoTxAction MakeJumpAction(int id, string alias, int jumpto, bool immediate)
         {
-            var action = new AutoTxAction(id)
+            var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.Jump,
                 Immediate = immediate,
@@ -83,12 +92,17 @@ namespace SerialDebugger.Comm
             action.JumpTo = new ReactivePropertySlim<int>(jumpto);
             action.JumpTo.AddTo(action.Disposables);
 
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                action.Alias = $"JumpTo [{action.JumpTo}]";
+            }
+
             return action;
         }
 
-        public static AutoTxAction MakeSendAction(int id, string tx_frame_name, int tx_frame_idx, int buff_idx, int buff_offset, int buff_length, bool immediate)
+        public static AutoTxAction MakeSendAction(int id, string alias, string tx_frame_name, int tx_frame_idx, int buff_idx, int buff_offset, int buff_length, bool immediate)
         {
-            var action = new AutoTxAction(id)
+            var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.Send,
                 Immediate = immediate,
@@ -101,12 +115,17 @@ namespace SerialDebugger.Comm
             action.TxFrameBuffIndex = new ReactivePropertySlim<int>(buff_idx);
             action.TxFrameBuffIndex.AddTo(action.Disposables);
 
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                action.Alias = $"Send [{action.TxFrameName.Value}]";
+            }
+
             return action;
         }
 
-        public static AutoTxAction MakeRecvAction(int id, string rx_name, int rx_idx, bool immediate)
+        public static AutoTxAction MakeRecvAction(int id, string alias, string rx_name, int rx_idx, bool immediate)
         {
-            var action = new AutoTxAction(id)
+            var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.Recv,
                 Immediate = immediate,
@@ -118,9 +137,9 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeScriptAction(int id, string script_func, bool immediate)
+        public static AutoTxAction MakeScriptAction(int id, string alias, string script_func, bool immediate)
         {
-            var action = new AutoTxAction(id)
+            var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.Script,
                 Immediate = immediate,

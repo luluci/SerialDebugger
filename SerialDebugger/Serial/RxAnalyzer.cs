@@ -113,13 +113,18 @@ namespace SerialDebugger.Serial
 
         private async Task<RxData> RunImpl(int timeout, int polling, CancellationToken ct)
         {
+            // 周期タイマ
+            Utility.CycleTimer cycle = new Utility.CycleTimer();
+            // タイムアウトタイマ
+            // タイムアウト判定基準時間:最後に受信した時間からtimeout経過で受信終了
+            Utility.CycleTimer timeoutTimer = new Utility.CycleTimer();
             // 受信開始時間
             DateTime RxBeginTime;
-            // タイムアウト判定基準時間:最後に受信した時間からtimeout経過で受信終了
-            var RxLastTime = DateTime.Now;
 
             while (true)
             {
+                //
+                cycle.Start();
                 // Cancel
                 if (ct.IsCancellationRequested)
                 {
@@ -141,10 +146,7 @@ namespace SerialDebugger.Serial
                 // 何かしらのデータ受信後、指定時間経過でタイムアウトする
                 if (RxBuffOffset > 0)
                 {
-                    var now_time = DateTime.Now;
-                    var diff_time = now_time - RxLastTime;
-                    var diff_ms = diff_time.Ticks / TimeSpan.TicksPerMillisecond;
-                    if (diff_ms >= timeout)
+                    if (timeoutTimer.WaitForMsec(timeout) <= 0)
                     {
                         byte[] data = new byte[RxBuffOffset];
                         Buffer.BlockCopy(RxBuff, 0, data, 0, RxBuffOffset);
@@ -174,10 +176,10 @@ namespace SerialDebugger.Serial
                     }
 
                     // 最後に受信した時間を更新
-                    RxLastTime = DateTime.Now;
+                    timeoutTimer.Start();
                 }
 
-                await Task.Delay(polling);
+                await cycle.WaitAsync(polling);
             }
         }
 

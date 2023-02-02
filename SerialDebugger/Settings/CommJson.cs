@@ -47,6 +47,9 @@ namespace SerialDebugger.Settings
 
         public class CommAutoTxAction
         {
+            [JsonPropertyName("alias")]
+            public string Alias { get; set; } = string.Empty;
+
             [JsonPropertyName("type")]
             public string Type { get; set; } = string.Empty;
 

@@ -146,14 +146,10 @@ namespace SerialDebugger.Comm
             switch (action.Type)
             {
                 case AutoTxActionType.Send:
-                    return MakeActionSend(action, path, is_first);
-
                 case AutoTxActionType.Wait:
-                    return MakeActionWait(action, path, is_first);
-
                 case AutoTxActionType.Jump:
-                    return MakeActionJump(action, path, is_first);
-
+                    return MakeActionDisp(action, path, is_first);
+                    
                 default:
                     throw new Exception("undefined Action.");
             }
@@ -199,35 +195,15 @@ namespace SerialDebugger.Comm
             return arrow;
         }
 
-
-        private static UIElement MakeActionSend(AutoTxAction action, string path, bool is_first)
+        private static UIElement MakeActionDisp(AutoTxAction action, string path, bool is_first)
         {
             var border = MakeActionBase(path, is_first);
             var tb = new TextBlock();
-            tb.Text = $"Send [{action.TxFrameName.Value}]";
+            tb.Text = action.Alias;
             
             border.Child = tb;
             return border;
         }
 
-        private static UIElement MakeActionWait(AutoTxAction action, string path, bool is_first)
-        {
-            var border = MakeActionBase(path, is_first);
-            var tb = new TextBlock();
-            tb.Text = $"Wait [{action.WaitTime} ms]";
-            
-            border.Child = tb;
-            return border;
-        }
-
-        private static UIElement MakeActionJump(AutoTxAction action, string path, bool is_first)
-        {
-            var border = MakeActionBase(path, is_first);
-            var tb = new TextBlock();
-            tb.Text = $"JumpTo [{action.JumpTo}]";
-            
-            border.Child = tb;
-            return border;
-        }
     }
 }

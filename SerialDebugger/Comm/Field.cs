@@ -478,7 +478,14 @@ namespace SerialDebugger.Comm
                         selectIndex = index;
                     }
                     //
-                    SelectsValueCheckTable.Add(item.Item1, index);
+                    try
+                    {
+                        SelectsValueCheckTable.Add(item.Item1, index);
+                    }
+                    catch (Exception)
+                    {
+                        throw new Exception($"dict指定のvalueに重複があります: (value:{item.Item1}, disp:{item.Item2})");
+                    }
                     //
                     index++;
                 }

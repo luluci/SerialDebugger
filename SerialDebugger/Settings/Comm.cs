@@ -63,7 +63,7 @@ namespace SerialDebugger.Settings
                     if (TxNameDict.TryGetValue(f.Name, out int value))
                     {
                         // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
-                        throw new Exception($"TxFrame[{i}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
+                        throw new Exception($"tx: frames[{i}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
                     }
                     TxNameDict.Add(f.Name, f.Id);
 
@@ -86,7 +86,7 @@ namespace SerialDebugger.Settings
                     if (RxNameDict.TryGetValue(f.Name, out int value))
                     {
                         // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
-                        throw new Exception($"rx.frame.nameに同じ名前({f.Name})が存在します。ユニークな名前を設定してください。");
+                        throw new Exception($"rx: frames[{f.Id}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
                     }
                     RxNameDict.Add(f.Name, f.Id);
                     // Pattern参照情報作成
@@ -95,7 +95,7 @@ namespace SerialDebugger.Settings
                         if (RxPatternDict.TryGetValue(ptn.Name, out RxPatternInfo inf))
                         {
                             // Pattern.NameはAutoTxからの参照に使うためユニークである必要がある。
-                            throw new Exception($"rx.frame.pattern.nameに同じ名前({ptn.Name})が存在します。ユニークな名前を設定してください。");
+                            throw new Exception($"rx: frames[{f.Id}]: patterns[{ptn.Id}]: 同じ名前({ptn.Name})が存在します。frame.patterns.nameにはユニークな名前を設定してください。");
                         }
                         RxPatternDict.Add(ptn.Name, new RxPatternInfo { FrameId = f.Id, PatternId = ptn.Id });
                     }
@@ -123,7 +123,7 @@ namespace SerialDebugger.Settings
         {
             if (Object.ReferenceEquals(frame.Name, string.Empty))
             {
-                throw new Exception($"RxFrame[{id}]: Nameを指定してください。");
+                throw new Exception($"rx: frames[{id}]: Nameを指定してください。");
             }
 
             try
@@ -156,7 +156,7 @@ namespace SerialDebugger.Settings
             }
             catch (Exception ex)
             {
-                throw new Exception($"RxFrame[{id}]({frame.Name}): {ex.Message}");
+                throw new Exception($"rx: frames[{id}]({frame.Name}): {ex.Message}");
             }
         }
 
@@ -164,25 +164,35 @@ namespace SerialDebugger.Settings
         {
             if (Object.ReferenceEquals(pattern.Name, string.Empty))
             {
-                throw new Exception("RxPattern: Nameを指定してください。");
+                throw new Exception($"patterns[{id}]: nameを指定してください。");
             }
 
-            var p = new RxPattern(id, pattern.Name, pattern.Active);
-
-            // Match作成
-            if (!(pattern.Matches is null))
+            try
             {
-                foreach (var match in pattern.Matches)
-                {
-                    var m = MakeRxMatch(match);
-                    p.Matches.Add(m);
-                }
-            }
+                var p = new RxPattern(id, pattern.Name, pattern.Active);
 
-            return p;
+                // Match作成
+                if (!(pattern.Matches is null))
+                {
+                    int m_id = 0;
+                    foreach (var match in pattern.Matches)
+                    {
+                        var m = MakeRxMatch(m_id, match);
+                        p.Matches.Add(m);
+
+                        m_id++;
+                    }
+                }
+
+                return p;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"patterns[{id}]({pattern.Name}): {ex.Message}");
+            }
         }
 
-        private RxMatch MakeRxMatch(Json.CommRxMatch match)
+        private RxMatch MakeRxMatch(int id, Json.CommRxMatch match)
         {
             // Type判定
             RxMatchType type;
@@ -201,35 +211,35 @@ namespace SerialDebugger.Settings
                     type = RxMatchType.Script;
                     break;
                 default:
-                    type = MakeRxMatchType(match);
+                    type = MakeRxMatchType(id, match);
                     break;
             }
             //
             switch (type)
             {
                 case RxMatchType.Any:
-                    return MakeRxMatchAny();
+                    return MakeRxMatchAny(id);
 
                 case RxMatchType.Value:
-                    return MakeRxMatchValue(match);
+                    return MakeRxMatchValue(id, match);
 
                 case RxMatchType.Timeout:
-                    return MakeRxMatchTimeout(match);
+                    return MakeRxMatchTimeout(id, match);
 
                 case RxMatchType.Script:
-                    return MakeRxMatchScript(match);
+                    return MakeRxMatchScript(id, match);
 
                 default:
-                    throw new Exception($"RxMatch: 不正なtype指定です: {type}");
+                    throw new Exception($"matches[{id}]: 不正なtype指定です: {type}");
             }
         }
 
-        private RxMatchType MakeRxMatchType(Json.CommRxMatch match)
+        private RxMatchType MakeRxMatchType(int id, Json.CommRxMatch match)
         {
             // 空文字以外=何か入力してる場合は想定外の文字列なのでエラー
             if (!Object.ReferenceEquals(match.Type, string.Empty))
             {
-                throw new Exception($"RxMatch: 不正なtype指定です: {match.Type}");
+                throw new Exception($"matches[{id}]: 不正なtype指定です: {match.Type}");
             }
 
             if (!Object.ReferenceEquals(match.Script, string.Empty))
@@ -250,7 +260,7 @@ namespace SerialDebugger.Settings
             return RxMatchType.Any;
         }
 
-        private RxMatch MakeRxMatchAny()
+        private RxMatch MakeRxMatchAny(int id)
         {
             return new RxMatch
             {
@@ -258,11 +268,11 @@ namespace SerialDebugger.Settings
             };
         }
 
-        private RxMatch MakeRxMatchValue(Json.CommRxMatch match)
+        private RxMatch MakeRxMatchValue(int id, Json.CommRxMatch match)
         {
             if (match.Value < 0)
             {
-                throw new Exception($"RxMatch: 不正なvalue指定です: {match.Value}");
+                throw new Exception($"matches[{id}]: 不正なvalue指定です: {match.Value}");
             }
 
             return new RxMatch
@@ -272,11 +282,11 @@ namespace SerialDebugger.Settings
             };
         }
 
-        private RxMatch MakeRxMatchTimeout(Json.CommRxMatch match)
+        private RxMatch MakeRxMatchTimeout(int id, Json.CommRxMatch match)
         {
             if (match.Msec < 0)
             {
-                throw new Exception($"RxMatch: 不正なtimeout指定です: {match.Msec}");
+                throw new Exception($"matches[{id}]: 不正なtimeout指定です: {match.Msec}");
             }
 
             return new RxMatch
@@ -286,11 +296,11 @@ namespace SerialDebugger.Settings
             };
         }
 
-        private RxMatch MakeRxMatchScript(Json.CommRxMatch match)
+        private RxMatch MakeRxMatchScript(int id, Json.CommRxMatch match)
         {
             if (Object.ReferenceEquals(match.Script, string.Empty))
             {
-                throw new Exception($"RxMatch: 不正なscript指定です: {match.Script}");
+                throw new Exception($"matches[{id}]: 不正なscript指定です: {match.Script}");
             }
 
             return new RxMatch
@@ -304,22 +314,29 @@ namespace SerialDebugger.Settings
 
         private AutoTxJob MakeAutoTxJob(int id, Json.CommAutoTxJob job)
         {
-            // Job作成
-            var j = new AutoTxJob(id, job.Name, job.Active);
-            // Action解析
-            if (!(job.Actions is null))
+            try
             {
-                int i = 0;
-                foreach (var action in job.Actions)
+                // Job作成
+                var j = new AutoTxJob(id, job.Name, job.Active);
+                // Action解析
+                if (!(job.Actions is null))
                 {
-                    j.Actions.Add(MakeAutoTxAction(i, action));
-                    i++;
+                    int i = 0;
+                    foreach (var action in job.Actions)
+                    {
+                        j.Actions.Add(MakeAutoTxAction(i, action));
+                        i++;
+                    }
                 }
-            }
-            //
-            j.Build(Tx);
+                //
+                j.Build(Tx);
 
-            return j;
+                return j;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"auto_tx: jobs[{id}]({job.Name}): {ex.Message}");
+            }
         }
 
         private AutoTxAction MakeAutoTxAction(int id, Json.CommAutoTxAction action)
@@ -333,40 +350,47 @@ namespace SerialDebugger.Settings
                     return MakeAutoTxActionWait(id, action);
 
                 case "Recv":
-                    throw new Exception("unimplemented!");
+                    throw new Exception($"actions[{id}]: {action.Type} is unimplemented!");
 
                 case "Jump":
                     return MakeAutoTxActionJump(id, action);
 
                 case "Script":
-                    throw new Exception("unimplemented!");
+                    throw new Exception($"actions[{id}]: {action.Type} is unimplemented!");
 
                 default:
-                    throw new Exception($"Undefined AutoTx Action Type: {action.Type}");
+                    throw new Exception($"actions[{id}]: Undefined AutoTx Action Type: {action.Type}");
             }
         }
         private AutoTxAction MakeAutoTxActionSend(int id, Json.CommAutoTxAction action)
         {
             if (Object.ReferenceEquals(action.TxFrameName,string.Empty))
             {
-                throw new Exception("AutoTx: Action: Send: 送信対象となるframe名(tx_frame_name)を指定してください。");
+                throw new Exception($"actions[{id}](Send): 送信対象となるframe名(tx_frame_name)を指定してください。");
             }
             if (action.TxFrameBuffIndex == -1)
             {
-                throw new Exception("AutoTx: Action: Send: 送信対象となるframeバッファ(tx_frame_buff_index)を指定してください。");
+                throw new Exception($"actions[{id}](Send): 送信対象となるframeバッファ(tx_frame_buff_index)を指定してください。");
             }
 
-            // FrameNameが存在しないときの例外処理は上流に任せる
-            var frame_idx = TxNameDict[action.TxFrameName];
-            var act = AutoTxAction.MakeSendAction(id, action.Alias, action.TxFrameName, frame_idx, action.TxFrameBuffIndex, action.TxFrameBuffOffset, action.TxFrameBuffLength, action.Immediate);
+            try
+            {
+                var frame_idx = TxNameDict[action.TxFrameName];
+                var act = AutoTxAction.MakeSendAction(id, action.Alias, action.TxFrameName, frame_idx, action.TxFrameBuffIndex, action.TxFrameBuffOffset, action.TxFrameBuffLength, action.Immediate);
 
-            return act;
+                return act;
+            }
+            catch
+            {
+                // FrameNameが存在しないとき
+                throw new Exception($"actions[{id}](Send): 指定されたtx.frame({action.TxFrameName})が存在しません。");
+            }
         }
         private AutoTxAction MakeAutoTxActionWait(int id, Json.CommAutoTxAction action)
         {
             if (action.WaitTime == -1)
             {
-                throw new Exception("AutoTx: Action: Wait: 待機時間(WaitTime)を指定してください。");
+                throw new Exception($"actions[{id}](Wait): 待機時間(WaitTime)を指定してください。");
             }
 
             var act = AutoTxAction.MakeWaitAction(id, action.Alias, action.WaitTime, action.Immediate);
@@ -377,7 +401,7 @@ namespace SerialDebugger.Settings
         {
             if (action.JumpTo == -1)
             {
-                throw new Exception("AutoTx: Action: Jump: JumpToを指定してください。");
+                throw new Exception($"actions[{id}](Jump): JumpToを指定してください。");
             }
 
             var act = AutoTxAction.MakeJumpAction(id, action.Alias, action.JumpTo, action.Immediate);
@@ -394,7 +418,7 @@ namespace SerialDebugger.Settings
         {
             if (Object.ReferenceEquals(frame.Name, string.Empty))
             {
-                throw new Exception($"TxFrame[{id}]: Nameを指定してください。");
+                throw new Exception($"tx: frames[{id}]: nameを指定してください。");
             }
 
             try
@@ -418,7 +442,7 @@ namespace SerialDebugger.Settings
             }
             catch (Exception ex)
             {
-                throw new Exception($"TxFrame[{id}]({frame.Name}): {ex.Message}");
+                throw new Exception($"tx: frames[{id}]({frame.Name}): {ex.Message}");
             }
         }
 
@@ -533,13 +557,13 @@ namespace SerialDebugger.Settings
             // Checksumチェック
             if (field.Checksum is null)
             {
-                throw new Exception($"Field[{id}]({field.Name}): type:ChecksumではChecksumオブジェクトを指定してください。");
+                throw new Exception($"fields[{id}]({field.Name}): type:ChecksumではChecksumオブジェクトを指定してください。");
             }
             // Nameチェック
             // Checksumの場合はmulti_nameは許可しない
             if (Object.ReferenceEquals(field.Name, string.Empty))
             {
-                throw new Exception($"Field[{id}]({field.Name}): Checksumノードはname,bit_sizeを指定してください。");
+                throw new Exception($"fields[{id}]({field.Name}): Checksumノードはname,bit_sizeを指定してください。");
             }
             // Checksum計算方法
             var method = new Field.ChecksumMethod();
@@ -578,7 +602,7 @@ namespace SerialDebugger.Settings
             var dict = field.Dict;
             if (dict is null)
             {
-                throw new Exception($"Field[{id}]({field.Name}): type:DictではDictオブジェクトを指定してください。");
+                throw new Exception($"fields[{id}]({field.Name}): type:DictではDictオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = new (UInt64, string)[dict.Count];
@@ -598,7 +622,7 @@ namespace SerialDebugger.Settings
             var unit = field.Unit;
             if (unit is null)
             {
-                throw new Exception($"Field[{id}]({field.Name}): type:UnitではUnitオブジェクトを指定してください。");
+                throw new Exception($"fields[{id}]({field.Name}): type:UnitではUnitオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = Field.MakeSelecterUnit(unit.Unit, unit.Lsb, unit.DispMax, unit.DispMin, unit.ValueMin, unit.Format);
@@ -612,7 +636,7 @@ namespace SerialDebugger.Settings
             var time = field.Time;
             if (time is null)
             {
-                throw new Exception($"Field[{id}]({field.Name}): type:TimeではTimeオブジェクトを指定してください。");
+                throw new Exception($"fields[{id}]({field.Name}): type:TimeではTimeオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = Field.MakeSelecterTime(time.Elapse, time.Begin, time.End, time.ValueMin);
@@ -626,7 +650,7 @@ namespace SerialDebugger.Settings
             var script = field.Script;
             if (script is null)
             {
-                throw new Exception($"Field[{id}]({field.Name}): type:ScriptではScriptオブジェクトを指定してください。");
+                throw new Exception($"fields[{id}]({field.Name}): type:ScriptではScriptオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = Field.MakeSelecterScript(script.Mode, script.Count, script.Script);
@@ -665,11 +689,11 @@ namespace SerialDebugger.Settings
                 // データチェック, nameとbitsizeの両方が有効である必要がある
                 if (Object.ReferenceEquals(field.Name, string.Empty))
                 {
-                    throw new Exception($"Field[{id}]: nameかmulti_nameのどちらかを指定してください。");
+                    throw new Exception($"fields[{id}]: nameかmulti_nameのどちらかを指定してください。");
                 }
                 if (field.BitSize <= 0)
                 {
-                    throw new Exception($"Field[{id}]({field.Name}): 有効なbit_sizeを指定してください。");
+                    throw new Exception($"fields[{id}]({field.Name}): 有効なbit_sizeを指定してください。");
                 }
                 var multi_name = new Field.InnerField[1];
                 multi_name[0] = new Field.InnerField(field.Name, field.BitSize);

@@ -274,7 +274,8 @@
 								}
 							],
 							"value": 85,
-							"type": "Edit"
+							"type": "Edit",
+							"base": 10
 						},
 						{
 							"name": "field2",

@@ -47,33 +47,37 @@ namespace SerialDebugger.Settings
 
         public async Task AnalyzeJsonAsync(Json.Comm json)
         {
-            if (json is null || json.Tx is null || json.Tx.Frames is null)
+            if (json is null)
             {
-                throw new Exception("txキーが定義されていません");
+                return;
             }
 
-            // TxFrameコレクション作成
-            int i = 0;
-            foreach (var frame in json.Tx.Frames)
+            if (!(json.Tx is null) && !(json.Tx.Frames is null))
             {
-                var f = await MakeTxFrameAsync(i, frame);
-
-                if (TxNameDict.TryGetValue(f.Name, out int value))
+                // TxFrameコレクション作成
+                int i = 0;
+                foreach (var frame in json.Tx.Frames)
                 {
-                    // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
-                    throw new Exception("tx.frame.nameに同じ名前が存在します。ユニークな名前を設定してください。");
-                }
-                TxNameDict.Add(f.Name, f.Id);
+                    var f = await MakeTxFrameAsync(i, frame);
 
-                Tx.Add(f);
-                i++;
+                    if (TxNameDict.TryGetValue(f.Name, out int value))
+                    {
+                        // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
+                        throw new Exception($"TxFrame[{i}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
+                    }
+                    TxNameDict.Add(f.Name, f.Id);
+
+                    Tx.Add(f);
+                    i++;
+                }
+
             }
 
             // RxFrame作成
             // TxFrame作成後に実施する
             if (!(json.Rx is null) && !(json.Rx.Frames is null))
             {
-                i = 0;
+                int i = 0;
                 foreach (var frame in json.Rx.Frames)
                 {
                     var f = await MakeRxFrameAsync(i, frame);
@@ -119,34 +123,41 @@ namespace SerialDebugger.Settings
         {
             if (Object.ReferenceEquals(frame.Name, string.Empty))
             {
-                throw new Exception("RxFrame: Nameを指定してください。");
+                throw new Exception($"RxFrame[{id}]: Nameを指定してください。");
             }
 
-            // RxFrame作成
-            var f = new RxFrame(id, frame.Name);
-            if (!(frame.Fields is null))
+            try
             {
-                int i = 0;
-                foreach (var field in frame.Fields)
+                // RxFrame作成
+                var f = new RxFrame(id, frame.Name);
+                if (!(frame.Fields is null))
                 {
-                    f.Fields.Add(await MakeFieldAsync(i, field));
-                    i++;
-                }
-                f.Build();
+                    int i = 0;
+                    foreach (var field in frame.Fields)
+                    {
+                        f.Fields.Add(await MakeFieldAsync(i, field));
+                        i++;
+                    }
+                    f.Build();
 
-                // PatternMatch作成
-                // Fieldsありのとき
-                i = 0;
-                foreach (var pattern in frame.Patterns)
-                {
-                    var p = MakeRxPattern(i, pattern);
-                    f.Patterns.Add(p);
-                    i++;
+                    // PatternMatch作成
+                    // Fieldsありのとき
+                    i = 0;
+                    foreach (var pattern in frame.Patterns)
+                    {
+                        var p = MakeRxPattern(i, pattern);
+                        f.Patterns.Add(p);
+                        i++;
+                    }
+                    f.BuildPattern();
                 }
-                f.BuildPattern();
+
+                return f;
             }
-
-            return f;
+            catch (Exception ex)
+            {
+                throw new Exception($"RxFrame[{id}]({frame.Name}): {ex.Message}");
+            }
         }
 
         private RxPattern MakeRxPattern(int id, Json.CommRxPattern pattern)
@@ -383,25 +394,32 @@ namespace SerialDebugger.Settings
         {
             if (Object.ReferenceEquals(frame.Name, string.Empty))
             {
-                throw new Exception("TxFrame: Nameを指定してください。");
+                throw new Exception($"TxFrame[{id}]: Nameを指定してください。");
             }
 
-            // TxFrame作成
-            var f = new TxFrame(id, frame.Name);
-            if (!(frame.Fields is null))
+            try
             {
-                int i = 0;
-                foreach (var field in frame.Fields)
+                // TxFrame作成
+                var f = new TxFrame(id, frame.Name);
+                if (!(frame.Fields is null))
                 {
-                    f.Fields.Add(await MakeFieldAsync(i, field));
-                    i++;
+                    int i = 0;
+                    foreach (var field in frame.Fields)
+                    {
+                        f.Fields.Add(await MakeFieldAsync(i, field));
+                        i++;
+                    }
+                    f.Build();
                 }
-                f.Build();
-            }
-            // TxFrame作成後にBackupBuffer作成
-            MakeTxBackupBuffers(frame, f);
+                // TxFrame作成後にBackupBuffer作成
+                MakeTxBackupBuffers(frame, f);
 
-            return f;
+                return f;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"TxFrame[{id}]({frame.Name}): {ex.Message}");
+            }
         }
 
         private void MakeTxBackupBuffers(Json.CommTxFrame frame, TxFrame f)
@@ -515,13 +533,13 @@ namespace SerialDebugger.Settings
             // Checksumチェック
             if (field.Checksum is null)
             {
-                throw new Exception("type:ChecksumではChecksumオブジェクトを指定してください。");
+                throw new Exception($"Field[{id}]({field.Name}): type:ChecksumではChecksumオブジェクトを指定してください。");
             }
             // Nameチェック
             // Checksumの場合はmulti_nameは許可しない
             if (Object.ReferenceEquals(field.Name, string.Empty))
             {
-                throw new Exception("Checksumノードはname,bit_sizeを指定してください。");
+                throw new Exception($"Field[{id}]({field.Name}): Checksumノードはname,bit_sizeを指定してください。");
             }
             // Checksum計算方法
             var method = new Field.ChecksumMethod();
@@ -560,7 +578,7 @@ namespace SerialDebugger.Settings
             var dict = field.Dict;
             if (dict is null)
             {
-                throw new Exception("type:DictではDictオブジェクトを指定してください。");
+                throw new Exception($"Field[{id}]({field.Name}): type:DictではDictオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = new (UInt64, string)[dict.Count];
@@ -580,7 +598,7 @@ namespace SerialDebugger.Settings
             var unit = field.Unit;
             if (unit is null)
             {
-                throw new Exception("type:UnitではUnitオブジェクトを指定してください。");
+                throw new Exception($"Field[{id}]({field.Name}): type:UnitではUnitオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = Field.MakeSelecterUnit(unit.Unit, unit.Lsb, unit.DispMax, unit.DispMin, unit.ValueMin, unit.Format);
@@ -594,7 +612,7 @@ namespace SerialDebugger.Settings
             var time = field.Time;
             if (time is null)
             {
-                throw new Exception("type:TimeではTimeオブジェクトを指定してください。");
+                throw new Exception($"Field[{id}]({field.Name}): type:TimeではTimeオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = Field.MakeSelecterTime(time.Elapse, time.Begin, time.End, time.ValueMin);
@@ -608,7 +626,7 @@ namespace SerialDebugger.Settings
             var script = field.Script;
             if (script is null)
             {
-                throw new Exception("type:ScriptではScriptオブジェクトを指定してください。");
+                throw new Exception($"Field[{id}]({field.Name}): type:ScriptではScriptオブジェクトを指定してください。");
             }
             // Selecter作成
             var selecter = Field.MakeSelecterScript(script.Mode, script.Count, script.Script);
@@ -639,7 +657,7 @@ namespace SerialDebugger.Settings
                 }
                 // multi_name指定時はBitSizeは使わない
                 // Field生成
-                result = new Field(id, name, multi_name, field.Value, type, selecter);
+                result = new Field(id, name, multi_name, field.Value, field.Base, type, selecter);
             }
             else
             {
@@ -647,16 +665,16 @@ namespace SerialDebugger.Settings
                 // データチェック, nameとbitsizeの両方が有効である必要がある
                 if (Object.ReferenceEquals(field.Name, string.Empty))
                 {
-                    throw new Exception("nameかmulti_nameのどちらかを指定してください。");
+                    throw new Exception($"Field[{id}]: nameかmulti_nameのどちらかを指定してください。");
                 }
                 if (field.BitSize <= 0)
                 {
-                    throw new Exception("有効なbit_sizeを指定してください。");
+                    throw new Exception($"Field[{id}]({field.Name}): 有効なbit_sizeを指定してください。");
                 }
                 var multi_name = new Field.InnerField[1];
                 multi_name[0] = new Field.InnerField(field.Name, field.BitSize);
                 // Field生成
-                result = new Field(id, field.Name, multi_name, field.Value, type, selecter);
+                result = new Field(id, field.Name, multi_name, field.Value, field.Base, type, selecter);
             }
 
             await result.InitAsync();

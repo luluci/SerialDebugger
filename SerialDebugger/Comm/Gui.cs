@@ -26,7 +26,8 @@ namespace SerialDebugger.Comm
         // Converter
         public static GuiValueColConverter ColConverter = new GuiValueColConverter();
         public static GuiTxBufferColConverter TxBufConverter = new GuiTxBufferColConverter();
-        public static GuiEditConverter EditConverter = new GuiEditConverter();
+        public static GuiHexEditConverter HexEditConverter = new GuiHexEditConverter();
+        public static GuiDecEditConverter DecEditConverter = new GuiDecEditConverter();
         public static GuiTxSendFixNameConverter TxSendFixNameConverter = new GuiTxSendFixNameConverter();
         public static GuiTxSendFixBGColorConverter TxSendFixBGColorConverter = new GuiTxSendFixBGColorConverter();
         public static GuiBitColBgConverter[] BitColBgConverter = new GuiBitColBgConverter[]
@@ -360,9 +361,9 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Script:
                     return MakeInputGuiSelecter(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
-                    return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:
-                    return MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Fix:
                 default:
                     return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
@@ -374,9 +375,9 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiEdit(Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiEdit(Field field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            var tb = MakeInputGuiTextBox(param, path, row, col, rowspan, colspan);
+            var tb = MakeInputGuiTextBox(param, path, field.InputBase, row, col, rowspan, colspan);
             //
             var border = MakeBorder1();
             border.Child = tb;
@@ -403,7 +404,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiTextBox(Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiTextBox(Object param, string path, int input_base, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // ベース作成
             var sp = new StackPanel
@@ -414,24 +415,53 @@ namespace SerialDebugger.Comm
 
             // binding作成
             var bind = new Binding(path + ".Value.Value");
-            bind.Converter = EditConverter;
+            switch (input_base)
+            {
+                case 10:
+                    bind.Converter = DecEditConverter;
+                    break;
+
+                default:
+                    bind.Converter = HexEditConverter;
+                    break;
+            }
             bind.ConverterParameter = param;
             //
             var tb = new TextBox();
             tb.SetBinding(TextBox.TextProperty, bind);
             tb.Background = SystemColors.ControlLightLightBrush;
             tb.TextAlignment = TextAlignment.Center;
-            tb.Width = Gui.setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput] - InputColUnitWidth;
+            // 表示幅
+            switch (input_base)
+            {
+                case 10:
+                    tb.Width = Gui.setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput];
+                    break;
+
+                default:
+                    tb.Width = Gui.setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput] - InputColUnitWidth;
+                    break;
+            }
             //
             sp.Children.Add(tb);
 
-            // h表示
-            var text = new TextBlock
+            // 単位表示
+            switch (input_base)
             {
-                Text = "h"
-            };
-            //
-            sp.Children.Add(text);
+                case 10:
+                    // なし
+                    break;
+
+                default:
+                    // h表示
+                    var text = new TextBlock
+                    {
+                        Text = "h"
+                    };
+                    //
+                    sp.Children.Add(text);
+                    break;
+            }
 
             return sp;
         }
@@ -450,7 +480,7 @@ namespace SerialDebugger.Comm
                 // ベース作成
                 var sp = new StackPanel();
                 // TextBox作成
-                var tb = MakeInputGuiTextBox(param, path, row, col, rowspan, colspan);
+                var tb = MakeInputGuiTextBox(param, path, field.InputBase, row, col, rowspan, colspan);
                 //
                 sp.Children.Add(tb);
 

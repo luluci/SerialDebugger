@@ -91,7 +91,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// Select列:テキストボックスに表示する文字列を作成する
     /// </summary>
-    internal class GuiEditConverter : IValueConverter
+    internal class GuiHexEditConverter : IValueConverter
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -102,17 +102,53 @@ namespace SerialDebugger.Comm
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            UInt64 temp = Convert.ToUInt64((string)value, 16);
-            var field = parameter as Field;
-            if ((field.Min <= temp) && (temp <= field.Max))
+            try
             {
-                return temp;
+                UInt64 temp = Convert.ToUInt64((string)value, 16);
+                var field = parameter as Field;
+                if ((field.Min <= temp) && (temp <= field.Max))
+                {
+                    return temp;
+                }
             }
-            else
+            catch
             {
-                // 範囲外は読み捨て
-                return DependencyProperty.UnsetValue;
+                // Convert失敗
             }
+            // 範囲外は読み捨て
+            return DependencyProperty.UnsetValue;
+        }
+    }
+
+    /// <summary>
+    /// Select列:テキストボックスに表示する文字列を作成する
+    /// </summary>
+    internal class GuiDecEditConverter : IValueConverter
+    {
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var temp = (UInt64)value;
+            // 10進数表示
+            return $"{temp}";
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            try
+            {
+                UInt64 temp = Convert.ToUInt64((string)value, 10);
+                var field = parameter as Field;
+                if ((field.Min <= temp) && (temp <= field.Max))
+                {
+                    return temp;
+                }
+            }
+            catch
+            {
+                // Convert失敗
+            }
+            // 範囲外は読み捨て
+            return DependencyProperty.UnsetValue;
         }
     }
 

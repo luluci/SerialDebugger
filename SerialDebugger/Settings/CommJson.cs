@@ -172,6 +172,17 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("value")]
             public UInt64 Value { get; set; } = 0;
 
+            [JsonPropertyName("base")]
+            public int Base { get; set; } = 16;
+
+            [JsonPropertyName("min")]
+            public UInt64 Min { get; set; } = UInt64.MaxValue;
+
+            [JsonPropertyName("max")]
+            public UInt64 Max { get; set; } = UInt64.MinValue;
+
+
+
             [JsonPropertyName("type")]
             public string Type { get; set; } = string.Empty;
 

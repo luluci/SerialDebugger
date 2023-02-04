@@ -20,6 +20,8 @@ namespace SerialDebugger.Comm
         public int Id { get; }
         public string Name { get; }
         public int BitSize { get; }
+        // テキストボックス表示基数
+        public int InputBase { get; }
         //
         public ReactivePropertySlim<UInt64> Value { get; set; }
         /// <summary>
@@ -103,16 +105,15 @@ namespace SerialDebugger.Comm
             public double DispMin { get; }
             public UInt64 ValueMin { get; }
             public string Format { get; }
-            // Time
+            // Time表現要素
             public double Elapse { get; }
             public DateTime TimeBegin { get; }
             public DateTime TimeEnd { get; }
-            // ValueMin
-            // Script
+            // Script表現要素
             public string Mode { get; }
             public int Count { get; }
             public string Script { get; }
-            // Refer
+            // Refer表現要素
             public Field FieldRef { get; }
 
             public Selecter((UInt64, string)[] dict)
@@ -209,17 +210,18 @@ namespace SerialDebugger.Comm
         /// <param name="type"></param>
         /// <param name="selecter"></param>
         public Field(int id, ChecksumNode node)
-            : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, InputModeType.Checksum, null)
+            : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, 16, InputModeType.Checksum, null)
         {
             Checksum = node;
             IsChecksum = true;
         }
         
-        public Field(int id, string name, InnerField[] innerFields, UInt64 value = 0, InputModeType type = InputModeType.Fix, Selecter selecter = null)
+        public Field(int id, string name, InnerField[] innerFields, UInt64 value, int input_base, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
             this.selecter = selecter;
             Id = id;
             Name = name;
+            InputBase = input_base;
             BitSize = 0;
             foreach (var inner in innerFields)
             {

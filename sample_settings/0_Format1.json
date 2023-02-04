@@ -189,7 +189,7 @@
 					],
 					"patterns": [
 						{
-							"name": "Rx_Pattern_1",
+							"name": "Rx_Pattern_3",
 							"active": true,
 							"matches": [
 								{ "type": "any" },
@@ -210,9 +210,9 @@
 					"name": "Job_Auto_A",
 					"active": false,
 					"actions": [
-						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1 },
-						{ "type": "Jump", "jump_to": 0 }
+						{ "type": "Wait", "alias": "wait 2sec!", "wait_time": 2000 },
+						{ "type": "Send", "alias": "send FrameA!!", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1 },
+						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
 					]
 				},
 				{

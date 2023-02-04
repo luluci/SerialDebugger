@@ -504,9 +504,9 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Script:
                     return Gui.MakeInputGuiSelecter(field.selecter.FieldRef, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
-                    return Gui.MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
+                    return Gui.MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:
-                    return Gui.MakeInputGuiEdit(field, path, row, col, rowspan, colspan);
+                    return Gui.MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Fix:
                 default:
                     return Gui.MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);

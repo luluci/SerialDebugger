@@ -42,10 +42,17 @@ namespace SerialDebugger
         }
         void MoveToNextUIElement(KeyEventArgs e)
         {
-            FocusNavigationDirection focusDirection = FocusNavigationDirection.Next;
-            TraversalRequest request = new TraversalRequest(focusDirection);
-            UIElement elementWithFocus = Keyboard.FocusedElement as UIElement;
-            if (elementWithFocus != null) elementWithFocus.MoveFocus(request);
+            var elementWithFocus = Keyboard.FocusedElement as UIElement;
+            if (!(elementWithFocus is null))
+            {
+                var focusDirectionNext = FocusNavigationDirection.Next;
+                var focusDirectionPrev = FocusNavigationDirection.Previous;
+                var requestNext = new TraversalRequest(focusDirectionNext);
+                var requestPrev = new TraversalRequest(focusDirectionPrev);
+                elementWithFocus.MoveFocus(requestNext);
+
+                (Keyboard.FocusedElement as UIElement)?.MoveFocus(requestPrev);
+            }
         }
     }
 }

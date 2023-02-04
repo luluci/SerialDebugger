@@ -86,6 +86,7 @@ namespace SerialDebugger.Comm
                     field.Name,
                     field.InnerFields.ToArray(),
                     field.Value.Value,
+                    field.InputBase,
                     field.InputType,
                     new Field.Selecter(field)
                 );

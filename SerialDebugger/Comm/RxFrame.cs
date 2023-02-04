@@ -246,6 +246,48 @@ namespace SerialDebugger.Comm
 
         }
 
+        public string MakeLogVisualize(byte[] buff, int length)
+        {
+            var log = new StringBuilder();
+
+            bool is_first = true;
+            int bit_size = 0;
+            UInt64 data;
+            foreach (var field in Fields)
+            {
+                // buffからfieldに該当する分のデータを抽出
+                bit_size = field.BitPos + field.BitSize;
+                data = GetUint64(buff, length, field.BytePos, bit_size);
+                // LSB側の余分ビットを除去
+                data >>= field.BitPos;
+                // MSB側の余分ビットを除去
+                data &= field.Mask;
+
+                // separator
+                if (!is_first)
+                {
+                    log.Append(", ");
+                }
+                // 
+                log.Append(field.Name).Append("=").Append(field.MakeDispByValue(data));
+
+                is_first = false;
+            }
+
+            return log.ToString();
+        }
+
+        private UInt64 GetUint64(byte[] buff, int length, int offset, int bit_size)
+        {
+            int byte_size = (bit_size + 7) / 8;
+            UInt64 result = 0;
+            for (int i = 0; i < byte_size && (offset + i) < length; i++)
+            {
+                result |= ((UInt64)buff[offset + i] << (i * 8));
+            }
+            return result;
+        }
+
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();
 

@@ -430,17 +430,11 @@ namespace SerialDebugger
                             break;
 
                         case Serial.RxDataType.Timeout:
-                            Logger.Add($"Comm Timeout: {Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset)}");
+                            Logger.Add($"[Rx][Timeout] {Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset)}");
                             break;
 
                         case Serial.RxDataType.Match:
-                            // 
-                            var sb = new StringBuilder(rxAnalyzer.MatchResult[0].PatternRef.Name);
-                            for (int i = 1; i < rxAnalyzer.MatchResultPos; i++)
-                            {
-                                sb.Append(",").Append(rxAnalyzer.MatchResult[i].PatternRef.Name);
-                            }
-                            Logger.Add($"Comm Match: {Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset)} ({sb.ToString()})");
+                            MakeRxLog();
                             // 処理結果を自動送信処理に通知
                             AutoTxExecRxEvent();
                             break;
@@ -470,6 +464,37 @@ namespace SerialDebugger
                 IsSerialOpen.Value = false;
                 IsEnableSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM接続";
+            }
+        }
+
+        private void MakeRxLog()
+        {
+            int frame_id = 0;
+            int result_idx = 0;
+            while (result_idx < rxAnalyzer.MatchResultPos)
+            {
+                // 先頭要素からログ作成
+                var result = rxAnalyzer.MatchResult[result_idx];
+                var sb = new StringBuilder(result.PatternRef.Name);
+                frame_id = result.FrameId;
+                // 同じFrame内でのパターンマッチは同一ログになる
+                result_idx++;
+                while (result_idx < rxAnalyzer.MatchResultPos && frame_id == rxAnalyzer.MatchResult[result_idx].FrameId)
+                {
+                    sb.Append(",").Append(rxAnalyzer.MatchResult[result_idx].PatternRef.Name);
+
+                    result_idx++;
+                }
+                string log;
+                if (result.PatternRef.IsLogVisualize)
+                {
+                    log = RxFrames[frame_id].MakeLogVisualize(rxAnalyzer.Result.RxBuff, rxAnalyzer.Result.RxBuffOffset);
+                }
+                else
+                {
+                    log = Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset);
+                }
+                Logger.Add($"[Rx][{sb.ToString()}] {log}");
             }
         }
 
@@ -576,7 +601,7 @@ namespace SerialDebugger
 
                 default:
                     // シリアル送信
-                    SerialWrite(frame.TxData);
+                    SerialWrite(frame.TxData, frame.Name);
                     break;
             }
         }
@@ -591,7 +616,7 @@ namespace SerialDebugger
 
                 default:
                     // シリアル送信
-                    SerialWrite(frame.TxData);
+                    SerialWrite(frame.TxData, frame.Name);
                     break;
             }
         }
@@ -621,7 +646,7 @@ namespace SerialDebugger
             frame.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
         }
 
-        private void SerialWrite(byte[] data)
+        private void SerialWrite(byte[] data, string name)
         {
             // 通信中のみ送信
             if (IsSerialOpen.Value)
@@ -631,7 +656,7 @@ namespace SerialDebugger
                     // 送信はGUIスレッドからのみ送信
                     serialPort.Write(data, 0, data.Length);
                     //
-                    Logger.Add($"Send: {Logger.Byte2Str(data)}");
+                    Logger.Add($"[Tx][{name}] {Logger.Byte2Str(data)}");
                     /*
                     await Task.Run(() => {
                         serialPort.Write(buff.ToArray(), 0, buff.Count);

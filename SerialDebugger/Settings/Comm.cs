@@ -190,7 +190,7 @@ namespace SerialDebugger.Settings
 
             try
             {
-                var p = new RxPattern(id, pattern.Name, pattern.Active);
+                var p = new RxPattern(id, pattern.Name, pattern.Active, pattern.LogVisualize);
 
                 // Match作成
                 if (!(pattern.Matches is null))

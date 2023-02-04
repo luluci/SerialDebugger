@@ -23,6 +23,7 @@ namespace SerialDebugger.Serial
         public byte[] RxBuff { get; set; }
         public int RxBuffOffset { get; set; }
         public int RxBuffTgtPos { get; set; }
+        public DateTime TimeStamp { get; set; }
 
         public RxData()
         {
@@ -173,6 +174,7 @@ namespace SerialDebugger.Serial
                         if (Analyze())
                         {
                             Result.Type = RxDataType.Match;
+                            Result.TimeStamp = endTimer.GetTime();
                             return;
                         }
                     }

@@ -103,7 +103,15 @@
 								}
 							],
 							"value": 85,
-							"type": "Edit",
+							"type": "Unit",
+							"unit": {
+								"unit": "-Frame",
+								"lsb": 1,
+								"disp_max": 10,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							},
 							"base": 10
 						},
 						{
@@ -191,6 +199,7 @@
 						{
 							"name": "Rx_Pattern_1",
 							"active": true,
+							"log_visualize": true,
 							"matches": [
 								{ "type": "any" },
 								{ "value": 1 },
@@ -437,6 +446,7 @@
 			"jobs": [
 				{
 					"name": "Job_Auto_1",
+					"alias": "job2を有効にする",
 					"active": true,
 					"actions": [
 						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_1" ] },
@@ -446,7 +456,7 @@
 				},
 				{
 					"name": "Job_Auto_2",
-					"active": true,
+					"active": false,
 					"actions": [
 						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_2" ] },
 						{ "type": "Wait", "wait_time": 2000 },
@@ -521,7 +531,15 @@
 								}
 							],
 							"value": 85,
-							"type": "Edit",
+							"type": "Unit",
+							"unit": {
+								"unit": "-Frame",
+								"lsb": 1,
+								"disp_max": 10,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							},
 							"base": 10
 						},
 						{

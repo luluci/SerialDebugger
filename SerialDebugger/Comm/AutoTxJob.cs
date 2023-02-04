@@ -182,7 +182,7 @@ namespace SerialDebugger.Comm
                     if (result)
                     {
                         // 処理終了からの時間を計測
-                        CycleTimer.Start();
+                        CycleTimer.StartBy(analyzer.Result.TimeStamp);
                         // 受信判定一致していたら次のActionに移行
                         if (NextAction())
                         {
@@ -249,7 +249,7 @@ namespace SerialDebugger.Comm
             // 処理終了からの時間を計測
             CycleTimer.Start();
             // Log出力
-            Logger.Add($"Auto Send: {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
+            Logger.Add($"[Tx][{action.TxFrameName}] {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
         }
 
         private bool ExecWait()

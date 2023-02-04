@@ -126,6 +126,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("active")]
             public bool Active { get; set; } = false;
 
+            [JsonPropertyName("log_visualize")]
+            public bool LogVisualize { get; set; } = false;
+
             [JsonPropertyName("matches")]
             public IList<CommRxMatch> Matches { get; set; }
         }

@@ -21,6 +21,16 @@ namespace SerialDebugger.Utility
             prev = DateTime.Now;
         }
 
+        public void StartBy(DateTime dt)
+        {
+            prev = dt;
+        }
+
+        public DateTime GetTime()
+        {
+            return prev;
+        }
+
         public void WaitThread(int msec)
         {
             var wait = WaitForMsec(msec);

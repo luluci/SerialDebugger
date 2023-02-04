@@ -376,7 +376,15 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Time:
                 case Field.InputModeType.Script:
                     var index = GetSelectsIndex(value);
-                    return Selects[index].Disp;
+                    if (index != -1)
+                    {
+                        return Selects[index].Disp;
+                    }
+                    else
+                    {
+                        return $"0x{value:X}";
+                    }
+
                 case Field.InputModeType.Edit:
                 case Field.InputModeType.Fix:
                 default:

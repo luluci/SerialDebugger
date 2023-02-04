@@ -33,7 +33,7 @@ namespace SerialDebugger.Log
             {
                 Impl.Log.RemoveAt(0);
             }
-            Impl.Log.Add($"{GetTimestamp(date)} : {log}");
+            Impl.Log.Add($"{GetTimestamp(date)} {log}");
             MainWindow.log_scrl.ScrollToBottom();
         }
 
@@ -87,7 +87,8 @@ namespace SerialDebugger.Log
         }
         static public string GetTimestamp(DateTime time)
         {
-            return time.ToString("yyyy/MM/dd/HH:mm:ss.FFFF");
+            //return time.ToString("yyyy/MM/dd/HH:mm:ss.FFFF");
+            return time.ToString("HH:mm:ss.fff");
         }
 
         static public string Byte2Str(byte[] data)

@@ -152,6 +152,7 @@ namespace SerialDebugger.Comm
             {
                 case AutoTxActionType.Send:
                 case AutoTxActionType.Wait:
+                case AutoTxActionType.Recv:
                 case AutoTxActionType.Jump:
                 case AutoTxActionType.ActivateAutoTx:
                     return MakeActionDisp(action, path, is_first);

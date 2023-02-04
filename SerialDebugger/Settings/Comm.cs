@@ -405,7 +405,7 @@ namespace SerialDebugger.Settings
                     return MakeAutoTxActionWait(id, action);
 
                 case "Recv":
-                    throw new Exception($"actions[{id}]: {action.Type} is unimplemented!");
+                    return MakeAutoTxActionRecv(id, action);
 
                 case "Jump":
                     return MakeAutoTxActionJump(id, action);
@@ -475,6 +475,34 @@ namespace SerialDebugger.Settings
 
             // 後ろで定義されるjobを指定できるように、AutoTxJobNameが存在するかは後でチェックする
             var act = AutoTxAction.MakeActivateAutoTxAction(id, action.Alias, action.AutoTxJobName, action.Immediate);
+
+            return act;
+        }
+        private AutoTxAction MakeAutoTxActionRecv(int id, Json.CommAutoTxAction action)
+        {
+            // RxFrame/Patternとひもづけ
+            var Recvs = new List<AutoTxRecvItem>();
+            if (!(action.RxPatternNames is null))
+            {
+                foreach (var name in action.RxPatternNames)
+                {
+                    if (RxPatternDict.TryGetValue(name, out RxPatternInfo info))
+                    {
+                        Recvs.Add(new AutoTxRecvItem
+                        {
+                            PatternName = name,
+                            FrameId = info.FrameId,
+                            PatternId = info.PatternId,
+                        });
+                    }
+                    else
+                    {
+                        throw new Exception($"actions[{id}](Recv): 指定された受信パターン({name})が存在しません。");
+                    }
+                }
+            }
+
+            var act = AutoTxAction.MakeRecvAction(id, action.Alias, Recvs, action.Immediate);
 
             return act;
         }

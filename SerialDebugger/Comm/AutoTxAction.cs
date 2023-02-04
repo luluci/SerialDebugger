@@ -22,6 +22,13 @@ namespace SerialDebugger.Comm
         ActivateAutoTx,     // AutoTx有効化
     }
 
+    class AutoTxRecvItem
+    {
+        public string PatternName { get; set; } = string.Empty;
+        public int FrameId { get; set; } = -1;
+        public int PatternId { get; set; } = -1;
+    }
+
     class AutoTxAction : BindableBase, IDisposable
     {
         // 共通
@@ -42,9 +49,8 @@ namespace SerialDebugger.Comm
         /// 待機時間(milli sec)
         /// </summary>
         public ReactivePropertySlim<int> WaitTime { get; private set; }
-
-        public ReactivePropertySlim<string> RxFrameName { get; private set; }
-        public int RxAnalyzeIndex { get; private set; }
+        // Recv
+        public List<AutoTxRecvItem> Recvs { get; private set; }
         // Jump
         public ReactivePropertySlim<int> JumpTo { get; private set; }
         // Script
@@ -127,16 +133,31 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeRecvAction(int id, string alias, string rx_name, int rx_idx, bool immediate)
+        public static AutoTxAction MakeRecvAction(int id, string alias, List<AutoTxRecvItem> rx_items, bool immediate)
         {
             var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.Recv,
                 Immediate = immediate,
+                Recvs = rx_items,
             };
-            action.RxFrameName = new ReactivePropertySlim<string>(rx_name);
-            action.RxFrameName.AddTo(action.Disposables);
-            action.RxAnalyzeIndex = rx_idx;
+
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                if (action.Recvs.Count > 0)
+                {
+                    var sb = new StringBuilder(action.Recvs[0].PatternName);
+                    for (int i = 1; i < action.Recvs.Count; i++)
+                    {
+                        sb.Append(",").Append(action.Recvs[i].PatternName);
+                    }
+                    action.Alias = $"Recv [{sb.ToString()}]";
+                }
+                else
+                {
+                    action.Alias = $"Recv <any>";
+                }
+            }
 
             return action;
         }

@@ -103,6 +103,9 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.Wait:
                     break;
 
+                case AutoTxActionType.Recv:
+                    break;
+
                 case AutoTxActionType.Jump:
                     if (action.JumpTo.Value >= Actions.Count)
                     {
@@ -154,6 +157,10 @@ namespace SerialDebugger.Comm
                         check = NextAction();
                         break;
 
+                    case AutoTxActionType.Recv:
+                        // Recvは周期判定では変化しない
+                        break;
+
                     default:
                         throw new Exception("undefined type.");
                 }
@@ -165,6 +172,18 @@ namespace SerialDebugger.Comm
             switch (Actions[ActiveActionIndex].Type)
             {
                 case AutoTxActionType.Recv:
+                    var result = ExecRecv(analyzer);
+                    if (result)
+                    {
+                        // 処理終了からの時間を計測
+                        CycleTimer.Start();
+                        // 受信判定一致していたら次のActionに移行
+                        if (NextAction())
+                        {
+                            // 通常Execを実施
+                            Exec(serial, TxFrames, AutoTxJobs);
+                        }
+                    }
                     break;
 
                 default:
@@ -267,6 +286,31 @@ namespace SerialDebugger.Comm
             var action = Actions[ActiveActionIndex];
 
             AutoTxJobs[action.AutoTxJobIndex.Value].IsActive.Value = true;
+        }
+
+        private bool ExecRecv(Serial.RxAnalyzer analyzer)
+        {
+            var action = Actions[ActiveActionIndex];
+
+            // 要素ゼロはなんでも受信でOK
+            if (action.Recvs.Count == 0)
+            {
+                return true;
+            }
+            //
+            foreach (var item in action.Recvs)
+            {
+                for (int a_idx = 0; a_idx < analyzer.MatchResultPos; a_idx++)
+                {
+                    var match = analyzer.MatchResult[a_idx];
+                    if (item.FrameId == match.FrameId && item.PatternId == match.PatternId)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         #region IDisposable Support

@@ -106,7 +106,7 @@ namespace SerialDebugger.Comm
         public static Border MakeJobName(AutoTxJob job, string path)
         {
             var cb = new CheckBox();
-            cb.Content = job.Name.Value;
+            cb.Content = job.Alias;
             var bind = new Binding(path + ".IsActive.Value");
             cb.SetBinding(CheckBox.IsCheckedProperty, bind);
             cb.FontWeight = FontWeights.Bold;

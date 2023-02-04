@@ -17,7 +17,8 @@ namespace SerialDebugger.Comm
     class AutoTxJob : BindableBase, IDisposable
     {
         public int Id { get; }
-        public ReactivePropertySlim<string> Name { get; }
+        public string Name { get; private set; }
+        public string Alias { get; private set; }
         public ReactivePropertySlim<bool> IsActive { get; set; }
         public (DateTime, AutoTxActionType, object)[] LogBuffer;
         public int LogBufferHead;
@@ -28,13 +29,12 @@ namespace SerialDebugger.Comm
 
         public int ActiveActionIndex { get; set; }
 
-        public AutoTxJob(int id, string name, bool active = false)
+        public AutoTxJob(int id, string name, string alias, bool active = false)
         {
             Id = id;
             CycleTimer = new Utility.CycleTimer();
 
-            Name = new ReactivePropertySlim<string>(name);
-            Name.AddTo(Disposables);
+            Name = name;
             IsActive = new ReactivePropertySlim<bool>(active);
             IsActive.Subscribe((x) =>
             {
@@ -46,6 +46,12 @@ namespace SerialDebugger.Comm
             IsActive.AddTo(Disposables);
             Actions = new ReactiveCollection<AutoTxAction>();
             Actions.AddTo(Disposables);
+
+            Alias = alias;
+            if (object.ReferenceEquals(Alias, string.Empty))
+            {
+                Alias = Name;
+            }
         }
 
         public void Add(AutoTxAction action)

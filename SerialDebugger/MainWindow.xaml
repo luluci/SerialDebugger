@@ -34,7 +34,7 @@
                 <Button Content="{Binding TextSerialOpen.Value}" Command="{Binding OnClickSerialOpen}" IsEnabled="{Binding IsEnableSerialOpen.Value}" Height="20" Margin="10,5,0,0"  Width="74" FontFamily="Meiryo UI"/>
                 <StackPanel Orientation="Horizontal" Margin="10,5,0,0" Height="22">
                     <TextBlock Margin="0,3,0,0" Text="自動送信:"/>
-                    <ComboBox x:Name="AutoTxShortcut" ItemsSource="{Binding AutoTxJobs}" DisplayMemberPath="Name.Value" SelectedIndex="{Binding AutoTxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
+                    <ComboBox x:Name="AutoTxShortcut" ItemsSource="{Binding AutoTxJobs}" DisplayMemberPath="Alias" SelectedIndex="{Binding AutoTxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
                     <Button Content="{Binding AutoTxShortcutButtonDisp.Value}" Command="{Binding OnClickAutoTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
                 </StackPanel>
                 <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}"  Margin="10,5,0,0" Width="80"/>

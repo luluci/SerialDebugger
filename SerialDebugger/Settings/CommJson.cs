@@ -38,6 +38,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
 
+            [JsonPropertyName("alias")]
+            public string Alias { get; set; } = string.Empty;
+
             [JsonPropertyName("active")]
             public bool Active { get; set; } = false;
 

@@ -124,12 +124,12 @@ namespace SerialDebugger.Settings
                     // Job作成
                     var j = MakeAutoTxJob(id, job);
                     // Job名重複チェック
-                    if (AutoTxJobNameDict.TryGetValue(j.Name.Value, out int idx))
+                    if (AutoTxJobNameDict.TryGetValue(j.Name, out int idx))
                     {
                         // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
-                        throw new Exception($"auto_tx: jobs[{j.Id}]: 同じ名前({j.Name.Value})が存在します。jobs.nameにはユニークな名前を設定してください。");
+                        throw new Exception($"auto_tx: jobs[{j.Id}]: 同じ名前({j.Name})が存在します。jobs.nameにはユニークな名前を設定してください。");
                     }
-                    AutoTxJobNameDict.Add(j.Name.Value, id);
+                    AutoTxJobNameDict.Add(j.Name, id);
                     //
                     AutoTx.Add(j);
                     id++;
@@ -372,7 +372,7 @@ namespace SerialDebugger.Settings
             try
             {
                 // Job作成
-                var j = new AutoTxJob(id, job.Name, job.Active);
+                var j = new AutoTxJob(id, job.Name, job.Alias, job.Active);
                 // Action解析
                 if (!(job.Actions is null))
                 {

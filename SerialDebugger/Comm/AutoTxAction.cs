@@ -14,22 +14,24 @@ namespace SerialDebugger.Comm
 
     enum AutoTxActionType
     {
-        Send,       // シリアル送信
-        Wait,       // 時間待機
-        Recv,       // 受信待機
-        Jump,       // ジャンプ
-        Script,     // スクリプト実行
+        Send,               // シリアル送信
+        Wait,               // 時間待機
+        Recv,               // 受信待機
+        Jump,               // ジャンプ
+        Script,             // スクリプト実行
+        ActivateAutoTx,     // AutoTx有効化
     }
 
     class AutoTxAction : BindableBase, IDisposable
     {
+        // 共通
         public int Id { get; }
         public string Alias { get; private set; }
-
         public AutoTxActionType Type { get; private set; }
         public ReactivePropertySlim<bool> IsActive { get; set; }
         public bool Immediate { get; set; }
 
+        // Send
         public ReactivePropertySlim<string> TxFrameName { get; private set; }
         public int TxFrameIndex { get; private set; }
         public int TxFrameOffset { get; set; }
@@ -43,11 +45,13 @@ namespace SerialDebugger.Comm
 
         public ReactivePropertySlim<string> RxFrameName { get; private set; }
         public int RxAnalyzeIndex { get; private set; }
-
+        // Jump
         public ReactivePropertySlim<int> JumpTo { get; private set; }
-
+        // Script
         public ReactivePropertySlim<string> ScriptName { get; private set; }
-
+        // Activate
+        public ReactivePropertySlim<string> AutoTxJobName { get; private set; }
+        public ReactivePropertySlim<int> AutoTxJobIndex { get; set; }
 
         public AutoTxAction(int id, string alias)
         {
@@ -150,7 +154,27 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        
+        public static AutoTxAction MakeActivateAutoTxAction(int id, string alias, string job_name, bool immediate)
+        {
+            var action = new AutoTxAction(id, alias)
+            {
+                Type = AutoTxActionType.ActivateAutoTx,
+                Immediate = immediate,
+            };
+            action.AutoTxJobName = new ReactivePropertySlim<string>(job_name);
+            action.AutoTxJobName.AddTo(action.Disposables);
+            action.AutoTxJobIndex = new ReactivePropertySlim<int>(-1);
+            action.AutoTxJobIndex.AddTo(action.Disposables);
+
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                action.Alias = $"Activate [{action.AutoTxJobName.Value}]";
+            }
+
+            return action;
+        }
+
+
 
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();

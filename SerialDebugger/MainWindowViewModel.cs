@@ -500,7 +500,7 @@ namespace SerialDebugger
                         // 有効ジョブを実行
                         if (job.IsActive.Value)
                         {
-                            job.Exec(serialPort, TxFrames);
+                            job.Exec(serialPort, TxFrames, AutoTxJobs);
                         }
                     }
 

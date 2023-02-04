@@ -110,12 +110,15 @@ namespace SerialDebugger.Comm
                     }
                     break;
 
+                case AutoTxActionType.ActivateAutoTx:
+                    break;
+
                 default:
                     throw new Exception("undefined type.");
             }
         }
         
-        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames)
+        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.AutoTxJob> AutoTxJobs)
         {
             bool check = true;
             while (check)
@@ -143,6 +146,12 @@ namespace SerialDebugger.Comm
                     case AutoTxActionType.Jump:
                         ExecJump();
                         check = true;
+                        break;
+
+                    case AutoTxActionType.ActivateAutoTx:
+                        ExecActivateAutoTx(AutoTxJobs);
+                        // 次のActionに移行
+                        check = NextAction();
                         break;
 
                     default:
@@ -238,6 +247,13 @@ namespace SerialDebugger.Comm
             ActiveActionIndex = Actions[ActiveActionIndex].JumpTo.Value;
             // Actionを有効にする
             Actions[ActiveActionIndex].IsActive.Value = true;
+        }
+
+        private void ExecActivateAutoTx(IList<Comm.AutoTxJob> AutoTxJobs)
+        {
+            var action = Actions[ActiveActionIndex];
+
+            AutoTxJobs[action.AutoTxJobIndex.Value].IsActive.Value = true;
         }
 
         #region IDisposable Support

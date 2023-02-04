@@ -20,7 +20,7 @@ namespace SerialDebugger.Settings
     {
         public ReactiveCollection<TxFrame> Tx { get; set; }
         public Dictionary<string, int> TxNameDict { get; set; }
-        // rx_autoresp
+        // 受信解析
         public ReactiveCollection<RxFrame> Rx { get; set; }
         public Dictionary<string, int> RxNameDict { get; set; }
         public class RxPatternInfo
@@ -29,8 +29,9 @@ namespace SerialDebugger.Settings
             public int PatternId { get; set; } = -1;
         }
         public Dictionary<string, RxPatternInfo> RxPatternDict { get; set; }
-        // tx_autosend
+        // 自動送信
         public ReactiveCollection<AutoTxJob> AutoTx { get; set; }
+        public Dictionary<string, int> AutoTxJobNameDict { get; set; }
 
         public Comm()
         {
@@ -43,6 +44,7 @@ namespace SerialDebugger.Settings
             RxPatternDict = new Dictionary<string, RxPatternInfo>();
             AutoTx = new ReactiveCollection<AutoTxJob>();
             AutoTx.AddTo(Disposables);
+            AutoTxJobNameDict = new Dictionary<string, int>();
         }
 
         public async Task AnalyzeJsonAsync(Json.Comm json)
@@ -112,9 +114,21 @@ namespace SerialDebugger.Settings
                 int id = 0;
                 foreach (var job in json.AutoTx.Jobs)
                 {
-                    AutoTx.Add(MakeAutoTxJob(id, job));
+                    // Job作成
+                    var j = MakeAutoTxJob(id, job);
+                    // Job名重複チェック
+                    if (AutoTxJobNameDict.TryGetValue(j.Name.Value, out int idx))
+                    {
+                        // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
+                        throw new Exception($"auto_tx: jobs[{j.Id}]: 同じ名前({j.Name.Value})が存在します。jobs.nameにはユニークな名前を設定してください。");
+                    }
+                    AutoTxJobNameDict.Add(j.Name.Value, id);
+                    //
+                    AutoTx.Add(j);
                     id++;
                 }
+                // AutoTx整合性チェック
+                ValidateAutoTx();
             }
         }
 
@@ -311,6 +325,40 @@ namespace SerialDebugger.Settings
         }
 
 
+        private void ValidateAutoTx()
+        {
+            foreach (var job in AutoTx)
+            {
+                foreach (var action in job.Actions)
+                {
+                    ValidateAutoTxAction(job, action);
+                }
+            }
+        }
+        private void ValidateAutoTxAction(AutoTxJob job, AutoTxAction action)
+        {
+            switch (action.Type)
+            {
+                case AutoTxActionType.ActivateAutoTx:
+                    // Activateチェック
+                    if (AutoTxJobNameDict.TryGetValue(action.AutoTxJobName.Value, out int index))
+                    {
+                        // 指定された名称のjobが存在すればOK
+                        // インデックスを記憶しておく
+                        action.AutoTxJobIndex.Value = index;
+                    }
+                    else
+                    {
+                        // 指定された名称のjobが存在しない場合は不正
+                        throw new Exception($"auto_tx: jobs[{job.Id}]({job.Name}): actions[{action.Id}]: Activate: 指定された名称({action.AutoTxJobName.Value})のjobが存在しません。");
+                    }
+                    break;
+
+                default:
+                    // チェック無し
+                    break;
+            }
+        }
 
         private AutoTxJob MakeAutoTxJob(int id, Json.CommAutoTxJob job)
         {
@@ -357,6 +405,9 @@ namespace SerialDebugger.Settings
 
                 case "Script":
                     throw new Exception($"actions[{id}]: {action.Type} is unimplemented!");
+
+                case "Activate":
+                    return MakeAutoTxActionActivate(id, action);
 
                 default:
                     throw new Exception($"actions[{id}]: Undefined AutoTx Action Type: {action.Type}");
@@ -405,6 +456,18 @@ namespace SerialDebugger.Settings
             }
 
             var act = AutoTxAction.MakeJumpAction(id, action.Alias, action.JumpTo, action.Immediate);
+
+            return act;
+        }
+        private AutoTxAction MakeAutoTxActionActivate(int id, Json.CommAutoTxAction action)
+        {
+            if (Object.ReferenceEquals(action.AutoTxJobName, string.Empty))
+            {
+                throw new Exception($"actions[{id}](Activate): 有効化対象となるauto_tx.job名(auto_tx_job_name)を指定してください。");
+            }
+
+            // 後ろで定義されるjobを指定できるように、AutoTxJobNameが存在するかは後でチェックする
+            var act = AutoTxAction.MakeActivateAutoTxAction(id, action.Alias, action.AutoTxJobName, action.Immediate);
 
             return act;
         }

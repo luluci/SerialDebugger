@@ -117,11 +117,16 @@ namespace SerialDebugger.Comm
             border.BorderThickness = new Thickness(1);
             border.BorderBrush = Brushes.DarkSlateGray;
             border.CornerRadius = new CornerRadius(9, 0, 0, 9);
-            border.Background = ColorFrameNameBg;
+            //border.Background = ColorFrameNameBg;
             //border.BorderBrush = ColorFrameNameBg;
             border.Child = cb;
             border.Padding = new Thickness(10,10,10,10);
             border.Margin = new Thickness(5, 5, 0, 5);
+
+            var bind_bg = new Binding(path + ".IsActive.Value");
+            bind_bg.Converter = ActiveJobBGColorConverter;
+            border.SetBinding(Border.BackgroundProperty, bind_bg);
+
 
             return border;
         }
@@ -148,6 +153,7 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.Send:
                 case AutoTxActionType.Wait:
                 case AutoTxActionType.Jump:
+                case AutoTxActionType.ActivateAutoTx:
                     return MakeActionDisp(action, path, is_first);
                     
                 default:
@@ -155,6 +161,7 @@ namespace SerialDebugger.Comm
             }
         }
 
+        private static AutoTxGuiActiveJobBGColorConverter ActiveJobBGColorConverter = new AutoTxGuiActiveJobBGColorConverter();
         private static AutoTxGuiActiveActionBGColorConverter ActiveActionBGColorConverter = new AutoTxGuiActiveActionBGColorConverter();
         private static Thickness ActionBaseBorderThickness = new Thickness(1);
         private static Thickness ActionBasePadding = new Thickness(5);

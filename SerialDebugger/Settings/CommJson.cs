@@ -56,7 +56,7 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("immediate")]
             public bool Immediate { get; set; } = false;
 
-
+            // Tx送信
             [JsonPropertyName("tx_frame_name")]
             public string TxFrameName { get; set; } = string.Empty;
 
@@ -69,12 +69,17 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("tx_frame_buff_length")]
             public int TxFrameBuffLength { get; set; } = -1;
 
-
+            // Wait
             [JsonPropertyName("wait_time")]
             public int WaitTime { get; set; } = -1;
 
+            // AutoTx Jump
             [JsonPropertyName("jump_to")]
             public int JumpTo { get; set; } = -1;
+
+            // Activate
+            [JsonPropertyName("auto_tx_job_name")]
+            public string AutoTxJobName { get; set; } = string.Empty;
 
 
             // 0個から受理, 0個指定でany

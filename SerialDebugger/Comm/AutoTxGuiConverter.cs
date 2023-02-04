@@ -35,4 +35,29 @@ namespace SerialDebugger.Comm
             throw new NotImplementedException();
         }
     }
+
+
+    internal class AutoTxGuiActiveJobBGColorConverter : IValueConverter
+    {
+        public static SolidColorBrush Active = new SolidColorBrush(Color.FromArgb(0xFF, 40, 60, 255));
+        public static SolidColorBrush Negative = new SolidColorBrush(Color.FromArgb(0xFF, 11, 40, 75));
+
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var active = (bool)value;
+            if (active)
+            {
+                return Active;
+            }
+            else
+            {
+                return Negative;
+            }
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

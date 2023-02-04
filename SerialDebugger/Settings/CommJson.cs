@@ -96,6 +96,9 @@ namespace SerialDebugger.Settings
 
         public class CommRx
         {
+            [JsonPropertyName("enable_multi_match")]
+            public bool MultiMatch { get; set; } = false;
+
             [JsonPropertyName("frames")]
             public IList<CommRxFrame> Frames { get; set; }
         }

@@ -419,6 +419,11 @@ namespace SerialDebugger.Comm
                     var rule = pattern.Analyzer.Rules[idx];
                     switch (rule.Type)
                     {
+                        case RxAnalyzeRuleType.Any:
+                            grid.Children.Add(Gui.MakeTextBlockStyle1("any", bit_pos, col_byte, 8));
+                            bit_pos += 8;
+                            break;
+
                         case RxAnalyzeRuleType.Value:
                             string disp = $"0x{rule.Value:X2}";
                             grid.Children.Add(Gui.MakeTextBlockStyle1(disp, bit_pos, col_byte, 8));

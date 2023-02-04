@@ -398,7 +398,7 @@ namespace SerialDebugger
                 serialPort = serialSetting.vm.GetSerialPort();
                 serialPort.Open();
                 // 解析クラス初期化
-                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames);
+                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames, Setting.Data.Comm.RxMultiMatch);
                 // COM切断を有効化
                 IsSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM切断";
@@ -417,10 +417,12 @@ namespace SerialDebugger
                 IsRxRunning = true;
                 while (IsRxRunning)
                 {
+                    // 受信開始前に初期化
+                    rxAnalyzer.Init();
                     // 受信解析, 一連の受信シーケンスが完了するまでawait
                     // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
-                    var result = await rxAnalyzer.Run(serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
-                    switch (result.Type)
+                    await rxAnalyzer.Run(serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
+                    switch (rxAnalyzer.Result.Type)
                     {
                         case Serial.RxDataType.Cancel:
                             // 実際はOperationCanceledExceptionをcatchする
@@ -428,14 +430,24 @@ namespace SerialDebugger
                             break;
 
                         case Serial.RxDataType.Timeout:
-                            Logger.Add($"Comm Timeout: {Logger.Byte2Str(result.Data)}");
+                            Logger.Add($"Comm Timeout: {Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset)}");
+                            break;
+
+                        case Serial.RxDataType.Match:
+                            // 
+                            var sb = new StringBuilder(rxAnalyzer.MatchResult[0].PatternRef.Name);
+                            for (int i = 1; i < rxAnalyzer.MatchResultPos; i++)
+                            {
+                                sb.Append(",").Append(rxAnalyzer.MatchResult[i].PatternRef.Name);
+                            }
+                            Logger.Add($"Comm Match: {Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset)} ({sb.ToString()})");
+                            // 処理結果を自動送信処理に通知
+                            AutoTxExecRxEvent();
                             break;
 
                         default:
                             break;
                     }
-                    // 処理結果を自動送信処理に通知
-                    // ...
                 }
             }
             catch (OperationCanceledException e)
@@ -514,6 +526,30 @@ namespace SerialDebugger
             }
 
         }
+        private void AutoTxExecRxEvent()
+        {
+            try
+            {
+                if (IsAutoTxRunning)
+                {
+                    // 受信イベントを通知
+                    foreach (var job in AutoTxJobs)
+                    {
+                        // 有効ジョブを実行
+                        if (job.IsActive.Value)
+                        {
+                            job.Exec(serialPort, TxFrames, AutoTxJobs, rxAnalyzer);
+                        }
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                IsAutoTxRunning = false;
+                Logger.AddException(exc);
+            }
+        }
+
         
         private void TickEventFinish()
         {

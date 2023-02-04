@@ -160,6 +160,19 @@ namespace SerialDebugger.Comm
             }
         }
 
+        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.AutoTxJob> AutoTxJobs, Serial.RxAnalyzer analyzer)
+        {
+            switch (Actions[ActiveActionIndex].Type)
+            {
+                case AutoTxActionType.Recv:
+                    break;
+
+                default:
+                    // 受信イベント以外は終了
+                    return;
+            }
+        }
+
         private bool NextAction()
         {
             // 現在Action終了

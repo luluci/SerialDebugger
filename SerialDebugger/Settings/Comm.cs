@@ -29,6 +29,7 @@ namespace SerialDebugger.Settings
             public int PatternId { get; set; } = -1;
         }
         public Dictionary<string, RxPatternInfo> RxPatternDict { get; set; }
+        public bool RxMultiMatch { get; set; }
         // 自動送信
         public ReactiveCollection<AutoTxJob> AutoTx { get; set; }
         public Dictionary<string, int> AutoTxJobNameDict { get; set; }
@@ -77,33 +78,39 @@ namespace SerialDebugger.Settings
 
             // RxFrame作成
             // TxFrame作成後に実施する
-            if (!(json.Rx is null) && !(json.Rx.Frames is null))
+            if (!(json.Rx is null))
             {
-                int i = 0;
-                foreach (var frame in json.Rx.Frames)
+                // 
+                RxMultiMatch = json.Rx.MultiMatch;
+                // Frames解析
+                if (!(json.Rx.Frames is null))
                 {
-                    var f = await MakeRxFrameAsync(i, frame);
+                    int i = 0;
+                    foreach (var frame in json.Rx.Frames)
+                    {
+                        var f = await MakeRxFrameAsync(i, frame);
 
-                    // NameDict作成
-                    if (RxNameDict.TryGetValue(f.Name, out int value))
-                    {
-                        // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
-                        throw new Exception($"rx: frames[{f.Id}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
-                    }
-                    RxNameDict.Add(f.Name, f.Id);
-                    // Pattern参照情報作成
-                    foreach (var ptn in f.Patterns)
-                    {
-                        if (RxPatternDict.TryGetValue(ptn.Name, out RxPatternInfo inf))
+                        // NameDict作成
+                        if (RxNameDict.TryGetValue(f.Name, out int value))
                         {
-                            // Pattern.NameはAutoTxからの参照に使うためユニークである必要がある。
-                            throw new Exception($"rx: frames[{f.Id}]: patterns[{ptn.Id}]: 同じ名前({ptn.Name})が存在します。frame.patterns.nameにはユニークな名前を設定してください。");
+                            // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
+                            throw new Exception($"rx: frames[{f.Id}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
                         }
-                        RxPatternDict.Add(ptn.Name, new RxPatternInfo { FrameId = f.Id, PatternId = ptn.Id });
-                    }
+                        RxNameDict.Add(f.Name, f.Id);
+                        // Pattern参照情報作成
+                        foreach (var ptn in f.Patterns)
+                        {
+                            if (RxPatternDict.TryGetValue(ptn.Name, out RxPatternInfo inf))
+                            {
+                                // Pattern.NameはAutoTxからの参照に使うためユニークである必要がある。
+                                throw new Exception($"rx: frames[{f.Id}]: patterns[{ptn.Id}]: 同じ名前({ptn.Name})が存在します。frame.patterns.nameにはユニークな名前を設定してください。");
+                            }
+                            RxPatternDict.Add(ptn.Name, new RxPatternInfo { FrameId = f.Id, PatternId = ptn.Id });
+                        }
 
-                    Rx.Add(f);
-                    i++;
+                        Rx.Add(f);
+                        i++;
+                    }
                 }
             }
 

@@ -194,11 +194,74 @@
 							"matches": [
 								{ "type": "any" },
 								{ "value": 2 },
+								{ "value": 3 },
 								{ "type": "any" },
+								{ "value": 3 },
 								{ "type": "any" },
+								{ "type": "any" }
+							]
+						}
+					]
+				},
+				{
+					"name": "Rx_Frame_2",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 20
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 16
+						},
+						{
+							"name": "field3",
+							"bit_size": 16,
+							"value": 1
+						},
+						{
+							"name": "field4",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "field5",
+							"bit_size": 3,
+							"value": 8
+						},
+						{
+							"name": "field6",
+							"bit_size": 2,
+							"value": 1
+						},
+						{
+							"name": "field7",
+							"bit_size": 8,
+							"value": 8
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_3",
+							"active": true,
+							"matches": [
 								{ "type": "any" },
+								{ "value": 2 },
+								{ "value": 3 },
 								{ "type": "any" },
+								{ "value": 3 }
+							]
+						},
+						{
+							"name": "Rx_Pattern_*",
+							"matches": [
+								{ "type": "script", "script": "func" },
+								{ "type": "timeout", "msec": 100 },
 								{ "type": "any" },
+								{ "type": "value", "value": 1 },
+								{ "value": 2 },
 								{ "type": "any" },
 								{ "type": "any" },
 								{ "type": "any" }
@@ -398,6 +461,73 @@
 							"value": [ 1, 77, 2, 4, 15, 0, 170, 255, 255 ]
 						}
 					]
+				},
+				{
+					"name": "Frame_B",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 1,
+							"value": 1
+						},
+						{
+							"name": "field2",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"value": 4,
+							"type": "Unit",
+							"unit": {
+								"unit": "hPa",
+								"lsb": 10,
+								"disp_max": 1100,
+								"disp_min": 850,
+								"value_min": 250,
+								"format": "F1"
+							}
+						},
+						{
+							"name": "field4",
+							"bit_size": 4,
+							"value": 4
+						},
+						{
+							"name": "field5",
+							"bit_size": 4,
+							"value": 255,
+							"type": "Dict",
+							"dict": [
+								{
+									"value": 2,
+									"disp": "2"
+								},
+								{
+									"value": 3,
+									"disp": "3"
+								},
+								{
+									"value": 14,
+									"disp": "14"
+								},
+								{
+									"value": 15,
+									"disp": "15"
+								},
+								{
+									"value": 16,
+									"disp": "16"
+								},
+								{
+									"value": 1000,
+									"disp": "1000"
+								}
+							]
+						}
+					],
+					"backup_buffer_size": 0
 				}
 			]
 		}

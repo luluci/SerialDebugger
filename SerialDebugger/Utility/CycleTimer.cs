@@ -39,10 +39,24 @@ namespace SerialDebugger.Utility
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="msec"></param>
+        /// <returns>
+        /// 引数で指定したタイムアウト時間経過までの残り時間を返す。
+        /// >  0 : 残り時間あり
+        /// <= 0 : タイムアウト時間経過
+        /// </returns>
         public int WaitForMsec(int msec)
         {
             var curr = DateTime.Now - prev;
             return msec - (int)(curr.Ticks / TimeSpan.TicksPerMillisecond);
+        }
+
+        public bool WaitTimeElapsed(int msec)
+        {
+            return (WaitForMsec(msec) <= 0);
         }
     }
 }

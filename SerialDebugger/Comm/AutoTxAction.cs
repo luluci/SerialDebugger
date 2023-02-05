@@ -20,6 +20,7 @@ namespace SerialDebugger.Comm
         Jump,               // ジャンプ
         Script,             // スクリプト実行
         ActivateAutoTx,     // AutoTx有効化
+        ActivateRx,         // Rx有効化
     }
 
     class AutoTxRecvItem
@@ -55,9 +56,15 @@ namespace SerialDebugger.Comm
         public ReactivePropertySlim<int> JumpTo { get; private set; }
         // Script
         public ReactivePropertySlim<string> ScriptName { get; private set; }
-        // Activate
-        public ReactivePropertySlim<string> AutoTxJobName { get; private set; }
-        public ReactivePropertySlim<int> AutoTxJobIndex { get; set; }
+        // Activate AutoTx
+        public string AutoTxJobName { get; private set; }
+        public int AutoTxJobIndex { get; set; }
+        public bool AutoTxState { get; private set; }
+        // Activate Rx
+        public string RxPatternName { get; private set; }
+        public int RxFrameIndex { get; set; }
+        public int RxPatternIndex { get; set; }
+        public bool RxState { get; private set; }
 
         public AutoTxAction(int id, string alias)
         {
@@ -175,26 +182,58 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeActivateAutoTxAction(int id, string alias, string job_name, bool immediate)
+        public static AutoTxAction MakeActivateAutoTxAction(int id, string alias, string job_name, bool state, bool immediate)
         {
             var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.ActivateAutoTx,
                 Immediate = immediate,
             };
-            action.AutoTxJobName = new ReactivePropertySlim<string>(job_name);
-            action.AutoTxJobName.AddTo(action.Disposables);
-            action.AutoTxJobIndex = new ReactivePropertySlim<int>(-1);
-            action.AutoTxJobIndex.AddTo(action.Disposables);
+            action.AutoTxJobName = job_name;
+            action.AutoTxJobIndex = -1;
+            action.AutoTxState = state;
 
             if (Object.ReferenceEquals(action.Alias, string.Empty))
             {
-                action.Alias = $"Activate [{action.AutoTxJobName.Value}]";
+                if (action.AutoTxState)
+                {
+                    action.Alias = $"Activate [{action.AutoTxJobName}]";
+                }
+                else
+                {
+                    action.Alias = $"Deactivate [{action.AutoTxJobName}]";
+                }
             }
 
             return action;
         }
 
+        public static AutoTxAction MakeActivateRxAction(int id, string alias, string pattern_name, bool state, bool immediate)
+        {
+            var action = new AutoTxAction(id, alias)
+            {
+                Type = AutoTxActionType.ActivateRx,
+                Immediate = immediate,
+            };
+            action.RxPatternName = pattern_name;
+            action.RxFrameIndex = -1;
+            action.RxPatternIndex = -1;
+            action.RxState = state;
+
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                if (action.RxState)
+                {
+                    action.Alias = $"Activate [{action.RxPatternName}]";
+                }
+                else
+                {
+                    action.Alias = $"Deactivate [{action.RxPatternName}]";
+                }
+            }
+
+            return action;
+        }
 
 
         #region IDisposable Support

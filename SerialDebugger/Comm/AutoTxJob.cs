@@ -122,12 +122,15 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.ActivateAutoTx:
                     break;
 
+                case AutoTxActionType.ActivateRx:
+                    break;
+
                 default:
                     throw new Exception("undefined type.");
             }
         }
         
-        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.AutoTxJob> AutoTxJobs)
+        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs)
         {
             bool check = true;
             while (check)
@@ -163,6 +166,12 @@ namespace SerialDebugger.Comm
                         check = NextAction();
                         break;
 
+                    case AutoTxActionType.ActivateRx:
+                        ExecActivateRx(RxFrames);
+                        // 次のActionに移行
+                        check = NextAction();
+                        break;
+
                     case AutoTxActionType.Recv:
                         // Recvは周期判定では変化しない
                         break;
@@ -173,7 +182,7 @@ namespace SerialDebugger.Comm
             }
         }
 
-        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.AutoTxJob> AutoTxJobs, Serial.RxAnalyzer analyzer)
+        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs, Serial.RxAnalyzer analyzer)
         {
             switch (Actions[ActiveActionIndex].Type)
             {
@@ -187,7 +196,7 @@ namespace SerialDebugger.Comm
                         if (NextAction())
                         {
                             // 通常Execを実施
-                            Exec(serial, TxFrames, AutoTxJobs);
+                            Exec(serial, TxFrames, RxFrames, AutoTxJobs);
                         }
                     }
                     break;
@@ -291,7 +300,14 @@ namespace SerialDebugger.Comm
         {
             var action = Actions[ActiveActionIndex];
 
-            AutoTxJobs[action.AutoTxJobIndex.Value].IsActive.Value = true;
+            AutoTxJobs[action.AutoTxJobIndex].IsActive.Value = action.AutoTxState;
+        }
+
+        private void ExecActivateRx(IList<Comm.RxFrame> RxFrames)
+        {
+            var action = Actions[ActiveActionIndex];
+
+            RxFrames[action.RxFrameIndex].Patterns[action.RxPatternIndex].IsActive.Value = action.RxState;
         }
 
         private bool ExecRecv(Serial.RxAnalyzer analyzer)

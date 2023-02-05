@@ -215,7 +215,8 @@
 						},
 						{
 							"name": "Rx_Pattern_2",
-							"active": true,
+							"active": false,
+							"log_visualize": true,
 							"matches": [
 								{ "type": "any" },
 								{ "value": 2 },
@@ -451,7 +452,9 @@
 					"actions": [
 						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_1" ] },
 						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Activate", "auto_tx_job_name": "Job_Auto_2" }
+						{ "type": "Activate", "auto_tx_job_name": "Job_Auto_2" },
+						{ "type": "Activate", "state": false, "auto_tx_job_name": "Job_Auto_3" },
+						{ "type": "Activate", "state": true, "rx_pattern_name": "Rx_Pattern_2" }
 					]
 				},
 				{

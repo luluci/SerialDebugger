@@ -84,6 +84,13 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("auto_tx_job_name")]
             public string AutoTxJobName { get; set; } = string.Empty;
 
+            [JsonPropertyName("rx_pattern_name")]
+            public string RxPatternName { get; set; } = string.Empty;
+
+            [JsonPropertyName("state")]
+            public bool State { get; set; } = true;
+
+
             // 0個から受理, 0個指定でany
             [JsonPropertyName("rx_pattern_names")]
             public IList<string> RxPatternNames { get; set; }

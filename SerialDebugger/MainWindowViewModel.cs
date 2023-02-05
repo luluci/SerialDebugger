@@ -537,7 +537,7 @@ namespace SerialDebugger
                         // 有効ジョブを実行
                         if (job.IsActive.Value)
                         {
-                            job.Exec(serialPort, TxFrames, AutoTxJobs);
+                            job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs);
                         }
                     }
 
@@ -563,7 +563,7 @@ namespace SerialDebugger
                         // 有効ジョブを実行
                         if (job.IsActive.Value)
                         {
-                            job.Exec(serialPort, TxFrames, AutoTxJobs, rxAnalyzer);
+                            job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs, rxAnalyzer);
                         }
                     }
                 }

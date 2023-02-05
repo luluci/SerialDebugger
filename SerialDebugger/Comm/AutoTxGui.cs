@@ -155,6 +155,7 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.Recv:
                 case AutoTxActionType.Jump:
                 case AutoTxActionType.ActivateAutoTx:
+                case AutoTxActionType.ActivateRx:
                     return MakeActionDisp(action, path, is_first);
                     
                 default:

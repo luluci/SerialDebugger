@@ -24,6 +24,8 @@ namespace SerialDebugger.Settings
         // 設定ファイル情報
         public string FilePath { get; set; }
         public string Name { get; set; }
+        // ログ設定
+        public Log Log { get; set; } = new Log();
         // 設定読み込み遅延処理
         public bool IsLoaded { get; set; } = false;
         // 設定内容
@@ -137,6 +139,8 @@ namespace SerialDebugger.Settings
         {
             // 設定ファイル情報
             info.Name = json.Name;
+            // ログ設定
+            info.Log.AnalyzeJson(json.Log);
         }
 
         public async Task LoadAsync(SettingInfo info)
@@ -211,6 +215,10 @@ namespace SerialDebugger.Settings
         {
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
+
+            // Log設定
+            [JsonPropertyName("log")]
+            public Log Log { get; set; }
 
             // Output設定
             [JsonPropertyName("output")]

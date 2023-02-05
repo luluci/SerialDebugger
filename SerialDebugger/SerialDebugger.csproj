@@ -92,6 +92,7 @@
     <Compile Include="Settings\Comm.cs" />
     <Compile Include="Settings\CommJson.cs" />
     <Compile Include="Settings\Gui.cs" />
+    <Compile Include="Settings\Log.cs" />
     <Compile Include="Settings\Output.cs" />
     <Compile Include="Settings\Serial.cs" />
     <Compile Include="Settings\Settings.cs" />

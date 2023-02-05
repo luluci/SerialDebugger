@@ -254,6 +254,8 @@ namespace SerialDebugger
 
         public async Task UpdateTxAsync()
         {
+            // 設定ファイルを切り替えたときにログクリア
+            Logger.Clear();
             // 現在表示中のGUIを破棄
             window.BaseSerialTx.Children.Clear();
             window.BaseSerialRx.Children.Clear();
@@ -286,6 +288,8 @@ namespace SerialDebugger
         public async Task LoadTxAsync()
         {
             var data = Settings[SettingsSelectIndex.Value];
+            // ログ設定更新
+            Logger.UpdateSetting(data.Log);
             // 未ロードファイルならロード処理
             if (!data.IsLoaded)
             {

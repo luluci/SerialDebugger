@@ -371,30 +371,7 @@ namespace SerialDebugger.Comm
                             break;
                     }
                     // Pattern値表示
-                    string disp;
-                    switch (match.Type)
-                    {
-                        case RxMatchType.Any:
-                            disp = "<Any>";
-                            col_width = 1;
-                            break;
-                        case RxMatchType.Value:
-                            disp = match.FieldRef.MakeDispByValue(match.Value);
-                            col_width = 1;
-                            break;
-                        case RxMatchType.Timeout:
-                            disp = $"Timeout[{match.Msec} ms]";
-                            col_width = 2;
-                            break;
-                        case RxMatchType.Script:
-                            disp = $"Script[{match.Script}]";
-                            col_width = 2;
-                            break;
-                        default:
-                            disp = "未定義MatchType";
-                            break;
-                    }
-                    grid.Children.Add(MakeNameGui(match.FieldRef, $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}]", disp, bit_pos, col_disp, use_bit_pos, col_width));
+                    grid.Children.Add(MakeTextBlockRecv(match, $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}]", bit_pos, col_disp, use_bit_pos, col_width));
                     //
                     bit_no += use_bit_no;
                     bit_pos += use_bit_pos;
@@ -490,6 +467,40 @@ namespace SerialDebugger.Comm
             //tb.FontSize += 1;
             tb.TextWrapping = TextWrapping.Wrap;
             tb.Padding = new Thickness(5, 2, 2, 2);
+            //
+            var border = Gui.MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            return border;
+        }
+
+
+        /// <summary>
+        /// キャプション的な部分の部品
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        public static UIElement MakeTextBlockRecv(RxMatch match, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            //
+            var tb = new TextBlock();
+            tb.Background = SystemColors.ControlLightLightBrush;
+            //tb.FontSize += 1;
+            tb.TextWrapping = TextWrapping.Wrap;
+            tb.Padding = new Thickness(5, 2, 2, 2);
+            // binding
+            var bind = new Binding(path + ".Disp.Value");
+            tb.SetBinding(TextBlock.TextProperty, bind);
             //
             var border = Gui.MakeBorder1();
             border.Child = tb;

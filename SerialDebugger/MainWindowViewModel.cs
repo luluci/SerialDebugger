@@ -492,7 +492,7 @@ namespace SerialDebugger
                 string log;
                 if (result.PatternRef.IsLogVisualize)
                 {
-                    log = RxFrames[frame_id].MakeLogVisualize(rxAnalyzer.Result.RxBuff, rxAnalyzer.Result.RxBuffOffset);
+                    log = RxFrames[frame_id].MakeLogVisualize(rxAnalyzer.Result.RxBuff, rxAnalyzer.Result.RxBuffOffset, result.PatternRef);
                 }
                 else
                 {

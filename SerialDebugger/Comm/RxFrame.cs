@@ -148,6 +148,8 @@ namespace SerialDebugger.Comm
                             value |= (match.Value << bit_pos);
                             mask |= (field.Mask << bit_pos);
                             bit_pos += field.BitSize;
+                            // Disp
+                            match.Disp.Value = match.FieldRef.MakeDispByValue(match.Value);
                             break;
 
                         case RxMatchType.Any:
@@ -158,6 +160,8 @@ namespace SerialDebugger.Comm
                             }
                             //
                             bit_pos += field.BitSize;
+                            // Disp
+                            match.Disp.Value = "<Any>";
                             break;
 
                         case RxMatchType.Timeout:
@@ -170,6 +174,8 @@ namespace SerialDebugger.Comm
                                 // Rule追加
                                 var rule = new RxAnalyzeRule(match.Msec);
                                 pattern.Analyzer.Rules.Add(rule);
+                                // Disp
+                                match.Disp.Value = $"Timeout[{match.Msec} ms]";
                             }
                             break;
 
@@ -183,6 +189,8 @@ namespace SerialDebugger.Comm
                                 // Rule追加
                                 var rule = new RxAnalyzeRule(match.Script);
                                 pattern.Analyzer.Rules.Add(rule);
+                                // Disp
+                                match.Disp.Value = $"Script[{match.Script}]";
                             }
                             break;
 
@@ -246,10 +254,12 @@ namespace SerialDebugger.Comm
 
         }
 
-        public string MakeLogVisualize(byte[] buff, int length)
+        public string MakeLogVisualize(byte[] buff, int length, RxPattern pattern)
         {
             var log = new StringBuilder();
 
+            RxMatch match;
+            int idx = 0;
             bool is_first = true;
             int bit_size = 0;
             UInt64 data;
@@ -268,8 +278,32 @@ namespace SerialDebugger.Comm
                 {
                     log.Append(", ");
                 }
-                // 
+                // ログ作成
                 log.Append(field.Name).Append("=").Append(field.MakeDispByValue(data));
+
+                // 該当するmatchを取得
+                while (!Object.ReferenceEquals(pattern.Matches[idx].FieldRef, field))
+                {
+                    idx++;
+                }
+                match = pattern.Matches[idx];
+                switch (match.Type)
+                {
+                    case RxMatchType.Value:
+                        // Valueは固定値なので変化しない
+                        break;
+
+                    case RxMatchType.Any:
+                        // 受信値に応じて表示を作成
+                        match.Disp.Value = field.MakeDispByValue(data);
+                        break;
+
+                    case RxMatchType.Timeout:
+                    case RxMatchType.Script:
+                    default:
+                        // 表示なし
+                        break;
+                }
 
                 is_first = false;
             }

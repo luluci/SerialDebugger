@@ -80,6 +80,8 @@ namespace SerialDebugger.Script
 
         public async Task Init()
         {
+            string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            CoreWebView2Environment.SetLoaderDllFolderPath(rootPath);
             await wv.EnsureCoreWebView2Async();
 
             //

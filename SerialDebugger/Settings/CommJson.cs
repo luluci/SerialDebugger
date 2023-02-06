@@ -64,7 +64,7 @@ namespace SerialDebugger.Settings
             public string TxFrameName { get; set; } = string.Empty;
 
             [JsonPropertyName("tx_frame_buff_index")]
-            public int TxFrameBuffIndex { get; set; } = -1;
+            public int TxFrameBuffIndex { get; set; } = 0;
 
             [JsonPropertyName("tx_frame_buff_offset")]
             public int TxFrameBuffOffset { get; set; } = -1;

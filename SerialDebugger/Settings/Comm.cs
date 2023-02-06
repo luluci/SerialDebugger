@@ -442,10 +442,8 @@ namespace SerialDebugger.Settings
             {
                 throw new Exception($"actions[{id}](Send): 送信対象となるframe名(tx_frame_name)を指定してください。");
             }
-            if (action.TxFrameBuffIndex == -1)
-            {
-                throw new Exception($"actions[{id}](Send): 送信対象となるframeバッファ(tx_frame_buff_index)を指定してください。");
-            }
+
+            // action.TxFrameBuffIndex: 省略時は0指定とする
 
             try
             {

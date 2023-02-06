@@ -295,7 +295,7 @@ namespace SerialDebugger.Settings
             public int Begin { get; set; } = 0;
 
             [JsonPropertyName("end")]
-            public int End { get; set; } = 0;
+            public int End { get; set; } = -1;
 
             [JsonPropertyName("method")]
             public string Method { get; set; } = string.Empty;

@@ -229,6 +229,11 @@ namespace SerialDebugger.Comm
             if (HasChecksum)
             {
                 var cs = Fields[ChecksumIndex];
+                // チェックサム計算範囲末尾省略時はチェックサムノード手前を指定
+                if (cs.Checksum.End == -1)
+                {
+                    cs.Checksum.End = cs.BytePos - 1;
+                }
                 // チェックサム計算範囲がChecksumノードをまたがる、または、要素数を上回るときNG
                 if ((cs.Checksum.End >= cs.BytePos) || (cs.Checksum.End >= Length))
                 {

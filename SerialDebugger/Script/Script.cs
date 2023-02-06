@@ -40,10 +40,10 @@ namespace SerialDebugger.Script
             }
             public Dictionary<int, string> list = new Dictionary<int, string>();
 
-            public UInt64 Key { get; set; }
+            public Int64 Key { get; set; }
             public string Value { get; set; }
 
-            public void result(UInt64 key, string value)
+            public void result(Int64 key, string value)
             {
                 this.Key = key;
                 this.Value = value;
@@ -120,7 +120,7 @@ namespace SerialDebugger.Script
             ");
         }
 
-        public async Task<(UInt64, string)> EvalExec(int i)
+        public async Task<(Int64, string)> EvalExec(int i)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public async Task<(UInt64, string)> Call(string script)
+        public async Task<(Int64, string)> Call(string script)
         {
             try
             {
@@ -163,7 +163,7 @@ namespace SerialDebugger.Script
         public class EvalExecResult
         {
             [JsonPropertyName("key")]
-            public UInt64 Key { get; set; }
+            public Int64 Key { get; set; }
 
             [JsonPropertyName("value")]
             public string Value { get; set; }

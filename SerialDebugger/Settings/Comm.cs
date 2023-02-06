@@ -299,7 +299,7 @@ namespace SerialDebugger.Settings
             return new RxMatch
             {
                 Type = RxMatchType.Value,
-                Value = (UInt64)match.Value,
+                Value = (Int64)match.Value,
             };
         }
 
@@ -726,7 +726,7 @@ namespace SerialDebugger.Settings
                 throw new Exception($"fields[{id}]({field.Name}): type:DictではDictオブジェクトを指定してください。");
             }
             // Selecter作成
-            var selecter = new (UInt64, string)[dict.Count];
+            var selecter = new (Int64, string)[dict.Count];
             int i = 0;
             foreach (var pair in dict)
             {

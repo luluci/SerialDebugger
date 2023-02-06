@@ -160,7 +160,7 @@ namespace SerialDebugger.Comm
         {
             // Fieldから情報収集
             int field_no = 0;
-            UInt64 buff = 0;
+            Int64 buff = 0;
             int bit_pos = 0;
             int byte_pos = 0;
             int disp_len = 0;
@@ -277,16 +277,16 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="field"></param>
         /// <param name="buffer"></param>
-        public void UpdateBuffer(Field field, UInt64 value, IList<byte> buffer)
+        public void UpdateBuffer(Field field, Int64 value, IList<byte> buffer)
         {
-            UInt64 mask = field.Mask;
-            UInt64 inv_mask = field.InvMask;
+            Int64 mask = field.Mask;
+            Int64 inv_mask = field.InvMask;
             // 1回目はvalueのビット位置がbit_pos分右にあるが、
             // このタイミングで左シフトすると有効データを捨てる可能性があるのでループ内で計算していく
             int shift = 8 - field.BitPos;
             int bit_pos = field.BitPos;
             int byte_pos = field.BytePos;
-            UInt64 inv_mask_shift_fill = ((UInt64)1 << bit_pos) - 1;
+            Int64 inv_mask_shift_fill = ((Int64)1 << bit_pos) - 1;
             for (int i = 0; i < field.ByteSize; i++, byte_pos++)
             {
                 // 対象バイトを抽出
@@ -323,11 +323,11 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public UInt64 CalcChecksum(IList<byte> buffer)
+        public Int64 CalcChecksum(IList<byte> buffer)
         {
             var cs = Fields[ChecksumIndex];
             // 合計算出
-            UInt64 sum = 0;
+            Int64 sum = 0;
             for (int i = cs.Checksum.Begin; i <= cs.Checksum.End; i++)
             {
                 sum += buffer[i];
@@ -370,19 +370,7 @@ namespace SerialDebugger.Comm
             // DragDrop設定が無いときのデフォルト
             if (dd is null)
             {
-                string def_value;
-                switch (dd.ValueFormat)
-                {
-                    case Settings.Output.DragDropValueFormat.Input:
-                        def_value = field.GetDisp();
-                        break;
-
-                    default:
-                        def_value = $"0x{value:X}";
-                        break;
-                }
-
-                return $"{Name}/{field.Name}/{def_value}";
+                return $"{Name}/{field.Name}/0x{value:X}";
             }
 
             // DragDrop設定があるとき
@@ -439,7 +427,7 @@ namespace SerialDebugger.Comm
                     {
                         // 該当データ計算
                         var inner = field.InnerFields[i];
-                        var mask = ((UInt64)1 << inner.BitSize) - 1;
+                        var mask = ((Int64)1 << inner.BitSize) - 1;
                         // html生成
                         if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
 

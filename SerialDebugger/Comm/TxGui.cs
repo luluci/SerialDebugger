@@ -284,7 +284,7 @@ namespace SerialDebugger.Comm
                                 }
                             }
                             // Value列作成
-                            grid.Children.Add(Gui.MakeTextBlockBindStyle1($"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldValue], field.BitSize));
+                            grid.Children.Add(Gui.MakeTextBlockBindStyle1(field, $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldValue], field.BitSize));
                             // Name列作成
                             int inner_idx = 0;
                             foreach (var inner in field.InnerFields)

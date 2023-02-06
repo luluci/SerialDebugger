@@ -23,7 +23,7 @@ namespace SerialDebugger.Comm
         // テキストボックス表示基数
         public int InputBase { get; }
         //
-        public ReactivePropertySlim<UInt64> Value { get; set; }
+        public ReactivePropertySlim<Int64> Value { get; set; }
         /// <summary>
         /// 1バイト境界からのビット位置.
         /// Nバイト目のMビット目を示す.
@@ -41,10 +41,12 @@ namespace SerialDebugger.Comm
 
         internal bool IsByteDisp { get; set; } = false;
 
-        public UInt64 Max { get; }
-        public UInt64 Min { get; }
-        public UInt64 Mask { get; }
-        public UInt64 InvMask { get; }
+        public Int64 Max { get; }
+        public Int64 Min { get; }
+        public Int64 Mask { get; }
+        public Int64 InvMask { get; }
+        public int HexSize { get; }
+        public string HexFormat { get; }
 
         // チェックサム用プロパティ
         public enum ChecksumMethod
@@ -97,13 +99,13 @@ namespace SerialDebugger.Comm
         {
             public InputModeType Type { get; }
             // Dict表現要素
-            public (UInt64, string)[] Dict { get; }
+            public (Int64, string)[] Dict { get; }
             // Unit表現要素
             public string Unit { get; }
             public double Lsb { get; }
             public double DispMax { get; }
             public double DispMin { get; }
-            public UInt64 ValueMin { get; }
+            public Int64 ValueMin { get; }
             public string Format { get; }
             // Time表現要素
             public double Elapse { get; }
@@ -116,13 +118,13 @@ namespace SerialDebugger.Comm
             // Refer表現要素
             public Field FieldRef { get; }
 
-            public Selecter((UInt64, string)[] dict)
+            public Selecter((Int64, string)[] dict)
             {
                 Type = InputModeType.Dict;
                 Dict = dict;
             }
 
-            public Selecter(string unit, double lsb, double disp_max, double disp_min, UInt64 value_min, string format)
+            public Selecter(string unit, double lsb, double disp_max, double disp_min, Int64 value_min, string format)
             {
                 Type = InputModeType.Unit;
                 Unit = unit;
@@ -133,7 +135,7 @@ namespace SerialDebugger.Comm
                 Format = format;
             }
 
-            public Selecter(double elapse, string begin, string end, UInt64 value_min)
+            public Selecter(double elapse, string begin, string end, Int64 value_min)
             {
                 Type = InputModeType.Time;
                 Elapse = elapse;
@@ -156,15 +158,15 @@ namespace SerialDebugger.Comm
                 FieldRef = field;
             }
         }
-        public static Selecter MakeSelecterDict((UInt64, string)[] dict)
+        public static Selecter MakeSelecterDict((Int64, string)[] dict)
         {
             return new Selecter(dict);
         }
-        public static Selecter MakeSelecterUnit(string unit, double lsb, double disp_max, double disp_min, UInt64 value_min, string format)
+        public static Selecter MakeSelecterUnit(string unit, double lsb, double disp_max, double disp_min, Int64 value_min, string format)
         {
             return new Selecter(unit, lsb, disp_max, disp_min, value_min, format);
         }
-        public static Selecter MakeSelecterTime(double elapse, string begin, string end, UInt64 value_min)
+        public static Selecter MakeSelecterTime(double elapse, string begin, string end, Int64 value_min)
         {
             return new Selecter(elapse, begin, end, value_min);
         }
@@ -177,10 +179,10 @@ namespace SerialDebugger.Comm
 
         public class Select
         {
-            public UInt64 Value { get; private set; }
+            public Int64 Value { get; private set; }
             public string Disp { get; private set; }
 
-            public Select(UInt64 value, string disp)
+            public Select(Int64 value, string disp)
             {
                 Disp = disp;
                 Value = value;
@@ -188,9 +190,9 @@ namespace SerialDebugger.Comm
         }
         public ReactiveCollection<Select> Selects { get; private set; }
         public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
-        public UInt64 SelectsValueMax = 0;
-        public UInt64 SelectsValueMin = 0;
-        public Dictionary<UInt64, int> SelectsValueCheckTable;
+        public Int64 SelectsValueMax = 0;
+        public Int64 SelectsValueMin = 0;
+        public Dictionary<Int64, int> SelectsValueCheckTable;
         public ReactiveCommand OnMouseDown { get; set; }
 
         public enum ChangeStates
@@ -216,7 +218,7 @@ namespace SerialDebugger.Comm
             IsChecksum = true;
         }
         
-        public Field(int id, string name, InnerField[] innerFields, UInt64 value, int input_base, InputModeType type = InputModeType.Fix, Selecter selecter = null)
+        public Field(int id, string name, InnerField[] innerFields, Int64 value, int input_base, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
             this.selecter = selecter;
             Id = id;
@@ -228,28 +230,22 @@ namespace SerialDebugger.Comm
                 BitSize += inner.BitSize;
             }
             // BitSizeチェック
-            if (BitSize > 64)
+            if (BitSize > 32)
             {
-                throw new Exception("64bit以上は指定できません");
+                throw new Exception("32bit以上は指定できません");
             }
             //
             InnerFields = new List<InnerField>(innerFields);
             // (Min,Max)
-            if (BitSize == 64)
-            {
-                Max = UInt64.MaxValue;
-                Min = UInt64.MinValue;
-            }
-            else
-            {
-                Max = ((UInt64)1 << BitSize) - 1;
-                Min = 0;
-            }
+            Max = ((Int64)1 << BitSize) - 1;
+            Min = ((Int64)1 << (BitSize - 1)) * -1;
             Mask = Max;
             InvMask = ~Mask;
+            HexSize = ((BitSize + 7) / 8) * 2;
+            HexFormat = $"X{HexSize}";
             //
-            value = value & Mask;
-            Value = new ReactivePropertySlim<UInt64>(value, mode: ReactivePropertyMode.DistinctUntilChanged);
+            value = LimitValue(value);
+            Value = new ReactivePropertySlim<Int64>(value, mode: ReactivePropertyMode.DistinctUntilChanged);
             Value
                 .Subscribe(x =>
                 {
@@ -294,20 +290,36 @@ namespace SerialDebugger.Comm
             await MakeSelectModeAsync(selecter);
         }
 
+        public Int64 LimitValue(Int64 value)
+        {
+            if (value > Max)
+            {
+                return Max;
+            }
+            else if (value < Min)
+            {
+                return Min;
+            }
+            else
+            {
+                return value;
+            }
+        }
+
         /// <summary>
         /// 設定ファイルからの初期値設定
         /// </summary>
         /// <param name="value"></param>
-        public void SetValue(UInt64 value)
+        public void SetValue(Int64 value)
         {
             // Value
-            value = value & Mask;
+            value = LimitValue(value);
             Value.Value = value;
             // SelectIndexSelects
             SelectIndexSelects.Value = GetSelectsIndex(value);
         }
 
-        public int GetSelectsIndex(UInt64 value)
+        public int GetSelectsIndex(Int64 value)
         {
             int index = -1;
             switch (InputType)
@@ -351,7 +363,7 @@ namespace SerialDebugger.Comm
         /// <param name="index"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public string MakeDisp(int index, UInt64 value)
+        public string MakeDisp(int index, Int64 value)
         {
             switch (InputType)
             {
@@ -363,11 +375,11 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Edit:
                 case Field.InputModeType.Fix:
                 default:
-                    return $"0x{value:X}";
+                    return MakeDispNumber(value);
             }
         }
 
-        public string MakeDispByValue(UInt64 value)
+        public string MakeDispByValue(Int64 value)
         {
             switch (InputType)
             {
@@ -392,7 +404,7 @@ namespace SerialDebugger.Comm
             }
         }
 
-        public string MakeDispNumber(UInt64 value)
+        public string MakeDispNumber(Int64 value)
         {
             switch (InputBase)
             {
@@ -401,8 +413,19 @@ namespace SerialDebugger.Comm
 
                 case 16:
                 default:
-                    return $"0x{value:X2}";
+                    return $"0x{MakeDispHex(value)}";
             }
+        }
+
+        public string MakeDispHex(Int64 value)
+        {
+            var result = value.ToString(HexFormat);
+            var right = result.Length - HexSize;
+            if (right > 0)
+            {
+                result = result.Substring(right, HexSize);
+            }
+            return result;
         }
 
         private async Task MakeSelectModeAsync(Selecter selecter)
@@ -447,44 +470,81 @@ namespace SerialDebugger.Comm
         {
             int selectIndex = 0;
             int index = 0;
-            double temp = selecter.DispMin;
-            UInt64 value = selecter.ValueMin;
+            Int64 value = selecter.ValueMin;
             SelectsValueMin = selecter.ValueMin;
-            while (temp <= selecter.DispMax)
+
+            if (selecter.Lsb > 0)
             {
-                string disp;
-                try
+                double temp = selecter.DispMin;
+                while (temp <= selecter.DispMax)
                 {
-                    disp = temp.ToString(selecter.Format) + selecter.Unit;
-                }
-                catch (Exception)
-                {
-                    disp = ((Int64)temp).ToString(selecter.Format) + selecter.Unit;
-                }
-                Selects.Add(new Select(value, disp));
-                // SelectIndex
-                if (value == Value.Value)
-                {
-                    selectIndex = index;
-                }
-                //
-                temp += selecter.Lsb;
-                index++;
-                value++;
-                // BitSize定義の上限到達で終了
-                if (value > Max)
-                {
-                    break;
+                    MakeSelectModeUnitImpl(selecter, value, temp);
+                    // SelectIndex
+                    if (value == Value.Value)
+                    {
+                        selectIndex = index;
+                    }
+                    //
+                    temp += selecter.Lsb;
+                    index++;
+                    value++;
+                    // BitSize定義の上限到達で終了
+                    if (value > Max)
+                    {
+                        break;
+                    }
                 }
             }
+            else if (selecter.Lsb < 0)
+            {
+                double temp = selecter.DispMax;
+                while (temp >= selecter.DispMin)
+                {
+                    MakeSelectModeUnitImpl(selecter, value, temp);
+                    // SelectIndex
+                    if (value == Value.Value)
+                    {
+                        selectIndex = index;
+                    }
+                    //
+                    temp += selecter.Lsb;
+                    index++;
+                    value++;
+                    // BitSize定義の上限到達で終了
+                    if (value > Max)
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // 
+                throw new Exception($"Field({Name}): Selecter=Unit: LSBにゼロは設定不可です。");
+            }
+
             SelectsValueMax = value - 1;
 
             return selectIndex;
         }
 
+        private void MakeSelectModeUnitImpl(Selecter selecter, Int64 value, double disp_value)
+        {
+            string disp;
+            try
+            {
+                disp = disp_value.ToString(selecter.Format) + selecter.Unit;
+            }
+            catch (Exception)
+            {
+                disp = ((Int64)disp_value).ToString(selecter.Format) + selecter.Unit;
+            }
+            Selects.Add(new Select(value, disp));
+        }
+
         private int MakeSelectModeDict(Selecter selecter)
         {
-            SelectsValueCheckTable = new Dictionary<ulong, int>();
+            SelectsValueCheckTable = new Dictionary<Int64, int>();
             int selectIndex = 0;
             int index = 0;
             foreach (var item in selecter.Dict)
@@ -519,7 +579,7 @@ namespace SerialDebugger.Comm
         {
             int selectIndex = 0;
             int index = 0;
-            UInt64 value = selecter.ValueMin;
+            Int64 value = selecter.ValueMin;
             SelectsValueMin = selecter.ValueMin;
             double elapse = selecter.Elapse;
             var dt = selecter.TimeBegin;
@@ -551,7 +611,7 @@ namespace SerialDebugger.Comm
 
         private async Task<int> MakeSelectModeScriptAsync(Selecter selecter)
         {
-            SelectsValueCheckTable = new Dictionary<ulong, int>();
+            SelectsValueCheckTable = new Dictionary<Int64, int>();
             switch (selecter.Mode)
             {
                 case "Exec":

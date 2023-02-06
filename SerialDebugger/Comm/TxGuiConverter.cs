@@ -22,9 +22,10 @@ namespace SerialDebugger.Comm
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var temp = (UInt64)value;
+            var temp = (Int64)value;
+            var field = (Field)parameter;
             // 16進数表示
-            return $"{temp:X2}h";
+            return $"{field.MakeDispHex(temp)}h";
             /*
             var field = (Field)value;
             // 16進数表示
@@ -61,16 +62,16 @@ namespace SerialDebugger.Comm
     /// </summary>
     internal class GuiBitColBgConverter : IValueConverter
     {
-        private readonly UInt64 mask;
+        private readonly Int64 mask;
 
-        public GuiBitColBgConverter(UInt64 m)
+        public GuiBitColBgConverter(Int64 m)
         {
             mask = m;
         }
 
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var val = (UInt64)value;
+            var val = (Int64)value;
             var field = (Field)parameter;
             if ((val & mask) != 0)
             {
@@ -95,16 +96,17 @@ namespace SerialDebugger.Comm
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var temp = (UInt64)value;
+            var temp = (Int64)value;
+            var field = (Field)parameter;
             // 16進数表示
-            return $"{temp:X}";
+            return $"{temp.ToString(field.HexFormat)}";
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             try
             {
-                UInt64 temp = Convert.ToUInt64((string)value, 16);
+                var temp = Convert.ToInt64((string)value, 16);
                 var field = parameter as Field;
                 if ((field.Min <= temp) && (temp <= field.Max))
                 {
@@ -127,7 +129,7 @@ namespace SerialDebugger.Comm
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var temp = (UInt64)value;
+            var temp = (Int64)value;
             // 10進数表示
             return $"{temp}";
         }
@@ -136,7 +138,7 @@ namespace SerialDebugger.Comm
         {
             try
             {
-                UInt64 temp = Convert.ToUInt64((string)value, 10);
+                var temp = Convert.ToInt64((string)value, 10);
                 var field = parameter as Field;
                 if ((field.Min <= temp) && (temp <= field.Max))
                 {

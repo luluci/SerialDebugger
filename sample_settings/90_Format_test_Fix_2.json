@@ -251,18 +251,6 @@
 								{
 									"name": "field1_bit20-31",
 									"bit_size": 12
-								},
-								{
-									"name": "field1_bit32-39",
-									"bit_size": 8
-								},
-								{
-									"name": "field1_bit40",
-									"bit_size": 1
-								},
-								{
-									"name": "field1_bit41-55",
-									"bit_size": 15
 								}
 							],
 							"value": 768614336404564650,
@@ -292,18 +280,6 @@
 								{
 									"name": "field1_bit20-31",
 									"bit_size": 12
-								},
-								{
-									"name": "field1_bit32-39",
-									"bit_size": 8
-								},
-								{
-									"name": "field1_bit40",
-									"bit_size": 1
-								},
-								{
-									"name": "field1_bit41-55",
-									"bit_size": 15
 								}
 							],
 							"value": 768614336404564650,

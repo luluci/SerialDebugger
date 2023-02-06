@@ -118,8 +118,8 @@ namespace SerialDebugger.Comm
                 //
                 int byte_pos = 0;
                 int bit_pos = 0;
-                UInt64 value = 0;
-                UInt64 mask = 0;
+                Int64 value = 0;
+                Int64 mask = 0;
                 int field_idx = 0;
                 int match_idx = 0;
                 while (match_idx < pattern.Matches.Count)
@@ -262,12 +262,12 @@ namespace SerialDebugger.Comm
             int idx = 0;
             bool is_first = true;
             int bit_size = 0;
-            UInt64 data;
+            Int64 data;
             foreach (var field in Fields)
             {
                 // buffからfieldに該当する分のデータを抽出
                 bit_size = field.BitPos + field.BitSize;
-                data = GetUint64(buff, length, field.BytePos, bit_size);
+                data = GetInt64(buff, length, field.BytePos, bit_size);
                 // LSB側の余分ビットを除去
                 data >>= field.BitPos;
                 // MSB側の余分ビットを除去
@@ -311,13 +311,13 @@ namespace SerialDebugger.Comm
             return log.ToString();
         }
 
-        private UInt64 GetUint64(byte[] buff, int length, int offset, int bit_size)
+        private Int64 GetInt64(byte[] buff, int length, int offset, int bit_size)
         {
             int byte_size = (bit_size + 7) / 8;
-            UInt64 result = 0;
+            Int64 result = 0;
             for (int i = 0; i < byte_size && (offset + i) < length; i++)
             {
-                result |= ((UInt64)buff[offset + i] << (i * 8));
+                result |= ((Int64)buff[offset + i] << (i * 8));
             }
             return result;
         }

@@ -23,7 +23,7 @@ namespace SerialDebugger.Comm
     class RxMatch : BindableBase, IDisposable
     {
         public RxMatchType Type { get; set; }
-        public UInt64 Value { get; set; }
+        public Int64 Value { get; set; }
         public int Msec { get; set; }
         public string Script { get; set; }
 

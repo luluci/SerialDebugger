@@ -99,7 +99,7 @@ namespace SerialDebugger.Comm
             new GuiBitColBgConverter(0x1000000000000000),
             new GuiBitColBgConverter(0x2000000000000000),
             new GuiBitColBgConverter(0x4000000000000000),
-            new GuiBitColBgConverter(0x8000000000000000),
+            //new GuiBitColBgConverter(0x8000000000000000),
         };
 
         static public Settings.SettingInfo setting;
@@ -210,11 +210,12 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeTextBlockBindStyle1(string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeTextBlockBindStyle1(Field field, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
             var bind = new Binding(path);
             bind.Converter = ColConverter;
+            bind.ConverterParameter = field;
             //
             var tb = new TextBlock();
             tb.SetBinding(TextBlock.TextProperty, bind);

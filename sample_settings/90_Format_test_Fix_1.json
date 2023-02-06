@@ -180,6 +180,28 @@
 					]
 				},
 				{
+					"name": "Frame2_D5c",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": -1,
+							"type": "Fix"
+						}
+					]
+				},
+				{
+					"name": "Frame2_D5d",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": -129,
+							"type": "Fix"
+						}
+					]
+				},
+				{
 					"name": "Frame2_D6",
 					"fields": [
 						{
@@ -213,17 +235,6 @@
 					]
 				},
 				{
-					"name": "Frame2_D9",
-					"fields": [
-						{
-							"name": "field1",
-							"bit_size": 40,
-							"value": 187649984473770,
-							"type": "Fix"
-						}
-					]
-				},
-				{
 					"name": "Frame2_D9b",
 					"fields": [
 						{
@@ -234,11 +245,11 @@
 								},
 								{
 									"name": "field1_2_error",
-									"bit_size": 24
+									"bit_size": 12
 								},
 								{
 									"name": "field1_2_value",
-									"bit_size": 2
+									"bit_size": 6
 								}
 							],
 							"value": 187649984473770,
@@ -251,8 +262,8 @@
 					"fields": [
 						{
 							"name": "field1",
-							"bit_size": 40,
-							"value": 187649984473770
+							"bit_size": 32,
+							"value": 4294967295
 						}
 					]
 				},
@@ -261,8 +272,8 @@
 					"fields": [
 						{
 							"name": "field1",
-							"bit_size": 60,
-							"value": 768614336404564650,
+							"bit_size": 32,
+							"value": -1,
 							"type": "Fix"
 						}
 					]
@@ -272,8 +283,8 @@
 					"fields": [
 						{
 							"name": "field1",
-							"bit_size": 64,
-							"value": 768614336404564650,
+							"bit_size": 32,
+							"value": -2147483648,
 							"type": "Fix"
 						}
 					]
@@ -290,18 +301,6 @@
 								{
 									"name": "field1_bit20-31",
 									"bit_size": 12
-								},
-								{
-									"name": "field1_bit32-39",
-									"bit_size": 8
-								},
-								{
-									"name": "field1_bit40",
-									"bit_size": 1
-								},
-								{
-									"name": "field1_bit41-63",
-									"bit_size": 23
 								}
 							],
 							"value": 768614336404564650,

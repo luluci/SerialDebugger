@@ -190,16 +190,16 @@ namespace SerialDebugger.Settings
             public int BitSize { get; set; } = 0;
 
             [JsonPropertyName("value")]
-            public UInt64 Value { get; set; } = 0;
+            public Int64 Value { get; set; } = 0;
 
             [JsonPropertyName("base")]
             public int Base { get; set; } = 16;
 
             [JsonPropertyName("min")]
-            public UInt64 Min { get; set; } = UInt64.MaxValue;
+            public Int64 Min { get; set; } = Int64.MaxValue;
 
             [JsonPropertyName("max")]
-            public UInt64 Max { get; set; } = UInt64.MinValue;
+            public Int64 Max { get; set; } = Int64.MinValue;
 
 
 
@@ -246,7 +246,7 @@ namespace SerialDebugger.Settings
             public double DispMin { get; set; } = 0;
 
             [JsonPropertyName("value_min")]
-            public UInt64 ValueMin { get; set; } = 0;
+            public Int64 ValueMin { get; set; } = 0;
 
             [JsonPropertyName("format")]
             public string Format { get; set; } = string.Empty;
@@ -255,7 +255,7 @@ namespace SerialDebugger.Settings
         public class CommFieldDict
         {
             [JsonPropertyName("value")]
-            public UInt64 Value { get; set; } = 0;
+            public Int64 Value { get; set; } = 0;
 
             [JsonPropertyName("disp")]
             public string Disp { get; set; } = string.Empty;
@@ -273,7 +273,7 @@ namespace SerialDebugger.Settings
             public string End { get; set; } = string.Empty;
 
             [JsonPropertyName("value_min")]
-            public UInt64 ValueMin { get; set; } = 0;
+            public Int64 ValueMin { get; set; } = 0;
         }
 
         public class CommFieldScript
@@ -307,7 +307,7 @@ namespace SerialDebugger.Settings
             public string Name { get; set; } = string.Empty;
 
             [JsonPropertyName("value")]
-            public IList<UInt64> Values { get; set; }
+            public IList<Int64> Values { get; set; }
         }
 
     }

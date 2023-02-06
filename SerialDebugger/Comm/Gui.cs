@@ -206,7 +206,7 @@ namespace SerialDebugger.Comm
 
         /// <summary>
         /// Binding設定付きテキストブロック
-        /// UInt64型binding
+        /// Int64型binding
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>

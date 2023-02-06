@@ -382,13 +382,26 @@ namespace SerialDebugger.Comm
                     }
                     else
                     {
-                        return $"0x{value:X}";
+                        return MakeDispNumber(value);
                     }
 
                 case Field.InputModeType.Edit:
                 case Field.InputModeType.Fix:
                 default:
-                    return $"0x{value:X}";
+                    return MakeDispNumber(value);
+            }
+        }
+
+        public string MakeDispNumber(UInt64 value)
+        {
+            switch (InputBase)
+            {
+                case 10:
+                    return value.ToString("D");
+
+                case 16:
+                default:
+                    return $"0x{value:X2}";
             }
         }
 

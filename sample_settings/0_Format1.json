@@ -441,6 +441,22 @@
 								{ "type": "any" },
 								{ "type": "any" }
 							]
+						},
+						{
+							"name": "Rx_Pattern_-15",
+							"active": true,
+							"matches": [
+								{ "type": "any" },
+								{ "value": -15 },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" }
+							]
 						}
 					]
 				}
@@ -593,7 +609,9 @@
 						{
 							"name": "field6",
 							"bit_size": 9,
-							"value": 170
+							"value": -1,
+							"base": 10,
+							"type": "Edit"
 						},
 						{
 							"name": "bit0",
@@ -633,11 +651,11 @@
 					"backup_buffers": [
 						{
 							"name": "設定X",
-							"value": [ 1, 85, 2, 4, 15, 1, 170, 255, 0 ]
+							"value": [ 1, -1, 2, 4, 15, 1, 170, -128, 0 ]
 						},
 						{
 							"name": "設定Y",
-							"value": [ 1, 77, 2, 4, 15, 0, 170, 255, 255 ]
+							"value": [ 1, 77, -2, 4, 15, 0, -170, 255, 255 ]
 						}
 					]
 				}

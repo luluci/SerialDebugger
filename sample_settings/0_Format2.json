@@ -1,5 +1,10 @@
 {
-	"name": "XXプロトコル用設定",
+	"name": "XXプロトコル用設定_2",
+	
+	"log": {
+		"directory": "./log/",
+		"max_size": 100
+	},
 	
 	"output": {
 		"drag_drop": {

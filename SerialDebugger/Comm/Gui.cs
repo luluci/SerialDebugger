@@ -255,7 +255,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeTextBlockBindStyle2(string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeTextBlockBindByteData(string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
             var bind = new Binding(path);
@@ -299,11 +299,12 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeTextBlockBindStyle2(Field field, string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeTextBlockBindBitData(Field field, string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
             var bind = new Binding(path);
             bind.Converter = BitColBgConverter[bit];
+            bind.ConverterParameter = field;
             //
             var tb = new TextBlock();
             tb.Text = name;

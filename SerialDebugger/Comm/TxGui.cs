@@ -280,7 +280,7 @@ namespace SerialDebugger.Comm
                                 // その他は各ビット情報を出力
                                 for (int i=0; i<field.BitSize; i++)
                                 {
-                                    grid.Children.Add(Gui.MakeTextBlockBindStyle2(field, $"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit+i, setting.Gui.ColOrder[(int)SettingGui.Col.BitIndex]));
+                                    grid.Children.Add(Gui.MakeTextBlockBindBitData(field, $"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit+i, setting.Gui.ColOrder[(int)SettingGui.Col.BitIndex]));
                                 }
                             }
                             // Value列作成
@@ -334,7 +334,7 @@ namespace SerialDebugger.Comm
                     // 送信バイトシーケンス
                     if (bit_pos == 0)
                     {
-                        grid.Children.Add(Gui.MakeTextBlockBindStyle2($"TxFrames[{frame_no}].TxBuffer[{byte_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes], 8));
+                        grid.Children.Add(Gui.MakeTextBlockBindByteData($"TxFrames[{frame_no}].TxBuffer[{byte_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes], 8));
                     }
                     //
                     bit_rest--;

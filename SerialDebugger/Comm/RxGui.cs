@@ -275,7 +275,7 @@ namespace SerialDebugger.Comm
                             // その他は各ビット情報を出力
                             for (int i = 0; i < field.BitSize; i++)
                             {
-                                grid.Children.Add(Gui.MakeTextBlockBindStyle2(field, $"{bit + i}", $"RxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit + i, ColOrder[(int)SettingGui.Col.BitIndex]));
+                                grid.Children.Add(Gui.MakeTextBlockBindBitData(field, $"{bit + i}", $"RxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit + i, ColOrder[(int)SettingGui.Col.BitIndex]));
                             }
                         }
                         // Name列作成
@@ -355,7 +355,7 @@ namespace SerialDebugger.Comm
                         case RxMatchType.Value:
                             for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
                             {
-                                grid.Children.Add(Gui.MakeTextBlockBindStyle2(match.FieldRef, $"{bit_no + bit}", $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}].Value", bit, bit_pos + bit, col_bit));
+                                grid.Children.Add(Gui.MakeTextBlockBindBitData(match.FieldRef, $"{bit_no + bit}", $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}].Value", bit, bit_pos + bit, col_bit));
                             }
                             use_bit_no = match.FieldRef.BitSize;
                             use_bit_pos = match.FieldRef.BitSize;

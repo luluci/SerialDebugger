@@ -48,7 +48,7 @@ namespace SerialDebugger.Comm
         {
             var temp = (byte)value;
             // 16進数表示
-            return $"{temp:X2}h";
+            return $"{temp}h";
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -99,7 +99,7 @@ namespace SerialDebugger.Comm
             var temp = (Int64)value;
             var field = (Field)parameter;
             // 16進数表示
-            return $"{temp.ToString(field.HexFormat)}";
+            return $"{field.MakeDispHex(temp)}";
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

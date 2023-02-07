@@ -173,7 +173,7 @@ namespace SerialDebugger.Comm
                 // Frame情報更新
                 BitLength += f.BitSize;
                 // 送信生データ作成
-                buff |= (f.Value.Value) << f.BitPos;
+                buff |= ((f.Value.Value) << f.BitPos) & f.Mask;
                 // Field位置更新
                 bit_pos += f.BitSize;
                 while (bit_pos >= 8)

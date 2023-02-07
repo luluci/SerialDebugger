@@ -198,8 +198,8 @@
 							"active": true,
 							"matches": [
 								{ "type": "any" },
-								{ "value": 2 },
-								{ "value": 3 },
+								{ "value": -2 },
+								{ "value": -3 },
 								{ "type": "any" },
 								{ "value": 3 },
 								{ "type": "any" },
@@ -256,7 +256,7 @@
 								{ "value": 2 },
 								{ "value": 3 },
 								{ "type": "any" },
-								{ "value": 3 }
+								{ "value": -3 }
 							]
 						},
 						{

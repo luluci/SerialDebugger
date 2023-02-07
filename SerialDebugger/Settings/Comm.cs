@@ -273,7 +273,7 @@ namespace SerialDebugger.Settings
                 return RxMatchType.Timeout;
             }
 
-            if (match.Value >= 0)
+            if (match.Value != Int64.MinValue)
             {
                 return RxMatchType.Value;
             }
@@ -291,7 +291,7 @@ namespace SerialDebugger.Settings
 
         private RxMatch MakeRxMatchValue(int id, Json.CommRxMatch match)
         {
-            if (match.Value < 0)
+            if (match.Value == Int64.MinValue)
             {
                 throw new Exception($"matches[{id}]: 不正なvalue指定です: {match.Value}");
             }

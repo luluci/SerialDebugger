@@ -146,7 +146,7 @@ namespace SerialDebugger.Settings
             public string Type { get; set; } = string.Empty;
 
             [JsonPropertyName("value")]
-            public int Value { get; set; } = -1;
+            public Int64 Value { get; set; } = Int64.MinValue;
 
             [JsonPropertyName("msec")]
             public int Msec { get; set; } = -1;

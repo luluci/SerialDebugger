@@ -143,9 +143,9 @@ namespace SerialDebugger.Comm
                                 throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Matchルールの指定がField定義数の範囲外");
                             }
                             // Value設定値チェック
-                            match.Value = match.Value & field.Mask;
+                            match.Value = field.LimitValue(match.Value);
                             //
-                            value |= (match.Value << bit_pos);
+                            value |= ((match.Value & field.Mask) << bit_pos);
                             mask |= (field.Mask << bit_pos);
                             bit_pos += field.BitSize;
                             // Disp

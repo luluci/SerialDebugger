@@ -89,6 +89,7 @@ namespace SerialDebugger.Comm
             Time,       // 時間(HH:MM)表現
             Script,     // スクリプト生成
             Checksum,   // チェックサム
+            Char,       // 文字入力
 
             // 特殊Selecter
             Refer,      // 参照:既存Fieldの内容を流用する。値は個別に保持する
@@ -115,6 +116,8 @@ namespace SerialDebugger.Comm
             public string Mode { get; }
             public int Count { get; }
             public string Script { get; }
+            // Char表現要素
+            public int CharId { get; }
             // Refer表現要素
             public Field FieldRef { get; }
 
@@ -152,6 +155,12 @@ namespace SerialDebugger.Comm
                 Script = script;
             }
 
+            public Selecter(int char_id)
+            {
+                Type = InputModeType.Char;
+                CharId = char_id;
+            }
+
             public Selecter(Field field)
             {
                 Type = InputModeType.Refer;
@@ -173,6 +182,10 @@ namespace SerialDebugger.Comm
         public static Selecter MakeSelecterScript(string mode, int count, string script)
         {
             return new Selecter(mode, count, script);
+        }
+        public static Selecter MakeSelecterChar(int char_id)
+        {
+            return new Selecter(char_id);
         }
 
         public Selecter selecter;
@@ -338,6 +351,7 @@ namespace SerialDebugger.Comm
                         index = (int)(value - SelectsValueMin);
                     }
                     break;
+                case Field.InputModeType.Char:
                 case Field.InputModeType.Edit:
                 case Field.InputModeType.Fix:
                 case Field.InputModeType.Checksum:
@@ -372,6 +386,8 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Time:
                 case Field.InputModeType.Script:
                     return Selects[index].Disp;
+                case Field.InputModeType.Char:
+                    return MakeDispChar(value);
                 case Field.InputModeType.Edit:
                 case Field.InputModeType.Fix:
                 default:
@@ -397,6 +413,8 @@ namespace SerialDebugger.Comm
                         return MakeDispNumber(value);
                     }
 
+                case Field.InputModeType.Char:
+                    return MakeDispChar(value);
                 case Field.InputModeType.Edit:
                 case Field.InputModeType.Fix:
                 default:
@@ -426,6 +444,12 @@ namespace SerialDebugger.Comm
                 result = result.Substring(right, HexSize);
             }
             return result;
+        }
+
+        public string MakeDispChar(Int64 value)
+        {
+            var ch = (char)(value & 0xFF);
+            return $"{ch}";
         }
 
         private async Task MakeSelectModeAsync(Selecter selecter)
@@ -459,6 +483,7 @@ namespace SerialDebugger.Comm
                 case InputModeType.Refer:
                     MakeSelectModeRefer();
                     break;
+                case InputModeType.Char:
                 case InputModeType.Edit:
                 case InputModeType.Fix:
                 default:

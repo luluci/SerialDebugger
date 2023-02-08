@@ -28,6 +28,7 @@ namespace SerialDebugger.Comm
         public static GuiTxBufferColConverter TxBufConverter = new GuiTxBufferColConverter();
         public static GuiHexEditConverter HexEditConverter = new GuiHexEditConverter();
         public static GuiDecEditConverter DecEditConverter = new GuiDecEditConverter();
+        public static GuiCharEditConverter CharEditConverter = new GuiCharEditConverter();
         public static GuiTxSendFixNameConverter TxSendFixNameConverter = new GuiTxSendFixNameConverter();
         public static GuiTxSendFixBGColorConverter TxSendFixBGColorConverter = new GuiTxSendFixBGColorConverter();
         public static GuiBitColBgConverter[] BitColBgConverter = new GuiBitColBgConverter[]
@@ -362,6 +363,8 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Time:
                 case Field.InputModeType.Script:
                     return MakeInputGuiSelecter(field, field, path, row, col, rowspan, colspan);
+                case Field.InputModeType.Char:
+                    return MakeInputGuiEditChar(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
                     return MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:
@@ -539,6 +542,45 @@ namespace SerialDebugger.Comm
             //cb.Background = SystemColors.ControlLightLightBrush;
 
             return cb;
+        }
+
+        /// <summary>
+        /// Binding設定付きTextBox
+        /// </summary>
+        /// <param name="tgt"></param>
+        /// <returns></returns>
+        public static UIElement MakeInputGuiEditChar(Field field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            // binding作成
+            var bind = new Binding(path + ".Value.Value");
+            bind.Converter = CharEditConverter;
+            bind.ConverterParameter = param;
+            //
+            var tb = new TextBox();
+            tb.SetBinding(TextBox.TextProperty, bind);
+            tb.Background = SystemColors.ControlLightLightBrush;
+            tb.TextAlignment = TextAlignment.Center;
+            tb.Width = Gui.setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput];
+            
+            //
+            var border = MakeBorder1();
+            border.Child = tb;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(border, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(border, colspan);
+            }
+
+            var bind_bgcolor = new Binding(path + ".ChangeState.Value");
+            bind_bgcolor.Converter = TxSendFixBGColorConverter;
+            border.SetBinding(Border.BorderBrushProperty, bind_bgcolor);
+
+            return border;
         }
 
     }

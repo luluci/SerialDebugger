@@ -155,6 +155,27 @@ namespace SerialDebugger.Comm
     }
 
     /// <summary>
+    /// Select列:テキストボックスに表示する文字列を作成する
+    /// </summary>
+    internal class GuiCharEditConverter : IValueConverter
+    {
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var temp = (char)((Int64)value & 0xFF);
+            var field = (Field)parameter;
+            // 16進数表示
+            return $"{temp}";
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var temp = (string)value;
+            var field = parameter as Field;
+            return temp[0];
+        }
+    }
+
+    /// <summary>
     /// 送信バイトシーケンス列に表示する文字列を作成する
     /// </summary>
     internal class GuiTxSendFixNameConverter : IValueConverter

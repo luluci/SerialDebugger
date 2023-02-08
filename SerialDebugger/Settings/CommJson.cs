@@ -223,6 +223,9 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("checksum")]
             public CommFieldChecksum Checksum { get; set; }
+
+            [JsonPropertyName("char")]
+            public string Char { get; set; } = string.Empty;
         }
 
         public class CommFieldMultiName
@@ -311,6 +314,9 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("value")]
             public IList<Int64> Values { get; set; }
+
+            [JsonPropertyName("value_ascii")]
+            public string ValueAscii { get; set; } = string.Empty;
         }
 
     }

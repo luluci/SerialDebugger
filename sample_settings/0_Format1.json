@@ -91,7 +91,7 @@
 						{
 							"name": "field1_1",
 							"bit_size": 8,
-							"value": 1
+							"value": 240
 						},
 						{
 							"name": "field1_2",
@@ -205,7 +205,7 @@
 							"active": true,
 							"log_visualize": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 1 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -222,7 +222,7 @@
 							"active": false,
 							"log_visualize": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 2 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -238,7 +238,7 @@
 							"name": "Rx_Pattern_3",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 3 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -254,7 +254,7 @@
 							"name": "Rx_Pattern_4",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 4 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -270,7 +270,7 @@
 							"name": "Rx_Pattern_5",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 5 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -286,7 +286,7 @@
 							"name": "Rx_Pattern_6",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 6 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -302,7 +302,7 @@
 							"name": "Rx_Pattern_7",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 7 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -318,7 +318,7 @@
 							"name": "Rx_Pattern_8",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 8 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -334,7 +334,7 @@
 							"name": "Rx_Pattern_9",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 9 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -350,7 +350,7 @@
 							"name": "Rx_Pattern_10",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 10 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -366,7 +366,7 @@
 							"name": "Rx_Pattern_11",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 11 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -382,7 +382,7 @@
 							"name": "Rx_Pattern_12",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 12 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -398,7 +398,7 @@
 							"name": "Rx_Pattern_13",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 13 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -414,7 +414,7 @@
 							"name": "Rx_Pattern_14",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 14 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -430,7 +430,7 @@
 							"name": "Rx_Pattern_15",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": 15 },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -446,9 +446,71 @@
 							"name": "Rx_Pattern_-15",
 							"active": true,
 							"matches": [
-								{ "type": "any" },
+								{ "value": 240 },
 								{ "value": -15 },
 								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" }
+							]
+						}
+					]
+				},
+				{
+					"name": "Rx_Frame_String",
+					"fields": [
+						{
+							"name": "HEADER",
+							"bit_size": 8,
+							"value": 252
+						},
+						{
+							"name": "char1",
+							"type": "Char",
+							"char": "A"
+						},
+						{
+							"name": "char2",
+							"type": "Char",
+							"char": "B"
+						},
+						{
+							"name": "char3",
+							"type": "Char",
+							"char": "C"
+						},
+						{
+							"name": "separator",
+							"bit_size": 8,
+							"value": 0
+						},
+						{
+							"name": "char4",
+							"type": "Char",
+							"char": "D"
+						},
+						{
+							"name": "char5",
+							"type": "Char",
+							"char": "E"
+						},
+						{
+							"name": "char6",
+							"type": "Char",
+							"char": "F"
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Frame_String_1",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 252 },
 								{ "type": "any" },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -555,7 +617,7 @@
 						{
 							"name": "field1_1",
 							"bit_size": 8,
-							"value": 1
+							"value": 240
 						},
 						{
 							"name": "field1_2",
@@ -668,11 +730,66 @@
 					"backup_buffers": [
 						{
 							"name": "設定X",
-							"value": [ 1, -1, 2, 4, 15, 1, 170, -128, 0 ]
+							"value": [ 240, -1, 2, 4, 15, 1, 170, -128, 0 ]
 						},
 						{
 							"name": "設定Y",
-							"value": [ 1, 77, -2, 4, 15, 0, -170, 255, 255 ]
+							"value": [ 240, 77, -2, 4, 15, 0, -170, 255, 255 ]
+						}
+					]
+				},
+				{
+					"name": "Frame_String",
+					"fields": [
+						{
+							"name": "HEADER",
+							"bit_size": 8,
+							"value": 252
+						},
+						{
+							"name": "char1",
+							"type": "Char",
+							"char": "A"
+						},
+						{
+							"name": "char2",
+							"type": "Char",
+							"char": "B"
+						},
+						{
+							"name": "char3",
+							"type": "Char",
+							"char": "C"
+						},
+						{
+							"name": "separator",
+							"bit_size": 8,
+							"value": 0
+						},
+						{
+							"name": "char4",
+							"type": "Char",
+							"char": "D"
+						},
+						{
+							"name": "char5",
+							"type": "Char",
+							"char": "E"
+						},
+						{
+							"name": "char6",
+							"type": "Char",
+							"char": "F"
+						}
+					],
+					"backup_buffers": [
+						{
+							"name": "設定X",
+							"value_ascii": "\u00FCABC\u0000DEFGHI"
+						},
+						{
+							"name": "設定Y",
+							"value_ascii": "\u00FCLMN\u0000OPQR"
 						}
 					]
 				}

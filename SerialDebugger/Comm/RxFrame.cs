@@ -263,6 +263,12 @@ namespace SerialDebugger.Comm
             bool is_first = true;
             int bit_size = 0;
             Int64 data;
+            string str;
+            string char_type_name = string.Empty;
+            bool prev_is_char = false;
+            var chars = new char[Fields.Count];
+            var prev_char_id = -1;
+            var chars_size = 0;
             foreach (var field in Fields)
             {
                 // buffからfieldに該当する分のデータを抽出
@@ -273,13 +279,57 @@ namespace SerialDebugger.Comm
                 // MSB側の余分ビットを除去
                 data &= field.Mask;
 
-                // separator
-                if (!is_first)
-                {
-                    log.Append(", ");
-                }
                 // ログ作成
-                log.Append(field.Name).Append("=").Append(field.MakeDispByValue(data));
+                str = field.MakeDispByValue(data);
+                // Char[]判定
+                if (field.InputType == Field.InputModeType.Char)
+                {
+                    if (prev_char_id == -1)
+                    {
+                        prev_char_id = field.selecter.CharId;
+                    }
+                    if (prev_char_id != field.selecter.CharId)
+                    {
+                        // separator
+                        if (!is_first)
+                        {
+                            log.Append(", ");
+                        }
+                        log.Append(char_type_name).Append("=").Append(chars, 0, chars_size);
+                        is_first = false;
+                        chars_size = 0;
+                        prev_char_id = field.selecter.CharId;
+                    }
+
+                    char_type_name = field.Name;
+                    chars[chars_size] = (char)(data & 0xFF);
+                    chars_size++;
+
+                    prev_is_char = true;
+                }
+                else
+                {
+                    if (prev_is_char)
+                    {
+                        // separator
+                        if (!is_first)
+                        {
+                            log.Append(", ");
+                        }
+                        log.Append(char_type_name).Append("=").Append(chars, 0, chars_size);
+                        is_first = false;
+                        chars_size = 0;
+                        prev_char_id = -1;
+                    }
+                    // separator
+                    if (!is_first)
+                    {
+                        log.Append(", ");
+                    }
+                    log.Append(field.Name).Append("=").Append(str);
+                    is_first = false;
+                    prev_is_char = false;
+                }
 
                 // 該当するmatchを取得
                 while (!Object.ReferenceEquals(pattern.Matches[idx].FieldRef, field))
@@ -295,7 +345,7 @@ namespace SerialDebugger.Comm
 
                     case RxMatchType.Any:
                         // 受信値に応じて表示を作成
-                        match.Disp.Value = field.MakeDispByValue(data);
+                        match.Disp.Value = str;
                         break;
 
                     case RxMatchType.Timeout:
@@ -304,8 +354,18 @@ namespace SerialDebugger.Comm
                         // 表示なし
                         break;
                 }
-
+            }
+            // Char[]判定
+            if (prev_is_char)
+            {
+                // separator
+                if (!is_first)
+                {
+                    log.Append(", ");
+                }
+                log.Append(char_type_name).Append("=").Append(chars, 0, chars_size);
                 is_first = false;
+                chars_size = 0;
             }
 
             return log.ToString();

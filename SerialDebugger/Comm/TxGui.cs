@@ -503,6 +503,8 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Time:
                 case Field.InputModeType.Script:
                     return Gui.MakeInputGuiSelecter(field.selecter.FieldRef, field, path, row, col, rowspan, colspan);
+                case Field.InputModeType.Char:
+                    return Gui.MakeInputGuiEditChar(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
                     return Gui.MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:

@@ -158,26 +158,43 @@ namespace SerialDebugger.Settings
                     bool prev_is_char = false;
                     foreach (var json_field in frame.Fields)
                     {
-
-                        // Field作成
-                        var field = await MakeFieldAsync(i, json_field, char_id);
-                        // Charチェック
-                        if (field.InputType == Field.InputModeType.Char)
+                        // Stringチェック
+                        if (json_field.Type == "String")
                         {
-                            prev_is_char = true;
+                            if (json_field.String.Length > 0)
+                            {
+                                foreach (var ch in json_field.String)
+                                {
+                                    var field = await MakeFieldStringNodeAsync(i, json_field, ch, char_id);
+                                    f.Fields.Add(field);
+                                    i++;
+                                }
+                                char_id++;
+                            }
                         }
                         else
                         {
-                            // Char -> その他 でID更新
-                            if (prev_is_char)
+
+                            // Field作成
+                            var field = await MakeFieldAsync(i, json_field, char_id);
+                            // Charチェック
+                            if (field.InputType == Field.InputModeType.Char)
                             {
-                                char_id++;
+                                prev_is_char = true;
                             }
-                            prev_is_char = false;
+                            else
+                            {
+                                // Char -> その他 でID更新
+                                if (prev_is_char)
+                                {
+                                    char_id++;
+                                }
+                                prev_is_char = false;
+                            }
+                            //
+                            f.Fields.Add(field);
+                            i++;
                         }
-                        //
-                        f.Fields.Add(field);
-                        i++;
                     }
                     f.Build();
 
@@ -572,25 +589,44 @@ namespace SerialDebugger.Settings
                     bool prev_is_char = false;
                     foreach (var json_field in frame.Fields)
                     {
-                        // Field作成
-                        var field = await MakeFieldAsync(i, json_field, char_id);
-                        // Charチェック
-                        if (field.InputType == Field.InputModeType.Char)
+
+                        // Stringチェック
+                        if (json_field.Type == "String")
                         {
-                            prev_is_char = true;
+                            if (json_field.String.Length > 0)
+                            {
+                                foreach (var ch in json_field.String)
+                                {
+                                    var field = await MakeFieldStringNodeAsync(i, json_field, ch, char_id);
+                                    f.Fields.Add(field);
+                                    i++;
+                                }
+                                char_id++;
+                            }
                         }
                         else
                         {
-                            // Char -> その他 でID更新
-                            if (prev_is_char)
+
+                            // Field作成
+                            var field = await MakeFieldAsync(i, json_field, char_id);
+                            // Charチェック
+                            if (field.InputType == Field.InputModeType.Char)
                             {
-                                char_id++;
+                                prev_is_char = true;
                             }
-                            prev_is_char = false;
+                            else
+                            {
+                                // Char -> その他 でID更新
+                                if (prev_is_char)
+                                {
+                                    char_id++;
+                                }
+                                prev_is_char = false;
+                            }
+                            //
+                            f.Fields.Add(field);
+                            i++;
                         }
-                        //
-                        f.Fields.Add(field);
-                        i++;
                     }
                     f.Build();
                 }
@@ -846,6 +882,23 @@ namespace SerialDebugger.Settings
             {
                 throw new Exception($"fields[{id}]({field.Name}): type:CharではMultiNamesを指定できません");
             }
+            // BitSizeは固定
+            field.BitSize = 8;
+            // Selecter
+            var selecter = Field.MakeSelecterChar(char_id);
+            // Field生成
+            return await MakeFieldImplAsync(id, field, Field.InputModeType.Char, selecter);
+        }
+
+        private async Task<Field> MakeFieldStringNodeAsync(int id, Json.CommField field, char ch, int char_id)
+        {
+            //
+            if (!(field.MultiNames is null))
+            {
+                throw new Exception($"fields[{id}]({field.Name}): type:CharではMultiNamesを指定できません");
+            }
+            // Value
+            field.Value = ch;
             // BitSizeは固定
             field.BitSize = 8;
             // Selecter

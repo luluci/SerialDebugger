@@ -489,19 +489,14 @@
 							"value": 0
 						},
 						{
-							"name": "char4",
-							"type": "Char",
-							"char": "D"
+							"name": "str2",
+							"type": "String",
+							"string": "DEF"
 						},
 						{
-							"name": "char5",
-							"type": "Char",
-							"char": "E"
-						},
-						{
-							"name": "char6",
-							"type": "Char",
-							"char": "F"
+							"name": "str3",
+							"type": "String",
+							"string": "GHI"
 						}
 					],
 					"patterns": [
@@ -511,6 +506,9 @@
 							"log_visualize": true,
 							"matches": [
 								{ "value": 252 },
+								{ "type": "any" },
+								{ "type": "any" },
+								{ "type": "any" },
 								{ "type": "any" },
 								{ "type": "any" },
 								{ "type": "any" },
@@ -747,19 +745,9 @@
 							"value": 252
 						},
 						{
-							"name": "char1",
-							"type": "Char",
-							"char": "A"
-						},
-						{
-							"name": "char2",
-							"type": "Char",
-							"char": "B"
-						},
-						{
-							"name": "char3",
-							"type": "Char",
-							"char": "C"
+							"name": "str1",
+							"type": "String",
+							"string": "ABC"
 						},
 						{
 							"name": "separator",
@@ -780,6 +768,11 @@
 							"name": "char6",
 							"type": "Char",
 							"char": "F"
+						},
+						{
+							"name": "str3",
+							"type": "String",
+							"string": "GHI"
 						}
 					],
 					"backup_buffers": [

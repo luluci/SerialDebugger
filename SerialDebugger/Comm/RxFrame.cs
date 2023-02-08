@@ -287,6 +287,7 @@ namespace SerialDebugger.Comm
                     if (prev_char_id == -1)
                     {
                         prev_char_id = field.selecter.CharId;
+                        char_type_name = field.Name;
                     }
                     if (prev_char_id != field.selecter.CharId)
                     {
@@ -299,9 +300,8 @@ namespace SerialDebugger.Comm
                         is_first = false;
                         chars_size = 0;
                         prev_char_id = field.selecter.CharId;
+                        char_type_name = field.Name;
                     }
-
-                    char_type_name = field.Name;
                     chars[chars_size] = (char)(data & 0xFF);
                     chars_size++;
 

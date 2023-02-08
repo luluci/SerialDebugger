@@ -24,6 +24,11 @@ namespace SerialDebugger.Comm
 
         public bool Match(byte data)
         {
+            if (Rules.Count <= Pos)
+            {
+                return false;
+            }
+
             var rule = Rules[Pos];
             switch (rule.Type)
             {

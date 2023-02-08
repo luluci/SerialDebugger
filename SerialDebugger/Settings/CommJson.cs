@@ -226,6 +226,9 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("char")]
             public string Char { get; set; } = string.Empty;
+
+            [JsonPropertyName("string")]
+            public string String { get; set; } = string.Empty;
         }
 
         public class CommFieldMultiName

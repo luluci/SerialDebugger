@@ -56,6 +56,8 @@ namespace SerialDebugger.Comm
         public ReactiveCollection<byte> TxBuffer { get; set; }
         // 確定送信データ
         public byte[] TxData { get; set; }
+        // ASCIIで送信するかどうか
+        public bool AsAscii { get; set; } = false;
         /// <summary>
         /// 送信データセーブ用バッファ
         /// </summary>
@@ -75,10 +77,11 @@ namespace SerialDebugger.Comm
         public bool HasChecksum { get; set; } = false;
         public int ChecksumIndex { get; set; }
 
-        public TxFrame(int id, string name)
+        public TxFrame(int id, string name, bool ascii)
         {
             Id = id;
             Name = name;
+            AsAscii = ascii;
 
             //UpdateMsg = new ReactivePropertySlim<Serial.UpdateTxBuffMsg>();
             //UpdateMsg.AddTo(Disposables);
@@ -245,7 +248,20 @@ namespace SerialDebugger.Comm
                 UpdateChecksum(TxBuffer);
             }
             // 送信データ作成
-            TxData = TxBuffer.ToArray();
+            if (AsAscii)
+            {
+                TxData = new byte[TxBuffer.Count*2];
+                for (int i=0; i<TxBuffer.Count; i++)
+                {
+                    var ch = Utility.HexAscii.AsciiTbl[TxBuffer[i]];
+                    TxData[i * 2 + 0] = (byte)ch[0];
+                    TxData[i * 2 + 1] = (byte)ch[1];
+                }
+            }
+            else
+            {
+                TxData = TxBuffer.ToArray();
+            }
         }
 
         /// <summary>

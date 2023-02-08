@@ -86,9 +86,13 @@ namespace SerialDebugger.Comm
             {
                 case AutoTxActionType.Send:
                     // action.TxFrameIndex 上流でチェック済み
+                    if (action.TxFrameBuffIndex.Value < 0)
+                    {
+                        throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: 0より大きな値を指定してください。({action.TxFrameBuffIndex.Value})");
+                    }
                     if (action.TxFrameBuffIndex.Value > 0 && (action.TxFrameBuffIndex.Value - 1) >= TxFrames[action.TxFrameIndex].BackupBufferLength)
                     {
-                        throw new Exception("AutoTx: SendAction: TxFrameBuffIndex.");
+                        throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: BackupBufferの定義数より大きな値が指定されました。({action.TxFrameBuffIndex.Value})");
                     }
                     // Offset/Length
                     var frame = TxFrames[action.TxFrameIndex];
@@ -103,6 +107,25 @@ namespace SerialDebugger.Comm
                     if (action.TxFrameOffset >= frame.Length || (action.TxFrameOffset + action.TxFrameLength) > frame.Length)
                     {
                         throw new Exception("AutoTx: SendAction: TxFrameOffset/TxFrameLength.");
+                    }
+                    // Aliasチェック
+                    if (Object.ReferenceEquals(action.Alias, string.Empty))
+                    {
+                        if (action.TxFrameBuffIndex.Value == 0)
+                        {
+                            action.Alias = $"Send [{action.TxFrameName.Value}]";
+                        }
+                        else
+                        {
+                            var bkframe = frame.BackupBuffer[action.TxFrameBuffIndex.Value - 1];
+                            action.Alias = $"Send [{bkframe.Name}]";
+                        }
+                    }
+                    // ASCIIチェック
+                    if (frame.AsAscii)
+                    {
+                        action.TxFrameOffset *= 2;
+                        action.TxFrameLength *= 2;
                     }
                     break;
 
@@ -241,16 +264,19 @@ namespace SerialDebugger.Comm
         {
             var action = Actions[ActiveActionIndex];
             var buff_idx = action.TxFrameBuffIndex.Value;
+            string name;
             // バッファ選択
             byte[] buff;
             if (buff_idx == 0)
             {
                 //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
+                name = action.TxFrameName.Value;
                 buff = TxFrames[action.TxFrameIndex].TxData;
             }
             else
             {
                 //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
+                name = TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].Name;
                 buff = TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData;
             }
             // バッファ送信
@@ -258,7 +284,7 @@ namespace SerialDebugger.Comm
             // 処理終了からの時間を計測
             CycleTimer.Start();
             // Log出力
-            Logger.Add($"[Tx][{action.TxFrameName}] {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
+            Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
         }
 
         private bool ExecWait()

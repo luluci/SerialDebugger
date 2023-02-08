@@ -98,6 +98,7 @@
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="Utility\BindableBase.cs" />
     <Compile Include="Utility\CycleTimer.cs" />
+    <Compile Include="Utility\HexAscii.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

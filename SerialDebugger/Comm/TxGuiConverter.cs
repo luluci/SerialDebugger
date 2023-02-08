@@ -48,7 +48,7 @@ namespace SerialDebugger.Comm
         {
             var temp = (byte)value;
             // 16進数表示
-            return $"{temp}h";
+            return $"{temp:X2}h";
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

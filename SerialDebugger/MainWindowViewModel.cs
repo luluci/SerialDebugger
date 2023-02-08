@@ -628,7 +628,20 @@ namespace SerialDebugger
         private void SerialTxBufferFix(Comm.TxFrame frame)
         {
             // バッファを送信データにコピー
-            frame.TxBuffer.CopyTo(frame.TxData, 0);
+            if (frame.AsAscii)
+            {
+                frame.TxData = new byte[frame.TxBuffer.Count * 2];
+                for (int i = 0; i < frame.TxBuffer.Count; i++)
+                {
+                    var ch = Utility.HexAscii.AsciiTbl[frame.TxBuffer[i]];
+                    frame.TxData[i * 2 + 0] = (byte)ch[0];
+                    frame.TxData[i * 2 + 1] = (byte)ch[1];
+                }
+            }
+            else
+            {
+                frame.TxBuffer.CopyTo(frame.TxData, 0);
+            }
             // 変更フラグを下す
             foreach (var field in frame.Fields)
             {
@@ -640,7 +653,20 @@ namespace SerialDebugger
         private void SerialTxBufferFix(Comm.TxBackupBuffer frame)
         {
             // バッファを送信データにコピー
-            frame.TxBuffer.CopyTo(frame.TxData, 0);
+            if (frame.FrameRef.AsAscii)
+            {
+                frame.TxData = new byte[frame.TxBuffer.Count * 2];
+                for (int i = 0; i < frame.TxBuffer.Count; i++)
+                {
+                    var ch = Utility.HexAscii.AsciiTbl[frame.TxBuffer[i]];
+                    frame.TxData[i * 2 + 0] = (byte)ch[0];
+                    frame.TxData[i * 2 + 1] = (byte)ch[1];
+                }
+            }
+            else
+            {
+                frame.TxBuffer.CopyTo(frame.TxData, 0);
+            }
             // 変更フラグを下す
             foreach (var field in frame.Fields)
             {

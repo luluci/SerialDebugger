@@ -168,6 +168,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
 
+            [JsonPropertyName("as_ascii")]
+            public bool AsAscii { get; set; } = false;
+
             [JsonPropertyName("fields")]
             public IList<CommField> Fields { get; set; }
 

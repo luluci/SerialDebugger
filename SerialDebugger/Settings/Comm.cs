@@ -445,14 +445,13 @@ namespace SerialDebugger.Settings
 
             // action.TxFrameBuffIndex: 省略時は0指定とする
 
-            try
+            if (TxNameDict.TryGetValue(action.TxFrameName, out int frame_idx))
             {
-                var frame_idx = TxNameDict[action.TxFrameName];
                 var act = AutoTxAction.MakeSendAction(id, action.Alias, action.TxFrameName, frame_idx, action.TxFrameBuffIndex, action.TxFrameBuffOffset, action.TxFrameBuffLength, action.Immediate);
 
                 return act;
             }
-            catch
+            else
             {
                 // FrameNameが存在しないとき
                 throw new Exception($"actions[{id}](Send): 指定されたtx.frame({action.TxFrameName})が存在しません。");
@@ -545,7 +544,7 @@ namespace SerialDebugger.Settings
             try
             {
                 // TxFrame作成
-                var f = new TxFrame(id, frame.Name);
+                var f = new TxFrame(id, frame.Name, frame.AsAscii);
                 if (!(frame.Fields is null))
                 {
                     int i = 0;

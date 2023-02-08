@@ -34,7 +34,7 @@ namespace SerialDebugger.Comm
     {
         // 共通
         public int Id { get; }
-        public string Alias { get; private set; }
+        public string Alias { get; set; }
         public AutoTxActionType Type { get; private set; }
         public ReactivePropertySlim<bool> IsActive { get; set; }
         public bool Immediate { get; set; }
@@ -132,10 +132,11 @@ namespace SerialDebugger.Comm
             action.TxFrameBuffIndex = new ReactivePropertySlim<int>(buff_idx);
             action.TxFrameBuffIndex.AddTo(action.Disposables);
 
-            if (Object.ReferenceEquals(action.Alias, string.Empty))
-            {
-                action.Alias = $"Send [{action.TxFrameName.Value}]";
-            }
+            // Validation時に作成
+            //if (Object.ReferenceEquals(action.Alias, string.Empty))
+            //{
+            //    action.Alias = $"Send [{action.TxFrameName.Value}]";
+            //}
 
             return action;
         }

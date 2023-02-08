@@ -526,6 +526,22 @@
 						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 0 },
 						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
 					]
+				},
+				{
+					"name": "job_Frame_A_0",
+					"alias": "Frame_A[0]を送信",
+					"active": true,
+					"actions": [
+						{ "type": "Send", "tx_frame_name": "Frame_A" }
+					]
+				},
+				{
+					"name": "job_Frame_A_1",
+					"alias": "Frame_A[1]を送信",
+					"active": true,
+					"actions": [
+						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1 }
+					]
 				}
 			]
 		},
@@ -534,6 +550,7 @@
 			"frames": [
 				{
 					"name": "Frame_A",
+					"as_ascii": true,
 					"fields": [
 						{
 							"name": "field1_1",

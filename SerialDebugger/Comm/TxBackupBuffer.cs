@@ -112,7 +112,20 @@ namespace SerialDebugger.Comm
                 TxBuffer.Add(value);
             }
             // 送信データ作成
-            TxData = TxBuffer.ToArray();
+            if (FrameRef.AsAscii)
+            {
+                TxData = new byte[TxBuffer.Count * 2];
+                for (int i = 0; i < TxBuffer.Count; i++)
+                {
+                    var ch = Utility.HexAscii.AsciiTbl[TxBuffer[i]];
+                    TxData[i * 2 + 0] = (byte)ch[0];
+                    TxData[i * 2 + 1] = (byte)ch[1];
+                }
+            }
+            else
+            {
+                TxData = TxBuffer.ToArray();
+            }
         }
 
         /// <summary>

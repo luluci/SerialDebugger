@@ -163,11 +163,14 @@ namespace SerialDebugger.Settings
                         {
                             if (json_field.String.Length > 0)
                             {
+                                int char_pos = 0;
                                 foreach (var ch in json_field.String)
                                 {
                                     var field = await MakeFieldStringNodeAsync(i, json_field, ch, char_id);
+                                    field.InnerFields[0].Name = $"{json_field.Name}[{char_pos}]";
                                     f.Fields.Add(field);
                                     i++;
+                                    char_pos++;
                                 }
                                 char_id++;
                             }
@@ -595,11 +598,14 @@ namespace SerialDebugger.Settings
                         {
                             if (json_field.String.Length > 0)
                             {
+                                int char_pos = 0;
                                 foreach (var ch in json_field.String)
                                 {
                                     var field = await MakeFieldStringNodeAsync(i, json_field, ch, char_id);
+                                    field.InnerFields[0].Name = $"{json_field.Name}[{char_pos}]";
                                     f.Fields.Add(field);
                                     i++;
+                                    char_pos++;
                                 }
                                 char_id++;
                             }

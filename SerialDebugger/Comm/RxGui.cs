@@ -337,17 +337,31 @@ namespace SerialDebugger.Comm
                 int bit_no = 0;
                 int bit_pos = 0;
                 int col_width = 1;
+                // バイト境界フラグ
+                bool is_byte_align = false;
+                // バイト表示可否フラグ
+                bool is_byte_disp = false;
                 for (int match_idx = 0; match_idx < pattern.Matches.Count; match_idx++)
                 {
                     //
                     var match = pattern.Matches[match_idx];
+                    //
+                    is_byte_align = (bit_no % 8) == 0;
+                    is_byte_disp = is_byte_align && ((match.FieldRef.BitSize % 8) == 0);
                     // Bit列作成
                     switch (match.Type)
                     {
                         case RxMatchType.Any:
-                            for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
+                            if (is_byte_disp)
                             {
-                                grid.Children.Add(Gui.MakeTextBlockStyleDisable($"{bit_no + bit}", bit_pos + bit, col_bit));
+                                grid.Children.Add(Gui.MakeTextBlockStyle1($"-", bit_pos, col_bit, match.FieldRef.BitSize));
+                            }
+                            else
+                            {
+                                for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
+                                {
+                                    grid.Children.Add(Gui.MakeTextBlockStyleDisable($"{bit_no + bit}", bit_pos + bit, col_bit));
+                                }
                             }
                             use_bit_no = match.FieldRef.BitSize;
                             use_bit_pos = match.FieldRef.BitSize;

@@ -43,6 +43,23 @@ namespace SerialDebugger
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
         public ReactiveCommand OnClickTxBufferSend { get; set; }
+        // Tx Shortcut定義
+        public class TxShortcutNode
+        {
+            public string Name { get; }
+            public int FrameId;
+            public int BufferId;
+
+            public TxShortcutNode(string name, int frameid, int bufferid)
+            {
+                Name = name;
+                FrameId = frameid;
+                BufferId = bufferid;
+            }
+        }
+        public ReactiveCollection<TxShortcutNode> TxShortcut { get; set; }
+        public ReactivePropertySlim<int> TxShortcutSelectedIndex { get; set; }
+        public ReactiveCommand OnClickTxShortcut { get; set; }
         // Comm: Rx
         public ReactiveCollection<Comm.RxFrame> RxFrames { get; set; }
         // Comm: AutoTx
@@ -157,6 +174,29 @@ namespace SerialDebugger
             RxFrames.AddTo(Disposables);
             AutoTxJobs = new ReactiveCollection<Comm.AutoTxJob>();
             AutoTxJobs.AddTo(Disposables);
+            // 送信ショートカット
+            TxShortcut = new ReactiveCollection<TxShortcutNode>();
+            TxShortcut.AddTo(Disposables);
+            TxShortcutSelectedIndex = new ReactivePropertySlim<int>();
+            TxShortcutSelectedIndex.AddTo(Disposables);
+            OnClickTxShortcut = new ReactiveCommand();
+            OnClickTxShortcut.Subscribe(x =>
+            {
+                if (0 <= TxShortcutSelectedIndex.Value && TxShortcutSelectedIndex.Value < TxShortcut.Count)
+                {
+                    var node = TxShortcut[TxShortcutSelectedIndex.Value];
+                    var frame = TxFrames[node.FrameId];
+                    if (node.BufferId == 0)
+                    {
+                        SerialTxBufferSendFix(frame);
+                    }
+                    else
+                    {
+                        SerialTxBufferSendFix(frame.BackupBuffer[node.BufferId-1]);
+                    }
+                }
+            })
+            .AddTo(Disposables);
             // 自動送信操作ショートカット
             AutoTxShortcutButtonDisp = new ReactivePropertySlim<string>();
             AutoTxShortcutButtonDisp.AddTo(Disposables);
@@ -318,6 +358,20 @@ namespace SerialDebugger
                 // GUI反映
                 window.BaseSerialTx.Children.Clear();
                 window.BaseSerialTx.Children.Add(tx);
+                // ショートカット作成
+                TxShortcut.Clear();
+                for (int frame_id = 0; frame_id < TxFrames.Count; frame_id++)
+                {
+                    // Frame登録
+                    var frame = TxFrames[frame_id];
+                    TxShortcut.Add(new TxShortcutNode(frame.Name, frame_id, 0));
+                    // BackupBuffer登録
+                    for (int bb_id = 0; bb_id < frame.BackupBufferLength; bb_id++)
+                    {
+                        var bb = frame.BackupBuffer[bb_id];
+                        TxShortcut.Add(new TxShortcutNode(bb.Name, frame_id, 1+bb_id));
+                    }
+                }
             }
             else
             {

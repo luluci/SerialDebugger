@@ -687,9 +687,11 @@ namespace SerialDebugger
                 frame.TxData = new byte[frame.TxBuffer.Count * 2];
                 for (int i = 0; i < frame.TxBuffer.Count; i++)
                 {
+                    // HEXをASCII化
                     var ch = Utility.HexAscii.AsciiTbl[frame.TxBuffer[i]];
-                    frame.TxData[i * 2 + 0] = (byte)ch[0];
-                    frame.TxData[i * 2 + 1] = (byte)ch[1];
+                    // little-endianで格納
+                    frame.TxData[i * 2 + 0] = (byte)ch[1];
+                    frame.TxData[i * 2 + 1] = (byte)ch[0];
                 }
             }
             else

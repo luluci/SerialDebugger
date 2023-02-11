@@ -16,27 +16,8 @@ namespace SerialDebugger.Comm
     using Utility;
     using Setting = Settings.Settings;
     using Logger = SerialDebugger.Log.Log;
-
-    interface ITxFrame
-    {
-        int Id { get; }
-        // 
-        string Name { get; }
-        /// <summary>
-        /// 送信フレーム: Field集合体
-        /// </summary>
-        ReactiveCollection<Field> Fields { get; set; }
-        /// <summary>
-        /// 送信バイトシーケンス
-        /// </summary>
-        ReactiveCollection<byte> TxBuffer { get; set; }
-        /// <summary>
-        /// TxFrame全体の変更状況
-        /// </summary>
-        ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
-    }
-
-    class TxFrame : BindableBase, ITxFrame, IDisposable
+    
+    class TxFrame : BindableBase, IDisposable
     {
         public int Id { get; }
         // 
@@ -50,22 +31,14 @@ namespace SerialDebugger.Comm
         /// </summary>
         public int Length { get; set; } = 0;
         public int BitLength { get; set; } = 0;
-        /// <summary>
-        /// 送信バイトシーケンス
-        /// </summary>
-        public ReactiveCollection<byte> TxBuffer { get; set; }
-        // 確定送信データ
-        public byte[] TxData { get; set; }
+
+        //
+        public int BufferSize { get; }
+        // FieldValueコンテナのコンテナ
+        public ReactiveCollection<TxFieldBuffer> Buffers { get; set; }
         // ASCIIで送信するかどうか
         public bool AsAscii { get; set; } = false;
-        /// <summary>
-        /// 送信データセーブ用バッファ
-        /// </summary>
-        public ReactiveCollection<TxBackupBuffer> BackupBuffer { get; set; }
-        /// <summary>
-        /// 送信バッファ数
-        /// </summary>
-        public int BackupBufferLength { get; set; } = 0;
+
         /// <summary>
         /// TxFrame全体の変更状況
         /// </summary>
@@ -77,76 +50,59 @@ namespace SerialDebugger.Comm
         public bool HasChecksum { get; set; } = false;
         public int ChecksumIndex { get; set; }
 
-        public TxFrame(int id, string name, bool ascii)
+        public TxFrame(int id, string name, int buffer_size, bool ascii)
         {
+            //
             Id = id;
             Name = name;
+            BufferSize = buffer_size;
             AsAscii = ascii;
-
-            //UpdateMsg = new ReactivePropertySlim<Serial.UpdateTxBuffMsg>();
-            //UpdateMsg.AddTo(Disposables);
+            //
             Fields = new ReactiveCollection<Field>();
-            Fields
-                .ObserveElementObservableProperty(x => x.Value).Subscribe(x =>
-                {
-                    Update(x.Instance);
-                });
-            Fields
-                .ObserveElementObservableProperty(x => x.SelectIndexSelects).Subscribe(x =>
-                {
-                    Update(x.Instance);
-                });
-            Fields
-                .ObserveElementObservableProperty(x => x.ChangeState).Subscribe(x =>
-                {
-                    ChangeState.Value = Field.ChangeStates.Changed;
-                });
             Fields
                 .ObserveElementObservableProperty(x => x.OnMouseDown).Subscribe((x) =>
                 {
                     DoDragDrop(x.Instance, x.Value as System.Windows.Input.MouseButtonEventArgs);
                 });
             Fields.AddTo(Disposables);
-            TxBuffer = new ReactiveCollection<byte>();
-            TxBuffer.AddTo(Disposables);
-            TxData = new byte[0];
-            BackupBuffer = new ReactiveCollection<TxBackupBuffer>();
-            //BackupBuffer.ObserveElementObservableProperty(x => x.UpdateMsg).Subscribe(x =>
-            // {
-            //     UpdateMsg.Value = x.Value;
-            // });
-            // Saveボタン
-            BackupBuffer.ObserveElementObservableProperty(x => x.OnClickSave).Subscribe(x =>
-            {
-                var buffer = x.Instance;
-                // 送信バイトシーケンスコピー
-                for (int i=0; i<TxBuffer.Count; i++)
-                {
-                    buffer.TxBuffer[i] = TxBuffer[i];
-                }
-                // 表示文字列コピー
-                for (int i=0; i<Fields.Count; i++)
-                {
-                    var field = Fields[i];
-                    var bk_field = buffer.Fields[i];
-                    bk_field.Value.Value = field.Value.Value;
-                }
-            });
-            // Storeボタン
-            BackupBuffer.ObserveElementObservableProperty(x => x.OnClickStore).Subscribe(x =>
-            {
-                var buffer = x.Instance;
-                for (int i = 0; i < Fields.Count; i++)
-                {
-                    var field = Fields[i];
-                    var bk_field = buffer.Fields[i];
-                    field.Value.Value = bk_field.Value.Value;
-                }
-            });
-            BackupBuffer.AddTo(Disposables);
+
+
+            Buffers = new ReactiveCollection<TxFieldBuffer>();
+            Buffers.AddTo(Disposables);
             //
             ChangeState = new ReactivePropertySlim<Field.ChangeStates>();
             ChangeState.AddTo(Disposables);
+
+            // Fieldsの値を格納するバッファを必ず1つ持つ
+            Buffers.Add(new TxFieldBuffer(0, Name, this));
+
+            // Saveボタン
+            Buffers.ObserveElementObservableProperty(x => x.OnClickSave).Subscribe(x =>
+            {
+                var src = Buffers[0];
+                var dst = x.Instance;
+                // 送信バイトシーケンスコピー
+                for (int i = 0; i < src.Buffer.Count; i++)
+                {
+                    dst.Buffer[i] = src.Buffer[i];
+                }
+                // 表示文字列コピー
+                for (int i = 0; i < Fields.Count; i++)
+                {
+                    dst.FieldValues[i].Value.Value = src.FieldValues[i].Value.Value;
+                }
+            });
+            // Storeボタン
+            Buffers.ObserveElementObservableProperty(x => x.OnClickStore).Subscribe(x =>
+            {
+                var dst = Buffers[0];
+                var src = x.Instance;
+                for (int i = 0; i < Fields.Count; i++)
+                {
+                    dst.FieldValues[i].Value.Value = src.FieldValues[i].Value.Value;
+                }
+            });
+            Buffers.AddTo(Disposables);
         }
 
         public void Add(Field field)
@@ -162,13 +118,19 @@ namespace SerialDebugger.Comm
         public void Build()
         {
             // Fieldから情報収集
+            byte data = 0;
             int field_no = 0;
-            Int64 buff = 0;
+            Int64 value = 0;
             int bit_pos = 0;
             int byte_pos = 0;
             int disp_len = 0;
             foreach (var f in Fields)
             {
+                // BuffersにFieldを登録
+                foreach (var buff in Buffers)
+                {
+                    buff.FieldValues.Add(new TxFieldValue(f));
+                }
                 // Field位置セット
                 f.BitPos = bit_pos;
                 f.BytePos = byte_pos;
@@ -176,15 +138,19 @@ namespace SerialDebugger.Comm
                 // Frame情報更新
                 BitLength += f.BitSize;
                 // 送信生データ作成
-                buff |= (f.Value.Value & f.Mask) << f.BitPos;
+                value |= (f.Value.Value & f.Mask) << f.BitPos;
                 // Field位置更新
                 bit_pos += f.BitSize;
                 while (bit_pos >= 8)
                 {
                     // 送信生データに1バイトたまったら送信バイトシーケンスに登録
-                    TxBuffer.Add((byte)(buff & 0xFF));
+                    data = (byte)(value & 0xFF);
+                    foreach (var buff in Buffers)
+                    {
+                        buff.Buffer.Add(data);
+                    }
                     // 登録分を生データから削除
-                    buff >>= 8;
+                    value >>= 8;
                     //
                     byte_pos++;
                     bit_pos -= 8;
@@ -215,9 +181,13 @@ namespace SerialDebugger.Comm
             if (bit_pos > 0)
             {
                 // 送信生データに1バイトたまったら送信バイトシーケンスに登録
-                TxBuffer.Add((byte)(buff & 0xFF));
+                data = (byte)(value & 0xFF);
+                foreach (var buff in Buffers)
+                {
+                    buff.Buffer.Add(data);
+                }
                 // 登録分を生データから削除
-                buff >>= 8;
+                value >>= 8;
                 //
                 byte_pos++;
                 bit_pos -= 8;
@@ -244,46 +214,52 @@ namespace SerialDebugger.Comm
                     cs.Checksum.End--;
                     Logger.Add($"Checksum Range is invalid: Fix to {cs.Checksum.Begin}-{cs.Checksum.End}");
                 }
-                //
-                UpdateChecksum(TxBuffer);
+                // チェックサム計算して初期化
+                var sum = CalcChecksum(Buffers[0].Buffer);
+                foreach (var buff in Buffers)
+                {
+                    buff.FieldValues[ChecksumIndex].Value.Value = sum;
+                }
             }
             // 送信データ作成
             if (AsAscii)
             {
-                TxData = new byte[TxBuffer.Count*2];
-                for (int i=0; i<TxBuffer.Count; i++)
+                // 2個目以降はバッファコピーで十分だが
+                foreach (var buff in Buffers)
                 {
-                    var ch = Utility.HexAscii.AsciiTbl[TxBuffer[i]];
-                    TxData[i * 2 + 0] = (byte)ch[0];
-                    TxData[i * 2 + 1] = (byte)ch[1];
+                    buff.Data = new byte[buff.Buffer.Count * 2];
+                    for (int i = 0; i < buff.Buffer.Count; i++)
+                    {
+                        var ch = Utility.HexAscii.AsciiTbl[buff.Buffer[i]];
+                        buff.Data[i * 2 + 0] = (byte)ch[0];
+                        buff.Data[i * 2 + 1] = (byte)ch[1];
+                    }
                 }
             }
             else
             {
-                TxData = TxBuffer.ToArray();
+                foreach (var buff in Buffers)
+                {
+                    buff.Data = buff.Buffer.ToArray();
+                }
             }
         }
 
         /// <summary>
         /// Fieldsが更新されたとき、送信バイトシーケンスに反映する
         /// </summary>
-        /// <param name="field"></param>
-        private void Update(Field field)
+        /// <param name="value"></param>
+        public void Update(TxFieldBuffer buffer, TxFieldValue value)
         {
             // 更新されたfieldをTxBufferに適用
-            UpdateBuffer(field, field.Value.Value, TxBuffer);
-            //// 更新メッセージ作成
-            //for (int pos = field.BytePos; pos < (field.BytePos+field.ByteSize); pos++)
-            //{
-            //    UpdateMsg.Value = new Serial.UpdateTxBuffMsg(Serial.UpdateTxBuffMsg.MsgType.UpdateBuffer, Id, pos, TxBuffer[pos]);
-            //}
+            UpdateBuffer(buffer, value);
             // チェックサムを持つframeで、更新fieldがチェックサムfieldでないとき、
             // チェックサムを再計算
-            if (HasChecksum && !field.IsChecksum)
+            if (HasChecksum && !value.FieldRef.IsChecksum)
             {
                 // チェックサム更新時はチェックサムfieldの更新により
                 // Updateがコールされるため、ここではメッセージ作成しない
-                UpdateChecksum(TxBuffer);
+                UpdateChecksum(buffer);
             }
         }
 
@@ -293,30 +269,31 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="field"></param>
         /// <param name="buffer"></param>
-        public void UpdateBuffer(Field field, Int64 value, IList<byte> buffer)
+        public void UpdateBuffer(TxFieldBuffer buffer, TxFieldValue value)
         {
-            Int64 mask = field.Mask;
-            Int64 inv_mask = field.InvMask;
+            Int64 temp = value.Value.Value;
+            Int64 mask = value.FieldRef.Mask;
+            Int64 inv_mask = value.FieldRef.InvMask;
             // 1回目はvalueのビット位置がbit_pos分右にあるが、
             // このタイミングで左シフトすると有効データを捨てる可能性があるのでループ内で計算していく
-            int shift = 8 - field.BitPos;
-            int bit_pos = field.BitPos;
-            int byte_pos = field.BytePos;
+            int shift = 8 - value.FieldRef.BitPos;
+            int bit_pos = value.FieldRef.BitPos;
+            int byte_pos = value.FieldRef.BytePos;
             Int64 inv_mask_shift_fill = ((Int64)1 << bit_pos) - 1;
-            for (int i = 0; i < field.ByteSize; i++, byte_pos++)
+            for (int i = 0; i < value.FieldRef.ByteSize; i++, byte_pos++)
             {
                 // 対象バイトを抽出
                 byte temp_mask = (byte)((mask << bit_pos) & 0xFF);
-                byte temp_value = (byte)((value << bit_pos) & temp_mask);
+                byte temp_value = (byte)((temp << bit_pos) & temp_mask);
                 byte temp_inv_mask = (byte)((inv_mask << bit_pos) | inv_mask_shift_fill & 0xFF);
                 // 送信バイトシーケンスに適用
                 // 該当ビットをクリア
-                buffer[byte_pos] &= temp_inv_mask;
+                buffer.Buffer[byte_pos] &= temp_inv_mask;
                 // 該当ビットにセット
-                buffer[byte_pos] |= temp_value;
+                buffer.Buffer[byte_pos] |= temp_value;
 
                 // 使ったデータを削除
-                value >>= shift;
+                temp >>= shift;
                 mask >>= shift;
                 inv_mask >>= shift;
                 // 次の計算に合わせて設定更新
@@ -327,10 +304,10 @@ namespace SerialDebugger.Comm
             }
         }
 
-        private void UpdateChecksum(IList<byte> buffer)
+        public void UpdateChecksum(TxFieldBuffer buffer)
         {
-            var cs = Fields[ChecksumIndex];
-            cs.Value.Value = CalcChecksum(buffer);
+            var cs = buffer.FieldValues[ChecksumIndex];
+            cs.Value.Value = CalcChecksum(buffer.Buffer);
         }
 
         /// <summary>
@@ -380,7 +357,9 @@ namespace SerialDebugger.Comm
         {
             // DragDrop設定参照取得
             var dd = Setting.Data.Output.DragDrop;
-            var value = field.Value.Value;
+            //var value = field.Value.Value;
+            var fv = Buffers[0].FieldValues[field.Id];
+            var value = fv.Value.Value;
             var str = new StringBuilder();
 
             // DragDrop設定が無いときのデフォルト
@@ -420,7 +399,7 @@ namespace SerialDebugger.Comm
                     switch (dd.ValueFormat)
                     {
                         case Settings.Output.DragDropValueFormat.Input:
-                            str.Append(field.GetDisp());
+                            str.Append(field.MakeDisp(fv.SelectIndex.Value, value));
                             break;
 
                         default:

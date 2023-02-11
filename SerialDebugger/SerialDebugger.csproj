@@ -82,6 +82,8 @@
     <Compile Include="Comm\RxGui.cs" />
     <Compile Include="Comm\RxMatch.cs" />
     <Compile Include="Comm\RxPattern.cs" />
+    <Compile Include="Comm\TxFieldBuffer.cs" />
+    <Compile Include="Comm\TxFieldValue.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Script\Script.cs" />
     <Compile Include="Serial\RxAnalyzer.cs" />
@@ -107,7 +109,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Comm\TxBackupBuffer.cs" />
     <Compile Include="Comm\Field.cs" />
     <Compile Include="Comm\TxFrame.cs" />
     <Compile Include="Comm\TxGui.cs" />

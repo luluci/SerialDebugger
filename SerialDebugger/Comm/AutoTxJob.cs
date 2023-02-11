@@ -86,16 +86,17 @@ namespace SerialDebugger.Comm
             {
                 case AutoTxActionType.Send:
                     // action.TxFrameIndex 上流でチェック済み
+                    var frame = TxFrames[action.TxFrameIndex];
                     if (action.TxFrameBuffIndex.Value < 0)
                     {
                         throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: 0より大きな値を指定してください。({action.TxFrameBuffIndex.Value})");
                     }
-                    if (action.TxFrameBuffIndex.Value > 0 && (action.TxFrameBuffIndex.Value - 1) >= TxFrames[action.TxFrameIndex].BackupBufferLength)
+                    else if (action.TxFrameBuffIndex.Value >= frame.BufferSize)
                     {
                         throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: BackupBufferの定義数より大きな値が指定されました。({action.TxFrameBuffIndex.Value})");
                     }
+                    var fb = frame.Buffers[action.TxFrameBuffIndex.Value];
                     // Offset/Length
-                    var frame = TxFrames[action.TxFrameIndex];
                     if (action.TxFrameOffset == -1)
                     {
                         action.TxFrameOffset = 0;
@@ -111,15 +112,7 @@ namespace SerialDebugger.Comm
                     // Aliasチェック
                     if (Object.ReferenceEquals(action.Alias, string.Empty))
                     {
-                        if (action.TxFrameBuffIndex.Value == 0)
-                        {
-                            action.Alias = $"Send [{action.TxFrameName.Value}]";
-                        }
-                        else
-                        {
-                            var bkframe = frame.BackupBuffer[action.TxFrameBuffIndex.Value - 1];
-                            action.Alias = $"Send [{bkframe.Name}]";
-                        }
+                        action.Alias = $"Send [{fb.Name}]";
                     }
                     // ASCIIチェック
                     if (frame.AsAscii)
@@ -263,22 +256,14 @@ namespace SerialDebugger.Comm
         private void ExecSend(SerialPort serial, IList<Comm.TxFrame> TxFrames)
         {
             var action = Actions[ActiveActionIndex];
+            var frame = TxFrames[action.TxFrameIndex];
+            var fb = frame.Buffers[action.TxFrameBuffIndex.Value];
             var buff_idx = action.TxFrameBuffIndex.Value;
             string name;
             // バッファ選択
-            byte[] buff;
-            if (buff_idx == 0)
-            {
-                //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
-                name = action.TxFrameName.Value;
-                buff = TxFrames[action.TxFrameIndex].TxData;
-            }
-            else
-            {
-                //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
-                name = TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].Name;
-                buff = TxFrames[action.TxFrameIndex].BackupBuffer[buff_idx - 1].TxData;
-            }
+            //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
+            name = fb.Name;
+            byte[] buff = fb.Data;
             // バッファ送信
             serial.Write(buff, action.TxFrameOffset, action.TxFrameLength);
             // 処理終了からの時間を計測

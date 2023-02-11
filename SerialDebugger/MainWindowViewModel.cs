@@ -42,19 +42,16 @@ namespace SerialDebugger
         // Comm: Tx
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
-        public ReactiveCommand OnClickTxBufferSend { get; set; }
         // Tx Shortcut定義
         public class TxShortcutNode
         {
             public string Name { get; }
-            public int FrameId;
-            public int BufferId;
+            public Comm.TxFieldBuffer Buffer { get; }
 
-            public TxShortcutNode(string name, int frameid, int bufferid)
+            public TxShortcutNode(string name, Comm.TxFieldBuffer buffer)
             {
                 Name = name;
-                FrameId = frameid;
-                BufferId = bufferid;
+                Buffer = buffer;
             }
         }
         public ReactiveCollection<TxShortcutNode> TxShortcut { get; set; }
@@ -152,14 +149,7 @@ namespace SerialDebugger
             OnClickTxDataSend = new ReactiveCommand();
             OnClickTxDataSend
                 .Subscribe(x => {
-                    var frame = (Comm.TxFrame)x;
-                    SerialTxBufferSendFix(frame);
-                })
-                .AddTo(Disposables);
-            OnClickTxBufferSend = new ReactiveCommand();
-            OnClickTxBufferSend
-                .Subscribe(x => {
-                    var frame = (Comm.TxBackupBuffer)x;
+                    var frame = (Comm.TxFieldBuffer)x;
                     SerialTxBufferSendFix(frame);
                 })
                 .AddTo(Disposables);
@@ -185,15 +175,7 @@ namespace SerialDebugger
                 if (0 <= TxShortcutSelectedIndex.Value && TxShortcutSelectedIndex.Value < TxShortcut.Count)
                 {
                     var node = TxShortcut[TxShortcutSelectedIndex.Value];
-                    var frame = TxFrames[node.FrameId];
-                    if (node.BufferId == 0)
-                    {
-                        SerialTxBufferSendFix(frame);
-                    }
-                    else
-                    {
-                        SerialTxBufferSendFix(frame.BackupBuffer[node.BufferId-1]);
-                    }
+                    SerialTxBufferSendFix(node.Buffer);
                 }
             })
             .AddTo(Disposables);
@@ -346,11 +328,6 @@ namespace SerialDebugger
             if (data.Comm.Tx.Count > 0)
             {
                 TxFrames = data.Comm.Tx;
-                //TxFrames.ObserveElementObservableProperty(x => x.UpdateMsg).Subscribe(x =>
-                //{
-                //    int hoge;
-                //    hoge = 0;
-                //});
                 // 通信データ初期化
                 InitComm();
                 // GUI作成
@@ -360,16 +337,11 @@ namespace SerialDebugger
                 window.BaseSerialTx.Children.Add(tx);
                 // ショートカット作成
                 TxShortcut.Clear();
-                for (int frame_id = 0; frame_id < TxFrames.Count; frame_id++)
+                foreach (var frame in TxFrames)
                 {
-                    // Frame登録
-                    var frame = TxFrames[frame_id];
-                    TxShortcut.Add(new TxShortcutNode(frame.Name, frame_id, 0));
-                    // BackupBuffer登録
-                    for (int bb_id = 0; bb_id < frame.BackupBufferLength; bb_id++)
+                    foreach (var fb in frame.Buffers)
                     {
-                        var bb = frame.BackupBuffer[bb_id];
-                        TxShortcut.Add(new TxShortcutNode(bb.Name, frame_id, 1+bb_id));
+                        TxShortcut.Add(new TxShortcutNode(fb.Name, fb));
                     }
                 }
             }
@@ -427,11 +399,9 @@ namespace SerialDebugger
             // TxFrame
             foreach (var frame in TxFrames)
             {
-                SerialTxBufferFix(frame);
-                // BackupBuffer
-                foreach (var bk_buff in frame.BackupBuffer)
+                foreach (var fb in frame.Buffers)
                 {
-                    SerialTxBufferFix(bk_buff);
+                    SerialTxBufferFix(fb);
                 }
             }
         }
@@ -648,7 +618,7 @@ namespace SerialDebugger
 
 
 
-        private void SerialTxBufferSendFix(Comm.TxFrame frame)
+        private void SerialTxBufferSendFix(Comm.TxFieldBuffer frame)
         {
             switch (frame.ChangeState.Value)
             {
@@ -659,77 +629,36 @@ namespace SerialDebugger
 
                 default:
                     // シリアル送信
-                    SerialWrite(frame.TxData, frame.Name);
-                    break;
-            }
-        }
-        private void SerialTxBufferSendFix(Comm.TxBackupBuffer frame)
-        {
-            switch (frame.ChangeState.Value)
-            {
-                case Comm.Field.ChangeStates.Changed:
-                    // 変更内容をシリアル通信データに反映
-                    SerialTxBufferFix(frame);
-                    break;
-
-                default:
-                    // シリアル送信
-                    SerialWrite(frame.TxData, frame.Name);
+                    SerialWrite(frame.Data, frame.Name);
                     break;
             }
         }
 
-        private void SerialTxBufferFix(Comm.TxFrame frame)
+        private void SerialTxBufferFix(Comm.TxFieldBuffer fb)
         {
             // バッファを送信データにコピー
-            if (frame.AsAscii)
+            if (fb.FrameRef.AsAscii)
             {
-                frame.TxData = new byte[frame.TxBuffer.Count * 2];
-                for (int i = 0; i < frame.TxBuffer.Count; i++)
+                for (int i = 0; i < fb.Buffer.Count; i++)
                 {
                     // HEXをASCII化
-                    var ch = Utility.HexAscii.AsciiTbl[frame.TxBuffer[i]];
+                    var ch = Utility.HexAscii.AsciiTbl[fb.Buffer[i]];
                     // little-endianで格納
-                    frame.TxData[i * 2 + 0] = (byte)ch[1];
-                    frame.TxData[i * 2 + 1] = (byte)ch[0];
+                    fb.Data[i * 2 + 0] = (byte)ch[1];
+                    fb.Data[i * 2 + 1] = (byte)ch[0];
                 }
             }
             else
             {
-                frame.TxBuffer.CopyTo(frame.TxData, 0);
+                fb.Buffer.CopyTo(fb.Data, 0);
             }
             // 変更フラグを下す
-            foreach (var field in frame.Fields)
+            foreach (var field in fb.FieldValues)
             {
                 field.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
             }
             //
-            frame.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
-        }
-        private void SerialTxBufferFix(Comm.TxBackupBuffer frame)
-        {
-            // バッファを送信データにコピー
-            if (frame.FrameRef.AsAscii)
-            {
-                frame.TxData = new byte[frame.TxBuffer.Count * 2];
-                for (int i = 0; i < frame.TxBuffer.Count; i++)
-                {
-                    var ch = Utility.HexAscii.AsciiTbl[frame.TxBuffer[i]];
-                    frame.TxData[i * 2 + 0] = (byte)ch[0];
-                    frame.TxData[i * 2 + 1] = (byte)ch[1];
-                }
-            }
-            else
-            {
-                frame.TxBuffer.CopyTo(frame.TxData, 0);
-            }
-            // 変更フラグを下す
-            foreach (var field in frame.Fields)
-            {
-                field.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
-            }
-            //
-            frame.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
+            fb.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
         }
 
         private void SerialWrite(byte[] data, string name)
@@ -767,12 +696,12 @@ namespace SerialDebugger
                 try
                 {
                     {
-                        var buff = TxFrames[0].TxBuffer;
+                        //var buff = TxFrames[0].TxBuffer;
                         //serialPort.Write(buff.ToArray(), 0, buff.Count);
                     }
                     System.Threading.Thread.Sleep(1000);
                     {
-                        var buff = TxFrames[1].TxBuffer;
+                        //var buff = TxFrames[1].TxBuffer;
                         //serialPort.Write(buff.ToArray(), 0, buff.Count);
                     }
                 }

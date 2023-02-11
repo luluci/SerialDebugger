@@ -300,10 +300,10 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeTextBlockBindBitData(Field field, string name, string path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeTextBlockBindBitData(Field field, string name, string value_path, int bit, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
-            var bind = new Binding(path);
+            var bind = new Binding(value_path);
             bind.Converter = BitColBgConverter[bit];
             bind.ConverterParameter = field;
             //
@@ -348,13 +348,13 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// Input GUI作成
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="field_path"></param>
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGui(Field field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGui(Field field, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             switch (field.InputType)
             {
@@ -362,13 +362,13 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Unit:
                 case Field.InputModeType.Time:
                 case Field.InputModeType.Script:
-                    return MakeInputGuiSelecter(field, field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiSelecter(field, field, field_path, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Char:
-                    return MakeInputGuiEditChar(field, field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiEditChar(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
-                    return MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiEdit(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:
-                    return MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
+                    return MakeInputGuiEdit(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Fix:
                 default:
                     return MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);
@@ -380,9 +380,9 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiEdit(Field field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiEdit(Field field, Object param, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            var tb = MakeInputGuiTextBox(param, path, field.InputBase, row, col, rowspan, colspan);
+            var tb = MakeInputGuiTextBox(param, value_path, field.InputBase, row, col, rowspan, colspan);
             //
             var border = MakeBorder1();
             border.Child = tb;
@@ -397,7 +397,7 @@ namespace SerialDebugger.Comm
                 Grid.SetColumnSpan(border, colspan);
             }
 
-            var bind_bgcolor = new Binding(path + ".ChangeState.Value");
+            var bind_bgcolor = new Binding(value_path + ".ChangeState.Value");
             bind_bgcolor.Converter = TxSendFixBGColorConverter;
             border.SetBinding(Border.BorderBrushProperty, bind_bgcolor);
 
@@ -409,7 +409,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiTextBox(Object param, string path, int input_base, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiTextBox(Object param, string value_path, int input_base, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // ベース作成
             var sp = new StackPanel
@@ -419,7 +419,7 @@ namespace SerialDebugger.Comm
             };
 
             // binding作成
-            var bind = new Binding(path + ".Value.Value");
+            var bind = new Binding(value_path + ".Value.Value");
             switch (input_base)
             {
                 case 10:
@@ -476,7 +476,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiSelecter(Field field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiSelecter(Field field, Object param, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             UIElement gui_ptr;
             // 2行(2bit)以上の領域があれば直接編集GUI追加
@@ -485,12 +485,12 @@ namespace SerialDebugger.Comm
                 // ベース作成
                 var sp = new StackPanel();
                 // TextBox作成
-                var tb = MakeInputGuiTextBox(param, path, field.InputBase, row, col, rowspan, colspan);
+                var tb = MakeInputGuiTextBox(param, value_path, field.InputBase, row, col, rowspan, colspan);
                 //
                 sp.Children.Add(tb);
 
                 // ComboBox作成
-                var cb = MakeInputGuiComboBox(param, path, row, col, rowspan, colspan);
+                var cb = MakeInputGuiComboBox(param, field_path, value_path, row, col, rowspan, colspan);
                 sp.Children.Add(cb);
 
                 gui_ptr = sp;
@@ -498,7 +498,7 @@ namespace SerialDebugger.Comm
             else
             {
                 // ComboBox作成
-                var cb = MakeInputGuiComboBox(param, path, row, col, rowspan, colspan);
+                var cb = MakeInputGuiComboBox(param, field_path, value_path, row, col, rowspan, colspan);
 
                 gui_ptr = cb;
             }
@@ -516,7 +516,7 @@ namespace SerialDebugger.Comm
                 Grid.SetColumnSpan(border, colspan);
             }
 
-            var bind_bgcolor = new Binding(path + ".ChangeState.Value");
+            var bind_bgcolor = new Binding(value_path + ".ChangeState.Value");
             bind_bgcolor.Converter = TxSendFixBGColorConverter;
             border.SetBinding(Border.BorderBrushProperty, bind_bgcolor);
 
@@ -528,11 +528,11 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiComboBox(Object field, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiComboBox(Object field, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
-            var bind_itemsrc = new Binding(path + ".Selects");
-            var bind_selectidx = new Binding(path + ".SelectIndexSelects.Value");
+            var bind_itemsrc = new Binding(field_path + ".Selects");
+            var bind_selectidx = new Binding(value_path + ".SelectIndex.Value");
             //
             var cb = new ComboBox();
             cb.SetBinding(ComboBox.ItemsSourceProperty, bind_itemsrc);
@@ -549,10 +549,10 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiEditChar(Field field, Object param, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiEditChar(Field field, Object param, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // binding作成
-            var bind = new Binding(path + ".Value.Value");
+            var bind = new Binding(value_path + ".Value.Value");
             bind.Converter = CharEditConverter;
             bind.ConverterParameter = param;
             //
@@ -576,7 +576,7 @@ namespace SerialDebugger.Comm
                 Grid.SetColumnSpan(border, colspan);
             }
 
-            var bind_bgcolor = new Binding(path + ".ChangeState.Value");
+            var bind_bgcolor = new Binding(value_path + ".ChangeState.Value");
             bind_bgcolor.Converter = TxSendFixBGColorConverter;
             border.SetBinding(Border.BorderBrushProperty, bind_bgcolor);
 

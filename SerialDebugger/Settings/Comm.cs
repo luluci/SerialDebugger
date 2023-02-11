@@ -576,15 +576,22 @@ namespace SerialDebugger.Settings
         /// <param name="frame"></param>
         private async Task<TxFrame> MakeTxFrameAsync(int id, Json.CommTxFrame frame)
         {
+            // 必須設定チェック
+            // Nameチェック
             if (Object.ReferenceEquals(frame.Name, string.Empty))
             {
                 throw new Exception($"tx: frames[{id}]: nameを指定してください。");
             }
+            // Bufferサイズ決定
+            int buffer_size = 1 + MakeTxBufferSize(frame);
 
             try
             {
                 // TxFrame作成
-                var f = new TxFrame(id, frame.Name, frame.AsAscii);
+                var f = new TxFrame(id, frame.Name, buffer_size, frame.AsAscii);
+                // f.Build()でバッファもまとめて作成するため、必要なバッファインスタンスを先に作成する
+                MakeTxBuffers(frame, f);
+                // Field作成
                 if (!(frame.Fields is null))
                 {
                     int i = 0;
@@ -637,7 +644,7 @@ namespace SerialDebugger.Settings
                     f.Build();
                 }
                 // TxFrame作成後にBackupBuffer作成
-                MakeTxBackupBuffers(frame, f);
+                InitTxBuffers(frame, f);
 
                 return f;
             }
@@ -647,67 +654,90 @@ namespace SerialDebugger.Settings
             }
         }
 
-        private void MakeTxBackupBuffers(Json.CommTxFrame frame, TxFrame f)
+        private int MakeTxBufferSize(Json.CommTxFrame frame)
         {
             // バッファサイズ作成
-            f.BackupBufferLength = frame.BackupBufferSize;
+            int size = 0;
+            //
+            if (frame.BackupBufferSize > 0)
+            {
+                size = frame.BackupBufferSize;
+            }
             if (!(frame.BackupBuffers is null))
             {
-                if (f.BackupBufferLength < frame.BackupBuffers.Count)
+                if (size < frame.BackupBuffers.Count)
                 {
-                    f.BackupBufferLength = frame.BackupBuffers.Count;
+                    size = frame.BackupBuffers.Count;
                 }
             }
+            //
+            return size;
+        }
 
-            // 送信データバックアップバッファ作成
+        private void MakeTxBuffers(Json.CommTxFrame frame, TxFrame f)
+        {
+            // BackupBuffers定義数を取得
+            int buffer_def_size = 0;
             if (!(frame.BackupBuffers is null))
             {
-                for (int i = 0; i < f.BackupBufferLength; i++)
+                buffer_def_size = frame.BackupBuffers.Count;
+            }
+            // 必須の1個より多くのバッファを持つ場合、インスタンスを作成しておく
+            string name;
+            for (int i = 1; i < f.BufferSize; i++)
+            {
+                // バッファ名称作成
+                if (i-1 < frame.BackupBuffers.Count)
                 {
-                    if (i < frame.BackupBuffers.Count)
+                    // BackupBuffers定義から作成
+                    if (Object.ReferenceEquals(frame.BackupBuffers[i-1].Name, string.Empty))
                     {
-                        // BackupBuffers定義から作成
-                        f.BackupBuffer.Add(MakeTxBackupBuffer(frame.BackupBuffers[i], f, i));
+                        name = $"buffer[{i - 1}]";
                     }
                     else
                     {
-                        // 空バッファを作成
-                        f.BackupBuffer.Add(MakeTxBackupBufferEmpty($"buffer[{i}]", f, i));
+                        name = frame.BackupBuffers[i - 1].Name;
                     }
                 }
-            }
-            else
-            {
-                // BackupBuffers未定義ならすべて空バッファ作成
-                for (int i = 0; i < f.BackupBufferLength; i++)
+                else
                 {
-                    f.BackupBuffer.Add(MakeTxBackupBufferEmpty($"buffer[{i}]", f, i));
+                    // 定型名称を作成
+                    name = $"buffer[{i - 1}]";
+                }
+
+                f.Buffers.Add(new TxFieldBuffer(i, name, f));
+            }
+        }
+
+        private void InitTxBuffers(Json.CommTxFrame frame, TxFrame f)
+        {
+
+            // 送信データバックアップバッファ初期化
+            if (!(frame.BackupBuffers is null))
+            {
+                // バックアップバッファは[1]から開始
+                // Jsonバックアップバッファ設定は[0]から開始
+                for (int i = 0; i < frame.BackupBuffers.Count; i++)
+                {
+                    InitTxBuffer(frame.BackupBuffers[i], f, i+1);
                 }
             }
         }
 
-        private TxBackupBuffer MakeTxBackupBuffer(Json.CommTxBackupBuffer json, TxFrame f, int idx)
+        private void InitTxBuffer(Json.CommTxBackupBuffer json, TxFrame f, int idx)
         {
-            // Buffer名称作成
-            string name = json.Name;
-            if (Object.ReferenceEquals(name, string.Empty))
-            {
-                name = $"buffer[{idx}]";
-            }
-            // Buffer作成
-            var buffer = new TxBackupBuffer(idx, name, f);
-            // value定義が無いなら空バッファを返す
+            // 初期値指定があれば反映する
+            var fb = f.Buffers[idx];
             if (!(json.Values is null))
             {
                 // json設定値反映
                 for (int i = 0; i < json.Values.Count && i < f.Fields.Count; i++)
                 {
                     // valueをバッファに反映
-                    var field = f.Fields[i];
                     var value = json.Values[i];
-                    var bk_field = buffer.Fields[i];
-                    bk_field.SetValue(value);
-                    f.UpdateBuffer(field, value, buffer.TxBuffer);
+                    var fv = fb.FieldValues[i];
+                    fv.SetValue(value);
+                    f.UpdateBuffer(fb, fv);
                 }
             }
             else if (!Object.ReferenceEquals(json.ValueAscii, string.Empty))
@@ -716,16 +746,15 @@ namespace SerialDebugger.Settings
                 for (int i = 0; i < json.ValueAscii.Length && i < f.Fields.Count; i++)
                 {
                     // valueをバッファに反映
-                    var field = f.Fields[i];
                     var value = json.ValueAscii[i];
-                    var bk_field = buffer.Fields[i];
-                    bk_field.SetValue(value);
-                    f.UpdateBuffer(field, value, buffer.TxBuffer);
+                    var fv = fb.FieldValues[i];
+                    fv.SetValue(value);
+                    f.UpdateBuffer(fb, fv);
                 }
             }
             else
             {
-                return buffer;
+                return;
             }
 
             // チェックサム
@@ -733,17 +762,8 @@ namespace SerialDebugger.Settings
             {
                 var i = f.ChecksumIndex;
                 var field = f.Fields[i];
-                var value = f.CalcChecksum(buffer.TxBuffer);
-                buffer.Fields[i].Value.Value = value;
-                f.UpdateBuffer(field, value, buffer.TxBuffer);
+                f.UpdateChecksum(fb);
             }
-
-            return buffer;
-        }
-        private TxBackupBuffer MakeTxBackupBufferEmpty(string name, TxFrame f, int idx)
-        {
-            // Buffer作成
-            return new TxBackupBuffer(idx, name, f);
         }
 
         private async Task<Field> MakeFieldAsync(int id, Json.CommField field, int char_id)

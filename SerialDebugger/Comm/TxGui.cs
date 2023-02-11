@@ -118,12 +118,12 @@ namespace SerialDebugger.Comm
                 grid.ColumnDefinitions.Add(col_input);
                 grid.ColumnDefinitions.Add(col_txdata);
                 // BackupBufferを持つ場合はスペースを少し開けてGUI作成
-                if (frame.BackupBufferLength > 0)
+                if (frame.BufferSize > 1)
                 {
                     var col_space = new ColumnDefinition();
                     col_space.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.Spacer]);
                     grid.ColumnDefinitions.Add(col_space);
-                    for (int i = 0; i < frame.BackupBufferLength; i++)
+                    for (int i = 1; i < frame.BufferSize; i++)
                     {
                         var col = new ColumnDefinition();
                         col.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.TxBuffer]);
@@ -142,10 +142,10 @@ namespace SerialDebugger.Comm
                     width += setting.Gui.ColWidth[i];
                 }
                 // BackupBufferを持つ場合はスペースを少し開けてGUI作成
-                if (frame.BackupBufferLength > 0)
+                if (frame.BufferSize > 1)
                 {
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.Spacer];
-                    for (int i = 0; i < frame.BackupBufferLength; i++)
+                    for (int i = 1; i < frame.BufferSize; i++)
                     {
                         width += setting.Gui.ColWidth[(int)SettingGui.Col.TxBuffer];
                     }
@@ -167,21 +167,18 @@ namespace SerialDebugger.Comm
             {
                 // 送信ボタン作成
                 // Bufferは各fieldと連動
-                grid.Children.Add(MakeTxSendFixButton($"TxFrames[{frame_no}]", "OnClickTxDataSend", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes]));
+                grid.Children.Add(MakeTxSendFixButton($"TxFrames[{frame_no}].Buffers[0]", "OnClickTxDataSend", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes]));
                 grid.Children.Add(Gui.MakeTextBlockStyle1("TxData", 1, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes]));
             }
             // BackupBufferを持つ場合はスペースを少し開けてGUI作成
-            if (frame.BackupBufferLength > 0)
+            // BackupBuffer列作成
+            // BackupBufferはBufferの保存/展開により値を決定
+            for (int i = 1; i < frame.BufferSize; i++)
             {
-                // BackupBuffer列作成
-                // BackupBufferはBufferの保存/展開により値を決定
-                for (int i = 0; i < frame.BackupBufferLength; i++)
-                {
-                    // 送信ボタン作成
-                    grid.Children.Add(MakeButtonLoadStore(frame.BackupBuffer[i], $"TxFrames[{frame_no}].BackupBuffer[{i}]", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i));
-                    // 表示ラベル
-                    grid.Children.Add(Gui.MakeTextBlockStyle1(frame.BackupBuffer[i].Name, 1, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i));
-                }
+                // 送信ボタン作成
+                grid.Children.Add(MakeButtonLoadStore(frame.Buffers[i], $"TxFrames[{frame_no}].Buffers[{i}]", "OnClickTxDataSend", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1));
+                // 表示ラベル
+                grid.Children.Add(Gui.MakeTextBlockStyle1(frame.Buffers[i].Name, 1, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1));
             }
 
             return width;
@@ -213,12 +210,12 @@ namespace SerialDebugger.Comm
                 grid.ColumnDefinitions.Add(col_input);
                 grid.ColumnDefinitions.Add(col_txdata);
                 // BackupBufferを持つ場合はスペースを少し開けてGUI作成
-                if (frame.BackupBufferLength > 0)
+                if (frame.BufferSize > 1)
                 {
                     var col_space = new ColumnDefinition();
                     col_space.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.Spacer]);
                     grid.ColumnDefinitions.Add(col_space);
-                    for (int i = 0; i < frame.BackupBufferLength; i++)
+                    for (int i = 1; i < frame.BufferSize; i++)
                     {
                         var col = new ColumnDefinition();
                         col.Width = new GridLength(setting.Gui.ColWidth[(int)SettingGui.Col.TxBuffer]);
@@ -238,10 +235,10 @@ namespace SerialDebugger.Comm
                     width += setting.Gui.ColWidth[i];
                 }
                 // BackupBufferを持つ場合はスペースを少し開けてGUI作成
-                if (frame.BackupBufferLength > 0)
+                if (frame.BufferSize > 1)
                 {
                     width += setting.Gui.ColWidth[(int)SettingGui.Col.Spacer];
-                    for (int i = 0; i < frame.BackupBufferLength; i++)
+                    for (int i = 1; i < frame.BufferSize; i++)
                     {
                         width += setting.Gui.ColWidth[(int)SettingGui.Col.TxBuffer];
                     }
@@ -280,11 +277,11 @@ namespace SerialDebugger.Comm
                                 // その他は各ビット情報を出力
                                 for (int i=0; i<field.BitSize; i++)
                                 {
-                                    grid.Children.Add(Gui.MakeTextBlockBindBitData(field, $"{bit + i}", $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit+i, setting.Gui.ColOrder[(int)SettingGui.Col.BitIndex]));
+                                    grid.Children.Add(Gui.MakeTextBlockBindBitData(field, $"{bit + i}", $"TxFrames[{frame_no}].Buffers[0].FieldValues[{field_pos}].Value.Value", i, bit+i, setting.Gui.ColOrder[(int)SettingGui.Col.BitIndex]));
                                 }
                             }
                             // Value列作成
-                            grid.Children.Add(Gui.MakeTextBlockBindStyle1(field, $"TxFrames[{frame_no}].Fields[{field_pos}].Value.Value", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldValue], field.BitSize));
+                            grid.Children.Add(Gui.MakeTextBlockBindStyle1(field, $"TxFrames[{frame_no}].Buffers[0].FieldValues[{field_pos}].Value.Value", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldValue], field.BitSize));
                             // Name列作成
                             int inner_idx = 0;
                             foreach (var inner in field.InnerFields)
@@ -294,13 +291,13 @@ namespace SerialDebugger.Comm
                             }
                             //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Input列作成
-                            grid.Children.Add(Gui.MakeInputGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldInput], field.BitSize));
+                            grid.Children.Add(Gui.MakeInputGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", $"TxFrames[{frame_no}].Buffers[0].FieldValues[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldInput], field.BitSize));
                             // BackupBuffer列作成
-                            for (int i = 0; i < frame.BackupBufferLength; i++)
+                            for (int i = 1; i < frame.BufferSize; i++)
                             {
-                                var bk_buffer = frame.BackupBuffer[i];
-                                var bk_field = bk_buffer.Fields[field_pos];
-                                grid.Children.Add(MakeBackupBufferGui(bk_field, bk_buffer, $"TxFrames[{frame_no}].BackupBuffer[{i}].Fields[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i, field.BitSize));
+                                var fb = frame.Buffers[i];
+                                var fv = fb.FieldValues[field_pos];
+                                grid.Children.Add(MakeBackupBufferGui(field, fv, $"TxFrames[{frame_no}].Fields[{field_pos}]", $"TxFrames[{frame_no}].Buffers[{i}].FieldValues[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1, field.BitSize));
                             }
 
                             // 次周回設定処理
@@ -325,16 +322,16 @@ namespace SerialDebugger.Comm
                             // Input列作成
                             grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldInput], bit_rest));
                             // BackupBuffer列作成
-                            for (int i = 0; i < frame.BackupBufferLength; i++)
+                            for (int i = 1; i < frame.BufferSize; i++)
                             {
-                                grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i, bit_rest));
+                                grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1, bit_rest));
                             }
                         }
                     }
                     // 送信バイトシーケンス
                     if (bit_pos == 0)
                     {
-                        grid.Children.Add(Gui.MakeTextBlockBindByteData($"TxFrames[{frame_no}].TxBuffer[{byte_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes], 8));
+                        grid.Children.Add(Gui.MakeTextBlockBindByteData($"TxFrames[{frame_no}].Buffers[0].Buffer[{byte_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBytes], 8));
                     }
                     //
                     bit_rest--;
@@ -396,7 +393,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        private static UIElement MakeButtonLoadStore(TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeButtonLoadStore(TxFieldBuffer buffer, string path, string cmnd_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
 
             var bind_store = new Binding(path + ".OnClickStore");
@@ -406,7 +403,7 @@ namespace SerialDebugger.Comm
             btn_store.Width = Gui.Button3Width[0];
             btn_store.SetBinding(Button.CommandProperty, bind_store);
 
-            var btn = MakeTxSendFixButton(path, "OnClickTxBufferSend", 0, col);
+            var btn = MakeTxSendFixButton(path, cmnd_path, 0, col);
             btn.Margin = new Thickness(2, 1, 2, 1);
             btn.Padding = new Thickness(5, 0, 5, 0);
             // border
@@ -488,27 +485,27 @@ namespace SerialDebugger.Comm
         /// <summary>
         /// BackupBuffer GUI作成
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="value_path"></param>
         /// <param name="row"></param>
         /// <param name="col"></param>
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeBackupBufferGui(Field field, TxBackupBuffer buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeBackupBufferGui(Field field, TxFieldValue value, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            switch (field.selecter.FieldRef.InputType)
+            switch (value.FieldRef.InputType)
             {
                 case Field.InputModeType.Dict:
                 case Field.InputModeType.Unit:
                 case Field.InputModeType.Time:
                 case Field.InputModeType.Script:
-                    return Gui.MakeInputGuiSelecter(field.selecter.FieldRef, field, path, row, col, rowspan, colspan);
+                    return Gui.MakeInputGuiSelecter(value.FieldRef, field, field_path, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Char:
-                    return Gui.MakeInputGuiEditChar(field, field, path, row, col, rowspan, colspan);
+                    return Gui.MakeInputGuiEditChar(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
-                    return Gui.MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
+                    return Gui.MakeInputGuiEdit(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:
-                    return Gui.MakeInputGuiEdit(field, field, path, row, col, rowspan, colspan);
+                    return Gui.MakeInputGuiEdit(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Fix:
                 default:
                     return Gui.MakeTextBlockStyle1("<FIX>", row, col, rowspan, colspan);

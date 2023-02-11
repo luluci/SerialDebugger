@@ -90,9 +90,6 @@ namespace SerialDebugger.Comm
             Script,     // スクリプト生成
             Checksum,   // チェックサム
             Char,       // 文字入力
-
-            // 特殊Selecter
-            Refer,      // 参照:既存Fieldの内容を流用する。値は個別に保持する
         };
         public InputModeType InputType { get; private set; }
 
@@ -118,8 +115,6 @@ namespace SerialDebugger.Comm
             public string Script { get; }
             // Char表現要素
             public int CharId { get; }
-            // Refer表現要素
-            public Field FieldRef { get; }
 
             public Selecter((Int64, string)[] dict)
             {
@@ -160,12 +155,6 @@ namespace SerialDebugger.Comm
                 Type = InputModeType.Char;
                 CharId = char_id;
             }
-
-            public Selecter(Field field)
-            {
-                Type = InputModeType.Refer;
-                FieldRef = field;
-            }
         }
         public static Selecter MakeSelecterDict((Int64, string)[] dict)
         {
@@ -202,10 +191,11 @@ namespace SerialDebugger.Comm
             }
         }
         public ReactiveCollection<Select> Selects { get; private set; }
-        public ReactivePropertySlim<int> SelectIndexSelects { get; set; }
         public Int64 SelectsValueMax = 0;
         public Int64 SelectsValueMin = 0;
         public Dictionary<Int64, int> SelectsValueCheckTable;
+        public int InitSelectIndex { get; private set; } = -1;
+
         public ReactiveCommand OnMouseDown { get; set; }
 
         public enum ChangeStates
@@ -214,7 +204,6 @@ namespace SerialDebugger.Comm
             Changed,    // 変更あり,未確定
             Updating,   // 変更あり,送信バッファ反映中
         }
-        public ReactivePropertySlim<ChangeStates> ChangeState { get; set; }
 
         /// <summary>
         /// チェックサムノード用コンストラクタ
@@ -259,41 +248,14 @@ namespace SerialDebugger.Comm
             //
             value = LimitValue(value);
             Value = new ReactivePropertySlim<Int64>(value, mode: ReactivePropertyMode.DistinctUntilChanged);
-            Value
-                .Subscribe(x =>
-                {
-                    // ComboBox入力更新
-                    var index = GetSelectsIndex(x);
-                    if (index != -1)
-                    {
-                        SelectIndexSelects.Value = index;
-                    }
-                    // 変更状態更新
-                    ChangeState.Value = ChangeStates.Changed;
-                })
-                .AddTo(Disposables);
+            Value.AddTo(Disposables);
             //
             Selects = new ReactiveCollection<Select>();
             Selects.AddTo(Disposables);
-            SelectIndexSelects = new ReactivePropertySlim<int>(0, mode:ReactivePropertyMode.DistinctUntilChanged);
-            SelectIndexSelects
-                .Subscribe((int index) =>
-                {
-                    if (index >= 0)
-                    {
-                        var select = Selects[index];
-                        // Value側でもSelectIndexSelectsとの同期をとって値を変更する
-                        // 値に変化がないとSubscribeは発火しない。
-                        Value.Value = select.Value;
-                    }
-                })
-                .AddTo(Disposables);
+
             //
             OnMouseDown = new ReactiveCommand();
             OnMouseDown.AddTo(Disposables);
-            // 値変更を送信バッファに反映したかどうか管理する
-            ChangeState = new ReactivePropertySlim<ChangeStates>(ChangeStates.Fixed);
-            ChangeState.AddTo(Disposables);
             //
             InputType = type;
         }
@@ -317,19 +279,6 @@ namespace SerialDebugger.Comm
             {
                 return value;
             }
-        }
-
-        /// <summary>
-        /// 設定ファイルからの初期値設定
-        /// </summary>
-        /// <param name="value"></param>
-        public void SetValue(Int64 value)
-        {
-            // Value
-            value = LimitValue(value);
-            Value.Value = value;
-            // SelectIndexSelects
-            SelectIndexSelects.Value = GetSelectsIndex(value);
         }
 
         public int GetSelectsIndex(Int64 value)
@@ -360,16 +309,7 @@ namespace SerialDebugger.Comm
             }
             return index;
         }
-
-        /// <summary>
-        /// 自Fieldの表示名を取得する
-        /// </summary>
-        /// <returns></returns>
-        public string GetDisp()
-        {
-            return MakeDisp(SelectIndexSelects.Value, Value.Value);
-        }
-
+        
         /// <summary>
         /// 指定したパラメータで表示名を作成する。
         /// BackupBufferで再利用。
@@ -466,22 +406,19 @@ namespace SerialDebugger.Comm
             {
                 case InputModeType.Unit:
                     index = MakeSelectModeUnit(selecter);
-                    SelectIndexSelects.Value = index;
+                    InitSelectIndex = index;
                     break;
                 case InputModeType.Dict:
                     index = MakeSelectModeDict(selecter);
-                    SelectIndexSelects.Value = index;
+                    InitSelectIndex = index;
                     break;
                 case InputModeType.Time:
                     index = MakeSelectModeTime(selecter);
-                    SelectIndexSelects.Value = index;
+                    InitSelectIndex = index;
                     break;
                 case InputModeType.Script:
                     index = await MakeSelectModeScriptAsync(selecter);
-                    SelectIndexSelects.Value = index;
-                    break;
-                case InputModeType.Refer:
-                    MakeSelectModeRefer();
+                    InitSelectIndex = index;
                     break;
                 case InputModeType.Char:
                 case InputModeType.Edit:
@@ -705,22 +642,7 @@ namespace SerialDebugger.Comm
 
             return selectIndex;
         }
-
-        public void MakeSelectModeRefer()
-        {
-            // InputTypeは参照先Fieldと同じとするので更新しない
-            // InputType = InputModeType.Refer;
-            // 空のオブジェクトを持っているので解放しておく
-            Selects.Dispose();
-            // Selectsは参照を取得して流用する
-            Selects = selecter.FieldRef.Selects;
-            // SelectIndexは個別に持つ必要があるので値をコピー
-            SelectIndexSelects.Value = selecter.FieldRef.SelectIndexSelects.Value;
-            SelectsValueCheckTable = selecter.FieldRef.SelectsValueCheckTable;
-            SelectsValueMax = selecter.FieldRef.SelectsValueMax;
-            SelectsValueMin = selecter.FieldRef.SelectsValueMin;
-        }
-
+        
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();
 

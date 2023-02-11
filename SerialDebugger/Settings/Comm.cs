@@ -137,6 +137,10 @@ namespace SerialDebugger.Settings
                 // AutoTx整合性チェック
                 ValidateAutoTx();
             }
+
+
+            // AutoTx整合性チェック
+            ValidateRx();
         }
 
 
@@ -202,7 +206,7 @@ namespace SerialDebugger.Settings
                     f.Build();
 
                     // PatternMatch作成
-                    // Fieldsありのとき
+                    // patternsありのとき
                     i = 0;
                     foreach (var pattern in frame.Patterns)
                     {
@@ -244,7 +248,7 @@ namespace SerialDebugger.Settings
                         m_id++;
                     }
                 }
-
+                
                 return p;
             }
             catch (Exception ex)
@@ -259,17 +263,20 @@ namespace SerialDebugger.Settings
             RxMatchType type;
             switch (match.Type)
             {
-                case "value":
+                case "Value":
                     type = RxMatchType.Value;
                     break;
-                case "any":
+                case "Any":
                     type = RxMatchType.Any;
                     break;
-                case "timeout":
+                case "Timeout":
                     type = RxMatchType.Timeout;
                     break;
-                case "script":
+                case "Script":
                     type = RxMatchType.Script;
+                    break;
+                case "Activate":
+                    type = RxMatchType.Activate;
                     break;
                 default:
                     type = MakeRxMatchType(id, match);
@@ -290,6 +297,9 @@ namespace SerialDebugger.Settings
                 case RxMatchType.Script:
                     return MakeRxMatchScript(id, match);
 
+                case RxMatchType.Activate:
+                    return MakeRxMatchActivate(id, match);
+
                 default:
                     throw new Exception($"matches[{id}]: 不正なtype指定です: {type}");
             }
@@ -306,6 +316,11 @@ namespace SerialDebugger.Settings
             if (!Object.ReferenceEquals(match.Script, string.Empty))
             {
                 return RxMatchType.Script;
+            }
+
+            if (!Object.ReferenceEquals(match.AutoTxJobName, string.Empty) || !Object.ReferenceEquals(match.RxPatternName, string.Empty))
+            {
+                return RxMatchType.Activate;
             }
 
             if (match.Msec >= 0)
@@ -371,6 +386,84 @@ namespace SerialDebugger.Settings
             };
         }
 
+        private RxMatch MakeRxMatchActivate(int id, Json.CommRxMatch match)
+        {
+            // 後ろで定義されるものを指定できるように、該当設定が存在するかは後でチェックする
+            if (!Object.ReferenceEquals(match.AutoTxJobName, string.Empty))
+            {
+                return new RxMatch
+                {
+                    Type = RxMatchType.ActivateAutoTx,
+                    AutoTxJobName = match.AutoTxJobName,
+                    AutoTxState = match.State,
+                };
+            }
+            else if (!Object.ReferenceEquals(match.RxPatternName, string.Empty))
+            {
+                return new RxMatch
+                {
+                    Type = RxMatchType.ActivateRx,
+                    RxPatternName = match.RxPatternName,
+                    RxState = match.State,
+                };
+            }
+            else
+            {
+                throw new Exception($"matches[{id}](Activate): 有効化対象となるauto_tx.job名(auto_tx_job)またはrx.pattern名(rx_pattern)を指定してください。");
+            }
+        }
+
+        private void ValidateRx()
+        {
+            foreach (var frame in Rx)
+            {
+                foreach (var pattern in frame.Patterns)
+                {
+                    foreach (var match in pattern.Matches)
+                    {
+                        ValidateRxMatch(frame, pattern, match);
+                    }
+                }
+            }
+        }
+        private void ValidateRxMatch(RxFrame frame, RxPattern pattern, RxMatch match)
+        {
+            switch (match.Type)
+            {
+                case RxMatchType.ActivateAutoTx:
+                    // AutoTx参照チェック
+                    if (AutoTxJobNameDict.TryGetValue(match.AutoTxJobName, out int index))
+                    {
+                        match.AutoTxJobIndex = index;
+                        match.AutoTxJobRef = AutoTx[index];
+                    }
+                    else
+                    {
+                        throw new Exception($"rx: frame[{frame.Id}].pattern[{pattern.Id}].match[]: Activate AutoTx: 指定された名称({match.AutoTxJobName})のjobが存在しません。");
+                    }
+                    break;
+
+                case RxMatchType.ActivateRx:
+                    // Rx参照チェック
+                    if (RxPatternDict.TryGetValue(match.RxPatternName, out RxPatternInfo info))
+                    {
+                        match.RxFrameIndex = info.FrameId;
+                        match.RxPatternIndex = info.PatternId;
+                        match.RxPatternRef = Rx[info.FrameId].Patterns[info.PatternId];
+                    }
+                    else
+                    {
+                        throw new Exception($"rx: frame[{frame.Id}].pattern[{pattern.Id}].match[]: Activate Rx: 指定された名称({match.RxPatternName})のpatternが存在しません。");
+                    }
+                    break;
+
+                case RxMatchType.Activate:
+                    throw new Exception($"rx: frame[{frame.Id}].pattern[{pattern.Id}].match[]: Logic error, Activate が出現するのはバグです。。");
+
+                default:
+                    break;
+            }
+        }
 
         private void ValidateAutoTx()
         {
@@ -483,7 +576,7 @@ namespace SerialDebugger.Settings
         {
             if (Object.ReferenceEquals(action.TxFrameName,string.Empty))
             {
-                throw new Exception($"actions[{id}](Send): 送信対象となるframe名(tx_frame_name)を指定してください。");
+                throw new Exception($"actions[{id}](Send): 送信対象となるframe名(tx_frame)を指定してください。");
             }
 
             // action.TxFrameBuffIndex: 省略時は0指定とする
@@ -538,7 +631,7 @@ namespace SerialDebugger.Settings
             }
             else
             {
-                throw new Exception($"actions[{id}](Activate): 有効化対象となるauto_tx.job名(auto_tx_job_name)またはrx.pattern名(rx_pattern_name)を指定してください。");
+                throw new Exception($"actions[{id}](Activate): 有効化対象となるauto_tx.job名(auto_tx_job)またはrx.pattern名(rx_pattern)を指定してください。");
             }
             
             return act;

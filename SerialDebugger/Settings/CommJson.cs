@@ -60,7 +60,7 @@ namespace SerialDebugger.Settings
             public bool Immediate { get; set; } = false;
 
             // Tx送信
-            [JsonPropertyName("tx_frame_name")]
+            [JsonPropertyName("tx_frame")]
             public string TxFrameName { get; set; } = string.Empty;
 
             [JsonPropertyName("tx_frame_buff_index")]
@@ -81,10 +81,10 @@ namespace SerialDebugger.Settings
             public int JumpTo { get; set; } = -1;
 
             // Activate
-            [JsonPropertyName("auto_tx_job_name")]
+            [JsonPropertyName("auto_tx_job")]
             public string AutoTxJobName { get; set; } = string.Empty;
 
-            [JsonPropertyName("rx_pattern_name")]
+            [JsonPropertyName("rx_pattern")]
             public string RxPatternName { get; set; } = string.Empty;
 
             [JsonPropertyName("state")]
@@ -96,7 +96,7 @@ namespace SerialDebugger.Settings
 
 
             // 0個から受理, 0個指定でany
-            [JsonPropertyName("rx_pattern_names")]
+            [JsonPropertyName("rx_patterns")]
             public IList<string> RxPatternNames { get; set; }
 
 
@@ -149,14 +149,28 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("type")]
             public string Type { get; set; } = string.Empty;
 
+            // PatternMatch
             [JsonPropertyName("value")]
             public Int64 Value { get; set; } = Int64.MinValue;
 
+            // Timeout
             [JsonPropertyName("msec")]
             public int Msec { get; set; } = -1;
 
+            // Script
             [JsonPropertyName("script")]
             public string Script { get; set; } = string.Empty;
+
+            // Activate
+            [JsonPropertyName("auto_tx_job")]
+            public string AutoTxJobName { get; set; } = string.Empty;
+
+            [JsonPropertyName("rx_pattern")]
+            public string RxPatternName { get; set; } = string.Empty;
+
+            [JsonPropertyName("state")]
+            public bool State { get; set; } = true;
+
         }
 
 

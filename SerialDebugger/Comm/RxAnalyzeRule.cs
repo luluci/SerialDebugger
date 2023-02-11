@@ -11,12 +11,16 @@ namespace SerialDebugger.Comm
         Any,
         Value,
         Timeout,
-        Script
+        Script,
+        ActivateAutoTx,
+        ActivateRx,
     }
 
     class RxAnalyzeRule
     {
         public RxAnalyzeRuleType Type { get; set; }
+        public RxMatch MatchRef { get; set; }
+
         public byte Value { get; set; }
         public byte Mask { get; set; }
         public int Timeout { get; set; }
@@ -51,6 +55,21 @@ namespace SerialDebugger.Comm
             // Script
             Type = RxAnalyzeRuleType.Script;
             Script = script;
+        }
+
+        public RxAnalyzeRule(RxMatch match)
+        {
+            MatchRef = match;
+
+            switch (MatchRef.Type)
+            {
+                case RxMatchType.ActivateAutoTx:
+                    Type = RxAnalyzeRuleType.ActivateAutoTx;
+                    break;
+                case RxMatchType.ActivateRx:
+                    Type = RxAnalyzeRuleType.ActivateRx;
+                    break;
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 {
-	"name": "XXプロトコル用設定",
+	"name": "動作テスト_自動送信、受信解析2",
 	
 	"log": {
 		"max_size": 100
@@ -122,71 +122,19 @@
 							"name": "field2",
 							"bit_size": 4,
 							"value": 2,
-							"type": "Edit",
-							"base": 10
+							"type": "Edit"
 						},
 						{
 							"name": "field3",
-							"bit_size": 7,
-							"value": 4,
-							"type": "Unit",
-							"unit": {
-								"unit": "hPa",
-								"lsb": 10,
-								"disp_max": 1100,
-								"disp_min": 850,
-								"value_min": 0,
-								"format": "F1"
-							}
+							"bit_size": 3,
+							"value": 2,
+							"type": "Edit"
 						},
 						{
 							"name": "field4",
-							"bit_size": 9,
-							"value": 15
-						},
-						{
-							"name": "field5",
 							"bit_size": 1,
-							"value": 255,
-							"type": "Dict",
-							"dict": [
-								{
-									"value": 0,
-									"disp": "OFF"
-								},
-								{
-									"value": 1,
-									"disp": "ON"
-								}
-							]
-						},
-						{
-							"name": "field6",
-							"bit_size": 9,
-							"value": 170
-						},
-						{
-							"name": "bit0",
-							"bit_size": 5,
-							"value": 1,
-							"type": "Time",
-							"time": {
-								"elapse": 10,
-								"begin": "14:50",
-								"end": "23:50",
-								"value_min": 0
-							}
-						},
-						{
-							"name": "field1",
-							"bit_size": 8,
-							"value": 1,
-							"type": "Script",
-							"script": {
-								"mode": "Exec",
-								"count": 10,
-								"script": "key = i * 2 + (i%2 == 0 ? 0x80 : 0x00);   value = key + ' h';"
-							}
+							"value": 2,
+							"type": "Edit"
 						},
 						{
 							"name": "Checksum",
@@ -207,14 +155,13 @@
 							"matches": [
 								{ "value": 240 },
 								{ "value": 1 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "rx_pattern": "Rx_Pattern_2", "state": true },
+								{ "rx_pattern": "Rx_Pattern_3", "state": true },
+								{ "auto_tx_job": "Job_Auto_1", "state": true }
 							]
 						},
 						{
@@ -224,298 +171,22 @@
 							"matches": [
 								{ "value": 240 },
 								{ "value": 2 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" }
 							]
 						},
 						{
 							"name": "Rx_Pattern_3",
-							"active": true,
+							"active": false,
 							"matches": [
 								{ "value": 240 },
 								{ "value": 3 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_4",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 4 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_5",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 5 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_6",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 6 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_7",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 7 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_8",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 8 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_9",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 9 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_10",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 10 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_11",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 11 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_12",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 12 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_13",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 13 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_14",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 14 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_15",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": 15 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						},
-						{
-							"name": "Rx_Pattern_-15",
-							"active": true,
-							"matches": [
-								{ "value": 240 },
-								{ "value": -15 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
-							]
-						}
-					]
-				},
-				{
-					"name": "Rx_Frame_String",
-					"fields": [
-						{
-							"name": "HEADER",
-							"bit_size": 8,
-							"value": 252
-						},
-						{
-							"name": "char1",
-							"type": "Char",
-							"char": "A"
-						},
-						{
-							"name": "char2",
-							"type": "Char",
-							"char": "B"
-						},
-						{
-							"name": "char3",
-							"type": "Char",
-							"char": "C"
-						},
-						{
-							"name": "separator",
-							"bit_size": 8,
-							"value": 0
-						},
-						{
-							"name": "str2",
-							"type": "String",
-							"string": "DEF"
-						},
-						{
-							"name": "str3",
-							"type": "String",
-							"string": "GHI"
-						}
-					],
-					"patterns": [
-						{
-							"name": "Rx_Frame_String_1",
-							"active": true,
-							"log_visualize": true,
-							"matches": [
-								{ "value": 252 },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" },
-								{ "type": "any" }
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" }
 							]
 						}
 					]
@@ -528,80 +199,33 @@
 				{
 					"name": "Job_Auto_1",
 					"alias": "job2を有効にする",
-					"active": true,
+					"active": false,
 					"actions": [
-						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_1" ] },
+						{ "type": "Log", "log": "<Job_Auto_1 start.>" },
+						{ "type": "Send", "tx_frame": "Frame_A", "tx_frame_buff_index": 1 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_2", "Rx_Pattern_3" ] },
 						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Activate", "auto_tx_job_name": "Job_Auto_2" },
-						{ "type": "Activate", "state": false, "auto_tx_job_name": "Job_Auto_3" },
-						{ "type": "Activate", "state": true, "rx_pattern_name": "Rx_Pattern_2" }
+						{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }
 					]
 				},
 				{
 					"name": "Job_Auto_2",
 					"active": false,
 					"actions": [
-						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_2" ] },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_2" ] },
 						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Send", "tx_frame_name": "Frame_A" },
+						{ "type": "Send", "tx_frame": "Frame_A" },
 						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
 					]
 				},
 				{
 					"name": "Job_Auto_3",
-					"active": true,
-					"actions": [
-						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_3" ] },
-						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Send", "tx_frame_name": "Frame_A" },
-						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
-					]
-				},
-				{
-					"name": "Job_Auto_4",
-					"active": true,
-					"actions": [
-						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_4" ] },
-						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 0 },
-						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
-					]
-				},
-				{
-					"name": "Job_Auto_5",
-					"active": true,
-					"actions": [
-						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_5" ] },
-						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 0 },
-						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
-					]
-				},
-				{
-					"name": "Job_Auto_6",
-					"active": true,
-					"actions": [
-						{ "type": "Recv", "rx_pattern_names": [ "Rx_Pattern_6" ] },
-						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 0 },
-						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
-					]
-				},
-				{
-					"name": "job_Frame_A_0",
-					"alias": "Frame_A[0]を送信",
-					"active": true,
-					"actions": [
-						{ "type": "Send", "tx_frame_name": "Frame_A" },
-						{ "type": "Log", "log": "<初期送信実行>" }
-					]
-				},
-				{
-					"name": "job_Frame_A_1",
-					"alias": "Frame_A[1]を送信",
 					"active": false,
 					"actions": [
-						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1 }
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_3" ] },
+						{ "type": "Wait", "wait_time": 2000 },
+						{ "type": "Send", "tx_frame": "Frame_A" },
+						{ "type": "Jump", "alias": "最初に戻る", "jump_to": 0 }
 					]
 				}
 			]
@@ -651,83 +275,15 @@
 						},
 						{
 							"name": "field3",
-							"bit_size": 7,
-							"value": 4,
-							"type": "Unit",
-							"unit": {
-								"unit": "hPa",
-								"lsb": 10,
-								"disp_max": 1100,
-								"disp_min": 850,
-								"value_min": 0,
-								"format": "F1"
-							}
-						},
-						{
-							"name": "field4-1",
-							"bit_size": 1,
-							"value": 1
-						},
-						{
-							"name": "field4-2",
-							"bit_size": 1,
-							"value": 0
-						},
-						{
-							"name": "field4-3",
-							"bit_size": 1,
-							"value": 1
-						},
-						{
-							"name": "field4-4",
-							"bit_size": 6,
-							"value": 15
-						},
-						{
-							"name": "field5",
-							"bit_size": 1,
-							"value": 255,
-							"type": "Dict",
-							"dict": [
-								{
-									"value": 0,
-									"disp": "OFF"
-								},
-								{
-									"value": 1,
-									"disp": "ON"
-								}
-							]
-						},
-						{
-							"name": "field6",
-							"bit_size": 9,
-							"value": -1,
-							"base": 10,
+							"bit_size": 3,
+							"value": 2,
 							"type": "Edit"
 						},
 						{
-							"name": "bit0",
-							"bit_size": 5,
-							"value": 1,
-							"type": "Time",
-							"time": {
-								"elapse": 10,
-								"begin": "14:50",
-								"end": "23:50",
-								"value_min": 0
-							}
-						},
-						{
-							"name": "field1",
-							"bit_size": 8,
-							"value": 1,
-							"type": "Script",
-							"script": {
-								"mode": "Exec",
-								"count": 10,
-								"script": "key = i * 2 + (i%2 == 0 ? 0x80 : 0x00);   value = key + ' h';"
-							}
+							"name": "field4",
+							"bit_size": 1,
+							"value": 2,
+							"type": "Edit"
 						},
 						{
 							"name": "Checksum",
@@ -744,61 +300,11 @@
 					"backup_buffers": [
 						{
 							"name": "設定X",
-							"value": [ 240, -1, 2, 4, 15, 1, 170, -128, 0 ]
+							"value": [ 240, -1, 2, 4, 15, 1 ]
 						},
 						{
 							"name": "設定Y",
-							"value": [ 240, 77, -2, 4, 15, 0, -170, 255, 255 ]
-						}
-					]
-				},
-				{
-					"name": "Frame_String",
-					"fields": [
-						{
-							"name": "HEADER",
-							"bit_size": 8,
-							"value": 252
-						},
-						{
-							"name": "str1",
-							"type": "String",
-							"string": "ABC"
-						},
-						{
-							"name": "separator",
-							"bit_size": 8,
-							"value": 0
-						},
-						{
-							"name": "char4",
-							"type": "Char",
-							"char": "D"
-						},
-						{
-							"name": "char5",
-							"type": "Char",
-							"char": "E"
-						},
-						{
-							"name": "char6",
-							"type": "Char",
-							"char": "F"
-						},
-						{
-							"name": "str3",
-							"type": "String",
-							"string": "GHI"
-						}
-					],
-					"backup_buffers": [
-						{
-							"name": "設定X",
-							"value_ascii": "\u00FCABC\u0000DEFGHI"
-						},
-						{
-							"name": "設定Y",
-							"value_ascii": "\u00FCLMN\u0000OPQR"
+							"value": [ 240, 77, -2, 4 ]
 						}
 					]
 				}

@@ -337,6 +337,7 @@ namespace SerialDebugger.Comm
                 int bit_no = 0;
                 int bit_pos = 0;
                 int col_width = 1;
+                int bit_size = 0;
                 // バイト境界フラグ
                 bool is_byte_align = false;
                 // バイト表示可否フラグ
@@ -346,8 +347,16 @@ namespace SerialDebugger.Comm
                     //
                     var match = pattern.Matches[match_idx];
                     //
+                    if (match.FieldRef is null)
+                    {
+                        bit_size = 0;
+                    }
+                    else
+                    {
+                        bit_size = match.FieldRef.BitSize;
+                    }
                     is_byte_align = (bit_no % 8) == 0;
-                    is_byte_disp = is_byte_align && ((match.FieldRef.BitSize % 8) == 0);
+                    is_byte_disp = is_byte_align && ((bit_size % 8) == 0);
                     // Bit列作成
                     switch (match.Type)
                     {
@@ -365,7 +374,9 @@ namespace SerialDebugger.Comm
                             }
                             use_bit_no = match.FieldRef.BitSize;
                             use_bit_pos = match.FieldRef.BitSize;
+                            col_width = 1;
                             break;
+
                         case RxMatchType.Value:
                             for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
                             {
@@ -373,15 +384,19 @@ namespace SerialDebugger.Comm
                             }
                             use_bit_no = match.FieldRef.BitSize;
                             use_bit_pos = match.FieldRef.BitSize;
+                            col_width = 1;
                             break;
 
                         default:
                         case RxMatchType.Timeout:
                         case RxMatchType.Script:
+                        case RxMatchType.ActivateAutoTx:
+                        case RxMatchType.ActivateRx:
                             // バイト単位でまとめて表示
                             grid.Children.Add(Gui.MakeTextBlockStyle1($"-", bit_pos, col_bit));
                             use_bit_no = 0;
                             use_bit_pos = 1;
+                            col_width = 2;
                             break;
                     }
                     // Pattern値表示

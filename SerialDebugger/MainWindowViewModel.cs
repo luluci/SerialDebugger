@@ -92,6 +92,7 @@ namespace SerialDebugger
 
         public MainWindowViewModel(MainWindow window)
         {
+            Comm.RxAnalyzer.Dispatcher = window.Dispatcher;
             this.window = window;
             // 初期表示のGridは動的に入れ替えるので最初に参照を取得しておく
             BaseSerialTxOrig = window.BaseSerialTx.Children[0];

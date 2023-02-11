@@ -248,6 +248,11 @@ namespace SerialDebugger.Comm
             };
             action.Log = log;
 
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                action.Alias = $"Log [{action.Log}]";
+            }
+
             return action;
         }
 

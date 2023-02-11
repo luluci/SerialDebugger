@@ -17,19 +17,36 @@ namespace SerialDebugger.Comm
         Value,
         Any,
         Timeout,
-        Script
+        Script,
+        Activate,
+        ActivateAutoTx,
+        ActivateRx,
     }
 
     class RxMatch : BindableBase, IDisposable
     {
-        public RxMatchType Type { get; set; }
-        public Int64 Value { get; set; }
-        public int Msec { get; set; }
-        public string Script { get; set; }
-
         public Field FieldRef { get; set; }
-
         public ReactivePropertySlim<string> Disp { get; set; }
+        public RxMatchType Type { get; set; }
+
+        // MatchAction
+        // PatternMatch
+        public Int64 Value { get; set; }
+        // Timeout
+        public int Msec { get; set; }
+        // Script
+        public string Script { get; set; }
+        // Activate AutoTx
+        public string AutoTxJobName { get; set; }
+        public int AutoTxJobIndex { get; set; }
+        public bool AutoTxState { get; set; }
+        public AutoTxJob AutoTxJobRef { get; set; }
+        // Activate Rx
+        public string RxPatternName { get; set; }
+        public int RxFrameIndex { get; set; }
+        public int RxPatternIndex { get; set; }
+        public bool RxState { get; set; }
+        public RxPattern RxPatternRef { get; set; }
 
         public RxMatch()
         {

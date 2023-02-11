@@ -169,7 +169,7 @@ namespace SerialDebugger.Comm
                                 // 1frameの途中で時間待ちをできるように1バイト境界に配置を前提とする。
                                 if (bit_pos > 0)
                                 {
-                                    throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Scriptはバイト境界に配置してください。");
+                                    throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Script,Activateはバイト境界に配置してください。");
                                 }
                                 // Rule追加
                                 var rule = new RxAnalyzeRule(match.Msec);
@@ -184,13 +184,43 @@ namespace SerialDebugger.Comm
                                 // 1frameの途中で時間待ちをできるように1バイト境界に配置を前提とする。
                                 if (bit_pos > 0)
                                 {
-                                    throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Scriptはバイト境界に配置してください。");
+                                    throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Script,Activateはバイト境界に配置してください。");
                                 }
                                 // Rule追加
                                 var rule = new RxAnalyzeRule(match.Script);
                                 pattern.Analyzer.Rules.Add(rule);
                                 // Disp
                                 match.Disp.Value = $"Script[{match.Script}]";
+                            }
+                            break;
+
+                        case RxMatchType.ActivateAutoTx:
+                            {
+                                // 1frameの途中で時間待ちをできるように1バイト境界に配置を前提とする。
+                                if (bit_pos > 0)
+                                {
+                                    throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Script,Activateはバイト境界に配置してください。");
+                                }
+                                // Rule追加
+                                var rule = new RxAnalyzeRule(match);
+                                pattern.Analyzer.Rules.Add(rule);
+                                // Disp
+                                match.Disp.Value = $"Activate AutoTx[{match.AutoTxJobName}]";
+                            }
+                            break;
+
+                        case RxMatchType.ActivateRx:
+                            {
+                                // 1frameの途中で時間待ちをできるように1バイト境界に配置を前提とする。
+                                if (bit_pos > 0)
+                                {
+                                    throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Script,Activateはバイト境界に配置してください。");
+                                }
+                                // Rule追加
+                                var rule = new RxAnalyzeRule(match);
+                                pattern.Analyzer.Rules.Add(rule);
+                                // Disp
+                                match.Disp.Value = $"Activate Rx[{match.RxPatternName}]";
                             }
                             break;
 

@@ -472,6 +472,9 @@ namespace SerialDebugger.Settings
                 case "Activate":
                     return MakeAutoTxActionActivate(id, action);
 
+                case "Log":
+                    return MakeAutoTxActionLog(id, action);
+
                 default:
                     throw new Exception($"actions[{id}]: Undefined AutoTx Action Type: {action.Type}");
             }
@@ -565,6 +568,18 @@ namespace SerialDebugger.Settings
             }
 
             var act = AutoTxAction.MakeRecvAction(id, action.Alias, Recvs, action.Immediate);
+
+            return act;
+        }
+        private AutoTxAction MakeAutoTxActionLog(int id, Json.CommAutoTxAction action)
+        {
+            // check
+            if (Object.ReferenceEquals(action.Log, string.Empty))
+            {
+                throw new Exception($"actions[{id}](Log): ログメッセージ(log)を指定してください。");
+            }
+            // Action作成
+            var act = AutoTxAction.MakeLogAction(id, action.Alias, action.Log, action.Immediate);
 
             return act;
         }

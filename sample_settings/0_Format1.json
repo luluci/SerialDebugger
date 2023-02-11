@@ -592,13 +592,14 @@
 					"alias": "Frame_A[0]を送信",
 					"active": true,
 					"actions": [
-						{ "type": "Send", "tx_frame_name": "Frame_A" }
+						{ "type": "Send", "tx_frame_name": "Frame_A" },
+						{ "type": "Log", "log": "<初期送信実行>" }
 					]
 				},
 				{
 					"name": "job_Frame_A_1",
 					"alias": "Frame_A[1]を送信",
-					"active": true,
+					"active": false,
 					"actions": [
 						{ "type": "Send", "tx_frame_name": "Frame_A", "tx_frame_buff_index": 1 }
 					]

@@ -90,6 +90,10 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("state")]
             public bool State { get; set; } = true;
 
+            // Log
+            [JsonPropertyName("log")]
+            public string Log { get; set; } = string.Empty;
+
 
             // 0個から受理, 0個指定でany
             [JsonPropertyName("rx_pattern_names")]

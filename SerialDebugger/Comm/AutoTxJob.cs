@@ -141,6 +141,9 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.ActivateRx:
                     break;
 
+                case AutoTxActionType.Log:
+                    break;
+
                 default:
                     throw new Exception("undefined type.");
             }
@@ -190,6 +193,12 @@ namespace SerialDebugger.Comm
 
                     case AutoTxActionType.Recv:
                         // Recvは周期判定では変化しない
+                        break;
+
+                    case AutoTxActionType.Log:
+                        ExecLog();
+                        // 次のActionに移行
+                        check = NextAction();
                         break;
 
                     default:
@@ -345,6 +354,14 @@ namespace SerialDebugger.Comm
 
             return false;
         }
+
+        private void ExecLog()
+        {
+            // Log出力
+            var action = Actions[ActiveActionIndex];
+            Logger.Add(action.Log);
+        }
+
 
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();

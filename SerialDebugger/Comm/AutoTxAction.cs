@@ -21,6 +21,7 @@ namespace SerialDebugger.Comm
         Script,             // スクリプト実行
         ActivateAutoTx,     // AutoTx有効化
         ActivateRx,         // Rx有効化
+        Log,                // ログにメッセージ出力
     }
 
     class AutoTxRecvItem
@@ -65,6 +66,8 @@ namespace SerialDebugger.Comm
         public int RxFrameIndex { get; set; }
         public int RxPatternIndex { get; set; }
         public bool RxState { get; private set; }
+        // Log
+        public string Log { get; private set; }
 
         public AutoTxAction(int id, string alias)
         {
@@ -232,6 +235,18 @@ namespace SerialDebugger.Comm
                     action.Alias = $"Deactivate [{action.RxPatternName}]";
                 }
             }
+
+            return action;
+        }
+
+        public static AutoTxAction MakeLogAction(int id, string alias, string log, bool immediate)
+        {
+            var action = new AutoTxAction(id, alias)
+            {
+                Type = AutoTxActionType.Log,
+                Immediate = immediate,
+            };
+            action.Log = log;
 
             return action;
         }

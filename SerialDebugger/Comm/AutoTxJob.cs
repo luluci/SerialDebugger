@@ -14,7 +14,7 @@ namespace SerialDebugger.Comm
     using Utility;
     using Logger = Log.Log;
     
-    class AutoTxJob : BindableBase, IDisposable
+    public class AutoTxJob : BindableBase, IDisposable
     {
         public int Id { get; }
         public string Name { get; private set; }

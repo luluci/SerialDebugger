@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SerialDebugger.Serial
 {
-    enum RxDataType
+    public enum RxDataType
     {
         Empty,
         Match,
@@ -16,7 +16,7 @@ namespace SerialDebugger.Serial
         Cancel,
     }
 
-    class RxData
+    public class RxData
     {
         public RxDataType Type { get; set; }
         public const int BuffSize = 1024;
@@ -33,14 +33,14 @@ namespace SerialDebugger.Serial
         }
     }
 
-    class RxMatchResult
+    public class RxMatchResult
     {
         public int FrameId { get; set; } = -1;
         public int PatternId { get; set; } = -1;
         public Comm.RxPattern PatternRef { get; set; }
     }
 
-    class RxAnalyzer
+    public class RxAnalyzer
     {
         bool HasRecieve;
 

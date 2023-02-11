@@ -17,7 +17,7 @@ namespace SerialDebugger.Comm
     using Setting = Settings.Settings;
     using Logger = SerialDebugger.Log.Log;
     
-    class TxFrame : BindableBase, IDisposable
+    public class TxFrame : BindableBase, IDisposable
     {
         public int Id { get; }
         // 

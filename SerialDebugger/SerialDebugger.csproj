@@ -85,6 +85,7 @@
     <Compile Include="Comm\TxFieldBuffer.cs" />
     <Compile Include="Comm\FieldValue.cs" />
     <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="Script\CommIf.cs" />
     <Compile Include="Script\Script.cs" />
     <Compile Include="Serial\RxAnalyzer.cs" />
     <Compile Include="Serial\Settings.xaml.cs">
@@ -176,6 +177,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Script\Comm.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Script\Field.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Script\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

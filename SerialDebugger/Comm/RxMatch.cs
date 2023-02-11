@@ -12,7 +12,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    enum RxMatchType
+    public enum RxMatchType
     {
         Value,
         Any,
@@ -23,7 +23,7 @@ namespace SerialDebugger.Comm
         ActivateRx,
     }
 
-    class RxMatch : BindableBase, IDisposable
+    public class RxMatch : BindableBase, IDisposable
     {
         public Field FieldRef { get; set; }
         public ReactivePropertySlim<string> Disp { get; set; }

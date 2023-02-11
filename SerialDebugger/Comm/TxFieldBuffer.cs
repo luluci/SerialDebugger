@@ -12,7 +12,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    class TxFieldBuffer : BindableBase, IDisposable
+    public class TxFieldBuffer : BindableBase, IDisposable
     {
         public string Name { get; }
         public int Id { get; }

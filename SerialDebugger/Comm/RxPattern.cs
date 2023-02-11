@@ -12,7 +12,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    class RxPattern : BindableBase, IDisposable
+    public class RxPattern : BindableBase, IDisposable
     {
         public int Id { get; }
         // 

@@ -247,6 +247,19 @@ namespace SerialDebugger
             OnClickTestSend = new ReactiveCommand();
             OnClickTestSend.Subscribe(async (x) =>
                 {
+                    try
+                    {
+                        //var z = await Script.Interpreter.Engine.wv.ExecuteScriptAsync("debug()");
+                        var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync("CommDebug()");
+                        int i;
+                        i = 0;
+                        i++;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.AddException(e);
+                    }
+                    /*
                     //SerialWrite_test();
                     var task = Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync($@"
 
@@ -264,6 +277,7 @@ namespace SerialDebugger
                     i++;
                     var result = await task;
                     i++;
+                    */
                 })
                 .AddTo(Disposables);
         }

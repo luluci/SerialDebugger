@@ -14,7 +14,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    class Field : BindableBase, IDisposable
+    public class Field : BindableBase, IDisposable
     {
         // 
         public int Id { get; }

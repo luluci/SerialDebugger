@@ -2,19 +2,13 @@
 <html lang="ja">
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+	<!-- Settings/Field/Script要素用スクリプト定義ファイル -->
+	<script type="text/javascript" src="./Field.js"></script>
+	<!-- AutoTx/Rx Scriptノードからの通信データ操作用スクリプト定義ファイル -->
+	<script type="text/javascript" src="./Comm.js"></script>
+
     <script language="javascript" type="text/javascript">
-		// Settings/Field/Script用関数
-		const Setting_Selecter_Script_2 = (i) => {
-			const unit = " (0.2/LSB)";
-			const base = 22.2;
-			const lsb = 0.2;
-			let key = i;
-			if ((i % 2) == 1) {
-				key <<= 4;
-			}
-			let value = (base + lsb * i).toFixed(1) + unit;
-			return { key:key, value:value }
-		}
+
 
 		const test_func = () => {
 			let hoge = "str";
@@ -23,8 +17,8 @@
 		}
 
 		const debug = () => {
-			const val = test_func_async();
-
+			//const val = test_func_async();
+			return "debug"
 		}
     </script>
 </head>

@@ -12,7 +12,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    enum AutoTxActionType
+    public enum AutoTxActionType
     {
         Send,               // シリアル送信
         Wait,               // 時間待機
@@ -24,14 +24,14 @@ namespace SerialDebugger.Comm
         Log,                // ログにメッセージ出力
     }
 
-    class AutoTxRecvItem
+    public class AutoTxRecvItem
     {
         public string PatternName { get; set; } = string.Empty;
         public int FrameId { get; set; } = -1;
         public int PatternId { get; set; } = -1;
     }
 
-    class AutoTxAction : BindableBase, IDisposable
+    public class AutoTxAction : BindableBase, IDisposable
     {
         // 共通
         public int Id { get; }

@@ -13,7 +13,7 @@ namespace SerialDebugger.Comm
     using Utility;
 
 
-    class RxFrame : BindableBase, IDisposable
+    public class RxFrame : BindableBase, IDisposable
     {
         public int Id { get; }
         // 

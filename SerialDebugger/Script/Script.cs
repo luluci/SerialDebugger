@@ -62,6 +62,8 @@ namespace SerialDebugger.Script
         public WebView2 wv;
         // json
         JsonSerializerOptions json_opt;
+        //
+        public CommIf Comm { get; set; }
 
         public EngineWebView2()
         {
@@ -78,17 +80,38 @@ namespace SerialDebugger.Script
                 //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 //NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
             };
+
+            //
+            Comm = new CommIf();
         }
 
         public async Task Init()
         {
+            // WebView2初期化
             await wv.EnsureCoreWebView2Async();
+
+            // ツール側インターフェース登録
+            wv.CoreWebView2.AddHostObjectToScript("Comm", Comm);
+            // Delayを入れないと次のExecuteScriptAsyncが失敗する
+            //await Task.Delay(100);
+            //
+            int limit = 0;
+            while (await wv.ExecuteScriptAsync("Comm_Loaded()") != "true")
+            {
+                limit++;
+                if (limit > 10)
+                {
+                    throw new Exception("WebView2の初期化に失敗したようです。");
+                }
+            }
 
             //
             wv.CoreWebView2.AddHostObjectToScript("evalExecResult", evalExecResult);
 
             // JavaScript側からの呼び出し
             wv.WebMessageReceived += webView_WebMessageReceived;
+
+
         }
 
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SerialDebugger.Comm
 {
-    enum RxAnalyzeRuleType
+    public enum RxAnalyzeRuleType
     {
         Any,
         Value,
@@ -16,7 +16,7 @@ namespace SerialDebugger.Comm
         ActivateRx,
     }
 
-    class RxAnalyzeRule
+    public class RxAnalyzeRule
     {
         public RxAnalyzeRuleType Type { get; set; }
         public RxMatch MatchRef { get; set; }

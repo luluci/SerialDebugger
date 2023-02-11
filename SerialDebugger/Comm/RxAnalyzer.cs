@@ -8,7 +8,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    class RxAnalyzer
+    public class RxAnalyzer
     {
         public delegate void DelegateActivate();
         public static System.Windows.Threading.Dispatcher Dispatcher { get; set; }

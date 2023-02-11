@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SerialDebugger.Utility
 {
-    class CycleTimer
+    public class CycleTimer
     {
         DateTime prev;
 

@@ -12,7 +12,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    class FieldValue : BindableBase, IDisposable
+    public class FieldValue : BindableBase, IDisposable
     {
         //
         public Field FieldRef { get; }

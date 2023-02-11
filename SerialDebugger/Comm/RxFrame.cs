@@ -66,7 +66,7 @@ namespace SerialDebugger.Comm
             int disp_len = 0;
             foreach (var f in Fields)
             {
-                f.Value.Value = 0;
+                //f.InitValue = 0;
                 // Field位置セット
                 f.BitPos = bit_pos;
                 f.BytePos = byte_pos;

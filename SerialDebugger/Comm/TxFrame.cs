@@ -43,8 +43,6 @@ namespace SerialDebugger.Comm
         /// TxFrame全体の変更状況
         /// </summary>
         public ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
-        //
-        //public ReactivePropertySlim<Serial.UpdateTxBuffMsg> UpdateMsg { get; set; }
 
         // checksum
         public bool HasChecksum { get; set; } = false;
@@ -138,7 +136,7 @@ namespace SerialDebugger.Comm
                 // Frame情報更新
                 BitLength += f.BitSize;
                 // 送信生データ作成
-                value |= (f.Value.Value & f.Mask) << f.BitPos;
+                value |= (f.InitValue & f.Mask) << f.BitPos;
                 // Field位置更新
                 bit_pos += f.BitSize;
                 while (bit_pos >= 8)

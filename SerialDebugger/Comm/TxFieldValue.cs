@@ -29,7 +29,7 @@ namespace SerialDebugger.Comm
             ChangeState = new ReactivePropertySlim<Field.ChangeStates>(Field.ChangeStates.Fixed);
             ChangeState.AddTo(Disposables);
 
-            Value = new ReactivePropertySlim<Int64>(FieldRef.Value.Value, mode: ReactivePropertyMode.DistinctUntilChanged);
+            Value = new ReactivePropertySlim<Int64>(FieldRef.InitValue, mode: ReactivePropertyMode.DistinctUntilChanged);
             Value.Subscribe(x =>
                 {
                     // ComboBox入力更新

@@ -643,6 +643,14 @@ namespace SerialDebugger.Settings
                     }
                     f.Build();
                 }
+                else
+                {
+                    // Field定義が空のときのケア
+                    foreach (var buff in f.Buffers)
+                    {
+                        buff.Data = buff.Buffer.ToArray();
+                    }
+                }
                 // TxFrame作成後にBackupBuffer作成
                 InitTxBuffers(frame, f);
 
@@ -684,25 +692,25 @@ namespace SerialDebugger.Settings
             }
             // 必須の1個より多くのバッファを持つ場合、インスタンスを作成しておく
             string name;
-            for (int i = 1; i < f.BufferSize; i++)
+            for (int i = 1, bk_idx = 0; i < f.BufferSize; i++, bk_idx++)
             {
                 // バッファ名称作成
-                if (i-1 < frame.BackupBuffers.Count)
+                if (bk_idx < buffer_def_size)
                 {
                     // BackupBuffers定義から作成
-                    if (Object.ReferenceEquals(frame.BackupBuffers[i-1].Name, string.Empty))
+                    if (Object.ReferenceEquals(frame.BackupBuffers[bk_idx].Name, string.Empty))
                     {
-                        name = $"buffer[{i - 1}]";
+                        name = $"buffer[{bk_idx}]";
                     }
                     else
                     {
-                        name = frame.BackupBuffers[i - 1].Name;
+                        name = frame.BackupBuffers[bk_idx].Name;
                     }
                 }
                 else
                 {
                     // 定型名称を作成
-                    name = $"buffer[{i - 1}]";
+                    name = $"buffer[{bk_idx}]";
                 }
 
                 f.Buffers.Add(new TxFieldBuffer(i, name, f));

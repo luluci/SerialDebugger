@@ -22,8 +22,8 @@ namespace SerialDebugger.Comm
         public int BitSize { get; }
         // テキストボックス表示基数
         public int InputBase { get; }
-        //
-        public ReactivePropertySlim<Int64> Value { get; set; }
+        // Field設定初期値
+        public Int64 InitValue { get; }
         /// <summary>
         /// 1バイト境界からのビット位置.
         /// Nバイト目のMビット目を示す.
@@ -247,8 +247,7 @@ namespace SerialDebugger.Comm
             HexFormat = $"X{HexSize}";
             //
             value = LimitValue(value);
-            Value = new ReactivePropertySlim<Int64>(value, mode: ReactivePropertyMode.DistinctUntilChanged);
-            Value.AddTo(Disposables);
+            InitValue = value;
             //
             Selects = new ReactiveCollection<Select>();
             Selects.AddTo(Disposables);
@@ -442,7 +441,7 @@ namespace SerialDebugger.Comm
                 {
                     MakeSelectModeUnitImpl(selecter, value, temp);
                     // SelectIndex
-                    if (value == Value.Value)
+                    if (value == InitValue)
                     {
                         selectIndex = index;
                     }
@@ -464,7 +463,7 @@ namespace SerialDebugger.Comm
                 {
                     MakeSelectModeUnitImpl(selecter, value, temp);
                     // SelectIndex
-                    if (value == Value.Value)
+                    if (value == InitValue)
                     {
                         selectIndex = index;
                     }
@@ -516,7 +515,7 @@ namespace SerialDebugger.Comm
                 {
                     Selects.Add(new Select(item.Item1, item.Item2));
                     //
-                    if (item.Item1 == Value.Value)
+                    if (item.Item1 == InitValue)
                     {
                         selectIndex = index;
                     }
@@ -552,7 +551,7 @@ namespace SerialDebugger.Comm
                 var disp = dt.ToString("HH:mm");
                 Selects.Add(new Select(value, disp));
                 // SelectIndex
-                if (value == Value.Value)
+                if (value == InitValue)
                 {
                     selectIndex = index;
                 }
@@ -600,7 +599,7 @@ namespace SerialDebugger.Comm
                 {
                     Selects.Add(new Select(result.Item1, result.Item2));
                     // SelectIndex
-                    if (result.Item1 == Value.Value)
+                    if (result.Item1 == InitValue)
                     {
                         selectIndex = index;
                     }
@@ -629,7 +628,7 @@ namespace SerialDebugger.Comm
                 {
                     Selects.Add(new Select(result.Item1, result.Item2));
                     // SelectIndex
-                    if (result.Item1 == Value.Value)
+                    if (result.Item1 == InitValue)
                     {
                         selectIndex = index;
                     }

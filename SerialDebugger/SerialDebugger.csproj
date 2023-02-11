@@ -83,7 +83,7 @@
     <Compile Include="Comm\RxMatch.cs" />
     <Compile Include="Comm\RxPattern.cs" />
     <Compile Include="Comm\TxFieldBuffer.cs" />
-    <Compile Include="Comm\TxFieldValue.cs" />
+    <Compile Include="Comm\FieldValue.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Script\Script.cs" />
     <Compile Include="Serial\RxAnalyzer.cs" />

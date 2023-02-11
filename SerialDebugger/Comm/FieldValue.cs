@@ -12,7 +12,7 @@ namespace SerialDebugger.Comm
 {
     using Utility;
 
-    class TxFieldValue : BindableBase, IDisposable
+    class FieldValue : BindableBase, IDisposable
     {
         //
         public Field FieldRef { get; }
@@ -21,7 +21,7 @@ namespace SerialDebugger.Comm
         public ReactivePropertySlim<int> SelectIndex { get; set; }
         public ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
 
-        public TxFieldValue(Field field)
+        public FieldValue(Field field)
         {
             // 対応するFieldへの参照
             FieldRef = field;

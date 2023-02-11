@@ -491,7 +491,7 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeBackupBufferGui(Field field, TxFieldValue value, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeBackupBufferGui(Field field, FieldValue value, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             switch (value.FieldRef.InputType)
             {

@@ -127,7 +127,7 @@ namespace SerialDebugger.Comm
                 // BuffersにFieldを登録
                 foreach (var buff in Buffers)
                 {
-                    buff.FieldValues.Add(new TxFieldValue(f));
+                    buff.FieldValues.Add(new FieldValue(f));
                 }
                 // Field位置セット
                 f.BitPos = bit_pos;
@@ -247,7 +247,7 @@ namespace SerialDebugger.Comm
         /// Fieldsが更新されたとき、送信バイトシーケンスに反映する
         /// </summary>
         /// <param name="value"></param>
-        public void Update(TxFieldBuffer buffer, TxFieldValue value)
+        public void Update(TxFieldBuffer buffer, FieldValue value)
         {
             // 更新されたfieldをTxBufferに適用
             UpdateBuffer(buffer, value);
@@ -267,7 +267,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="field"></param>
         /// <param name="buffer"></param>
-        public void UpdateBuffer(TxFieldBuffer buffer, TxFieldValue value)
+        public void UpdateBuffer(TxFieldBuffer buffer, FieldValue value)
         {
             Int64 temp = value.Value.Value;
             Int64 mask = value.FieldRef.Mask;

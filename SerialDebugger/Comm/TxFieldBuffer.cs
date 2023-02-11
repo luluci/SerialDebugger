@@ -18,7 +18,7 @@ namespace SerialDebugger.Comm
         public int Id { get; }
         public TxFrame FrameRef { get; }
 
-        public ReactiveCollection<TxFieldValue> FieldValues { get; set; }
+        public ReactiveCollection<FieldValue> FieldValues { get; set; }
         public ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
 
         public ReactiveCommand OnClickSave { get; set; }
@@ -40,7 +40,7 @@ namespace SerialDebugger.Comm
             ChangeState.AddTo(Disposables);
             Buffer = new ReactiveCollection<byte>();
             Buffer.AddTo(Disposables);
-            FieldValues = new ReactiveCollection<TxFieldValue>();
+            FieldValues = new ReactiveCollection<FieldValue>();
             FieldValues
                 .ObserveElementObservableProperty(x => x.Value).Subscribe(x =>
                 {

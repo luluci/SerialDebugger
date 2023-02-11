@@ -275,7 +275,7 @@ namespace SerialDebugger.Comm
                             // その他は各ビット情報を出力
                             for (int i = 0; i < field.BitSize; i++)
                             {
-                                grid.Children.Add(Gui.MakeTextBlockBindBitData(field, $"{bit + i}", $"RxFrames[{frame_no}].Fields[{field_pos}].Value.Value", i, bit + i, ColOrder[(int)SettingGui.Col.BitIndex]));
+                                grid.Children.Add(Gui.MakeTextBlockBindBitData(field, $"{bit + i}", $"RxFrames[{frame_no}].Fields[{field_pos}].InitValue", i, bit + i, ColOrder[(int)SettingGui.Col.BitIndex]));
                             }
                         }
                         // Name列作成

@@ -56,6 +56,7 @@ namespace SerialDebugger
         }
         public ReactiveCollection<TxShortcutNode> TxShortcut { get; set; }
         public ReactivePropertySlim<int> TxShortcutSelectedIndex { get; set; }
+        public ReactivePropertySlim<string> TxShortcutButtonDisp { get; set; }
         public ReactiveCommand OnClickTxShortcut { get; set; }
         // Comm: Rx
         public ReactiveCollection<Comm.RxFrame> RxFrames { get; set; }
@@ -167,8 +168,31 @@ namespace SerialDebugger
             // 送信ショートカット
             TxShortcut = new ReactiveCollection<TxShortcutNode>();
             TxShortcut.AddTo(Disposables);
+            TxShortcutButtonDisp = new ReactivePropertySlim<string>();
+            TxShortcutButtonDisp.AddTo(Disposables);
             TxShortcutSelectedIndex = new ReactivePropertySlim<int>();
-            TxShortcutSelectedIndex.AddTo(Disposables);
+            TxShortcutSelectedIndex
+                .Subscribe(x =>
+                {
+                    if (0 <= x && x < TxShortcut.Count)
+                    {
+                        switch (TxShortcut[x].Buffer.ChangeState.Value)
+                        {
+                            case Comm.Field.ChangeStates.Fixed:
+                                TxShortcutButtonDisp.Value = "送信";
+                                break;
+
+                            default:
+                                TxShortcutButtonDisp.Value = "確定";
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        TxShortcutButtonDisp.Value = "-";
+                    }
+                })
+                .AddTo(Disposables);
             OnClickTxShortcut = new ReactiveCommand();
             OnClickTxShortcut.Subscribe(x =>
             {
@@ -342,6 +366,10 @@ namespace SerialDebugger
                     foreach (var fb in frame.Buffers)
                     {
                         TxShortcut.Add(new TxShortcutNode(fb.Name, fb));
+                        fb.ChangeState.Subscribe(x =>
+                        {
+                            TxShortcutSelectedIndex.ForceNotify();
+                        });
                     }
                 }
             }
@@ -375,7 +403,7 @@ namespace SerialDebugger
                     AutoTxShortcutSelectedIndex.Value = 0;
                     AutoTxShortcutSelectedIndex.ForceNotify();
                     // AutoTxイベント購読
-                    AutoTxJobs.ObserveElementObservableProperty(x => x.IsActive).Subscribe(XmlDataProvider =>
+                    AutoTxJobs.ObserveElementObservableProperty(x => x.IsActive).Subscribe(x =>
                     {
                         // 
                         AutoTxShortcutSelectedIndex.ForceNotify();

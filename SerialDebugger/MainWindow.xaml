@@ -35,7 +35,7 @@
                 <StackPanel Orientation="Horizontal" Margin="10,5,0,0" Height="22">
                     <TextBlock Margin="0,3,0,0" Text="送信:"/>
                     <ComboBox ItemsSource="{Binding TxShortcut}" DisplayMemberPath="Name" SelectedIndex="{Binding TxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
-                    <Button Content="送信" Command="{Binding OnClickTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
+                    <Button Content="{Binding TxShortcutButtonDisp.Value}" Command="{Binding OnClickTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="10,5,0,0" Height="22">
                     <TextBlock Margin="0,3,0,0" Text="自動送信:"/>

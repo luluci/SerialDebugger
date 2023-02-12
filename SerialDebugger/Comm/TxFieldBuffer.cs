@@ -64,6 +64,52 @@ namespace SerialDebugger.Comm
             OnClickStore.AddTo(Disposables);
         }
 
+        /// <summary>
+        /// Bufferに変更があれば送信Dataに反映する
+        /// </summary>
+        /// <returns></returns>
+        public bool BufferFix()
+        {
+            switch (ChangeState.Value)
+            {
+                case Comm.Field.ChangeStates.Changed:
+                    // 変更内容をシリアル通信データに反映
+                    BufferToData();
+                    return true;
+
+                default:
+                    // 変更なし
+                    return false;
+            }
+        }
+
+        public void BufferToData()
+        {
+            // バッファを送信データにコピー
+            if (FrameRef.AsAscii)
+            {
+                for (int i = 0; i < Buffer.Count; i++)
+                {
+                    // HEXをASCII化
+                    var ch = Utility.HexAscii.AsciiTbl[Buffer[i]];
+                    // little-endianで格納
+                    Data[i * 2 + 0] = (byte)ch[1];
+                    Data[i * 2 + 1] = (byte)ch[0];
+                }
+            }
+            else
+            {
+                Buffer.CopyTo(Data, 0);
+            }
+            // 変更フラグを下す
+            foreach (var field in FieldValues)
+            {
+                field.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
+            }
+            //
+            ChangeState.Value = Comm.Field.ChangeStates.Fixed;
+        }
+
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();
 

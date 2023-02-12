@@ -250,7 +250,22 @@ namespace SerialDebugger
                     try
                     {
                         //var z = await Script.Interpreter.Engine.wv.ExecuteScriptAsync("debug()");
-                        var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync("CommDebug()");
+var script = @"
+(() => {
+try {
+    //throw new Error('error');
+    //Comm.Debug();
+    return CommDebug();
+}
+catch (e) {
+    Comm.Error(e.message);
+    return false;
+}
+return true;
+})();
+";
+                        //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync("CommDebug()");
+                        var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(script);
                         int i;
                         i = 0;
                         i++;
@@ -356,6 +371,7 @@ namespace SerialDebugger
             {
                 await Setting.LoadAsync(data);
             }
+            Script.Interpreter.Engine.Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
             Comm.Gui.Init(data);
             // GUI作成
             WindowTitle.Value = $"{ToolTitle} [{data.Name}]";
@@ -444,7 +460,7 @@ namespace SerialDebugger
             {
                 foreach (var fb in frame.Buffers)
                 {
-                    SerialTxBufferFix(fb);
+                    fb.BufferToData();
                 }
             }
         }
@@ -667,7 +683,7 @@ namespace SerialDebugger
             {
                 case Comm.Field.ChangeStates.Changed:
                     // 変更内容をシリアル通信データに反映
-                    SerialTxBufferFix(frame);
+                    frame.BufferFix();
                     break;
 
                 default:
@@ -675,33 +691,6 @@ namespace SerialDebugger
                     SerialWrite(frame.Data, frame.Name);
                     break;
             }
-        }
-
-        private void SerialTxBufferFix(Comm.TxFieldBuffer fb)
-        {
-            // バッファを送信データにコピー
-            if (fb.FrameRef.AsAscii)
-            {
-                for (int i = 0; i < fb.Buffer.Count; i++)
-                {
-                    // HEXをASCII化
-                    var ch = Utility.HexAscii.AsciiTbl[fb.Buffer[i]];
-                    // little-endianで格納
-                    fb.Data[i * 2 + 0] = (byte)ch[1];
-                    fb.Data[i * 2 + 1] = (byte)ch[0];
-                }
-            }
-            else
-            {
-                fb.Buffer.CopyTo(fb.Data, 0);
-            }
-            // 変更フラグを下す
-            foreach (var field in fb.FieldValues)
-            {
-                field.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
-            }
-            //
-            fb.ChangeState.Value = Comm.Field.ChangeStates.Fixed;
         }
 
         private void SerialWrite(byte[] data, string name)

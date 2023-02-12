@@ -93,16 +93,17 @@ namespace SerialDebugger.Script
             // ツール側インターフェース登録
             wv.CoreWebView2.AddHostObjectToScript("Comm", Comm);
             // Delayを入れないと次のExecuteScriptAsyncが失敗する
-            //await Task.Delay(100);
+            await Task.Delay(10);
             //
             int limit = 0;
             while (await wv.ExecuteScriptAsync("Comm_Loaded()") != "true")
             {
                 limit++;
-                if (limit > 10)
+                if (limit > 50)
                 {
                     throw new Exception("WebView2の初期化に失敗したようです。");
                 }
+                await Task.Delay(100);
             }
 
             //

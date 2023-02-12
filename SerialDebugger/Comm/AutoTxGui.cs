@@ -154,6 +154,7 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.Wait:
                 case AutoTxActionType.Recv:
                 case AutoTxActionType.Jump:
+                case AutoTxActionType.Script:
                 case AutoTxActionType.ActivateAutoTx:
                 case AutoTxActionType.ActivateRx:
                 case AutoTxActionType.Log:

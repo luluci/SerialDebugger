@@ -1,0 +1,283 @@
+{
+	"name": "動作テスト_Script操作",
+	
+	"log": {
+		"max_size": 100
+	},
+	
+	"output": {
+		"drag_drop": {
+			"body": {
+				"begin" : "<table><tbody>",
+				"end"   : "</tbody></table>"
+			},
+			"item": {
+				"begin" : "<tr>",
+				"end"   : "</tr>"
+			},
+			"frame_name": {
+				"begin" : "<td>",
+				"end"   : "</td>"
+			},
+			"field_name": {
+				"begin" : "<td>",
+				"end"   : "</td>"
+			},
+			"field_value": {
+				"begin" : "<td>",
+				"end"   : "</td>"
+			},
+			"field_inner_name": {
+				"begin" : "<td>",
+				"end"   : "</td>"
+			},
+			"field_inner_value": {
+				"begin" : "<td>",
+				"end"   : "</td>"
+			},
+			"value_format": "Input"
+		}
+	},
+	
+	"gui": {
+		"window":
+			{
+				"width": 900,
+				"height": 700
+			},
+		"column_order":
+			{
+				"byte_index": 0,
+				"bit_index": 1,
+				"field_value": 2,
+				"field_name": 3,
+				"field_input": 4,
+				"tx_bytes": 5,
+				"spacer": 6,
+				"tx_buffer": 7
+			},
+		"column_width":
+			{
+				"byte_index": 25,
+				"bit_index": 25,
+				"field_value": 40,
+				"field_name": 80,
+				"field_input": 80,
+				"tx_bytes": 50,
+				"spacer": 10,
+				"tx_buffer": 80
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"comm": {
+		"rx": {
+			"enable_multi_match": true,
+			"frames": [
+				{
+					"name": "Rx_Frame_1",
+					"fields": [
+						{
+							"name": "field1_1",
+							"bit_size": 8,
+							"value": 240
+						},
+						{
+							"name": "field1_2",
+							"bit_size": 777,
+							"multi_name": [
+								{
+									"name": "field1_2_status",
+									"bit_size": 5
+								},
+								{
+									"name": "field1_2_error",
+									"bit_size": 3
+								}
+							],
+							"value": 85,
+							"type": "Unit",
+							"unit": {
+								"unit": "-Frame",
+								"lsb": 1,
+								"disp_max": 10,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							},
+							"base": 10
+						},
+						{
+							"name": "field2",
+							"bit_size": 4,
+							"value": 2,
+							"type": "Unit",
+							"unit": {
+								"unit": "-seq",
+								"lsb": 1,
+								"disp_max": 30,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							}
+						},
+						{
+							"name": "field3",
+							"bit_size": 3,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "field4",
+							"bit_size": 1,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_1",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 1 },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						}
+					]
+				}
+			]
+		},
+	
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_Auto_1",
+					"alias": "job2を有効にする",
+					"active": false,
+					"actions": [
+						{ "type": "Log", "log": "<Job_Auto_1 start.>" },
+						{ "type": "Send", "tx_frame": "Frame_A" },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_1" ] },
+						{ "type": "Script", "script": "Job1_0_Format5()" },
+						{ "type": "Wait", "wait_time": 2000 },
+						{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }
+					]
+				}
+			]
+		},
+	
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_A",
+					"as_ascii": false,
+					"fields": [
+						{
+							"name": "field1_1",
+							"bit_size": 8,
+							"value": 240
+						},
+						{
+							"name": "field1_2",
+							"bit_size": 777,
+							"multi_name": [
+								{
+									"name": "field1_2_status",
+									"bit_size": 5
+								},
+								{
+									"name": "field1_2_error",
+									"bit_size": 3
+								}
+							],
+							"value": 85,
+							"type": "Unit",
+							"unit": {
+								"unit": "-Frame",
+								"lsb": 1,
+								"disp_max": 10,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							},
+							"base": 10
+						},
+						{
+							"name": "field2",
+							"bit_size": 4,
+							"value": 0,
+							"type": "Unit",
+							"unit": {
+								"unit": "-seq",
+								"lsb": 1,
+								"disp_max": 30,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							}
+						},
+						{
+							"name": "field3",
+							"bit_size": 3,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "field4",
+							"bit_size": 1,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"backup_buffer_size": 2,
+					"backup_buffers": [
+						{
+							"name": "設定X",
+							"value": [ 240, -1, 2, 4, 15, 1 ]
+						},
+						{
+							"name": "設定Y",
+							"value": [ 240, 77, -2, 4 ]
+						}
+					]
+				}
+			]
+		}
+	}
+}

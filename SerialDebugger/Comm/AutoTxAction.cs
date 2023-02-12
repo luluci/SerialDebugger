@@ -183,6 +183,11 @@ namespace SerialDebugger.Comm
             action.ScriptName = new ReactivePropertySlim<string>(script_func);
             action.ScriptName.AddTo(action.Disposables);
 
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                action.Alias = $"Script [{action.ScriptName}]";
+            }
+
             return action;
         }
 

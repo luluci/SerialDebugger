@@ -135,6 +135,9 @@ namespace SerialDebugger.Comm
                     }
                     break;
 
+                case AutoTxActionType.Script:
+                    break;
+
                 case AutoTxActionType.ActivateAutoTx:
                     break;
 
@@ -149,7 +152,7 @@ namespace SerialDebugger.Comm
             }
         }
         
-        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs)
+        public async Task Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs)
         {
             bool check = true;
             while (check)
@@ -166,8 +169,7 @@ namespace SerialDebugger.Comm
 
                     case AutoTxActionType.Wait:
                         // 時間経過判定
-                        var result = ExecWait();
-                        if (result)
+                        if (ExecWait())
                         {
                             // 時間経過していたら次のActionに移行
                             check = NextAction();
@@ -177,6 +179,13 @@ namespace SerialDebugger.Comm
                     case AutoTxActionType.Jump:
                         ExecJump();
                         check = true;
+                        break;
+
+                    case AutoTxActionType.Script:
+                        if (await ExecScript())
+                        {
+                            check = NextAction();
+                        }
                         break;
 
                     case AutoTxActionType.ActivateAutoTx:
@@ -207,7 +216,7 @@ namespace SerialDebugger.Comm
             }
         }
 
-        public void Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs, Serial.RxAnalyzer analyzer)
+        public async Task Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs, Serial.RxAnalyzer analyzer)
         {
             switch (Actions[ActiveActionIndex].Type)
             {
@@ -221,7 +230,7 @@ namespace SerialDebugger.Comm
                         if (NextAction())
                         {
                             // 通常Execを実施
-                            Exec(serial, TxFrames, RxFrames, AutoTxJobs);
+                            await Exec(serial, TxFrames, RxFrames, AutoTxJobs);
                         }
                     }
                     break;
@@ -314,6 +323,22 @@ namespace SerialDebugger.Comm
             ActiveActionIndex = Actions[ActiveActionIndex].JumpTo.Value;
             // Actionを有効にする
             Actions[ActiveActionIndex].IsActive.Value = true;
+        }
+
+        private async Task<bool> ExecScript()
+        {
+            bool result = true;
+
+            var action = Actions[ActiveActionIndex];
+            // Script実行
+            var check = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(action.ScriptName.Value);
+            // false時のみ再判定
+            if (check == "false")
+            {
+                result = false;
+            }
+
+            return result;
         }
 
         private void ExecActivateAutoTx(IList<Comm.AutoTxJob> AutoTxJobs)

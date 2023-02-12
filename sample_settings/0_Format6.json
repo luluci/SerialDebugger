@@ -611,7 +611,7 @@
 			"frames": [
 				{
 					"name": "Frame_A",
-					"as_ascii": false,
+					"as_ascii": true,
 					"fields": [
 						{
 							"name": "field1_1",

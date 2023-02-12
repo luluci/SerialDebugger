@@ -523,7 +523,7 @@ return true;
                         case Serial.RxDataType.Match:
                             MakeRxLog();
                             // 処理結果を自動送信処理に通知
-                            AutoTxExecRxEvent();
+                            await AutoTxExecRxEvent();
                             break;
 
                         default:
@@ -624,7 +624,7 @@ return true;
                         // 有効ジョブを実行
                         if (job.IsActive.Value)
                         {
-                            job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs);
+                            await job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs);
                         }
                     }
 
@@ -638,7 +638,7 @@ return true;
             }
 
         }
-        private void AutoTxExecRxEvent()
+        private async Task AutoTxExecRxEvent()
         {
             try
             {
@@ -650,7 +650,7 @@ return true;
                         // 有効ジョブを実行
                         if (job.IsActive.Value)
                         {
-                            job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs, rxAnalyzer);
+                            await job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs, rxAnalyzer);
                         }
                     }
                 }

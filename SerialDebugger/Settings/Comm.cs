@@ -560,7 +560,7 @@ namespace SerialDebugger.Settings
                     return MakeAutoTxActionJump(id, action);
 
                 case "Script":
-                    throw new Exception($"actions[{id}]: {action.Type} is unimplemented!");
+                    return MakeAutoTxActionScript(id, action);
 
                 case "Activate":
                     return MakeAutoTxActionActivate(id, action);
@@ -612,6 +612,17 @@ namespace SerialDebugger.Settings
             }
 
             var act = AutoTxAction.MakeJumpAction(id, action.Alias, action.JumpTo, action.Immediate);
+
+            return act;
+        }
+        private AutoTxAction MakeAutoTxActionScript(int id, Json.CommAutoTxAction action)
+        {
+            if (Object.ReferenceEquals(action.Script, string.Empty))
+            {
+                throw new Exception($"actions[{id}](Script): スクリプト(Script)を指定してください。");
+            }
+
+            var act = AutoTxAction.MakeScriptAction(id, action.Alias, action.Script, action.Immediate);
 
             return act;
         }

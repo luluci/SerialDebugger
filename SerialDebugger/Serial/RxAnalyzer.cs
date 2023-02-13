@@ -213,11 +213,11 @@ namespace SerialDebugger.Serial
             for (; Result.RxBuffTgtPos < Result.RxBuffOffset; Result.RxBuffTgtPos++)
             {
                 // 解析対象データ
-                var ch = Result.RxBuff[Result.RxBuffTgtPos];
                 if (InvertBit)
                 {
-                    ch = (byte)~ch;
+                    Result.RxBuff[Result.RxBuffTgtPos] = (byte)~Result.RxBuff[Result.RxBuffTgtPos];
                 }
+                var ch = Result.RxBuff[Result.RxBuffTgtPos];
                 // 解析
                 foreach (var frame in RxFramesRef)
                 {

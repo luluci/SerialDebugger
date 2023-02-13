@@ -48,6 +48,14 @@ namespace SerialDebugger.Settings
             AutoTxJobNameDict = new Dictionary<string, int>();
         }
 
+        public void ClearDict()
+        {
+            TxNameDict.Clear();
+            RxNameDict.Clear();
+            RxPatternDict.Clear();
+            AutoTxJobNameDict.Clear();
+        }
+
         public async Task AnalyzeJsonAsync(Json.Comm json)
         {
             if (json is null)

@@ -312,6 +312,7 @@ return true;
                 }
                 catch (Exception ex)
                 {
+                    Settings[SettingsSelectIndex.Value].Comm.ClearDict();// 暫定
                     WindowTitle.Value = $"{ToolTitle}";
                     BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
                     BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
@@ -352,6 +353,7 @@ return true;
             }
             catch (Exception ex)
             {
+                Settings[SettingsSelectIndex.Value].Comm.ClearDict();// 暫定
                 //MessageBox.Show($"Setting File Load Error: {ex.Message}");
                 WindowTitle.Value = $"{ToolTitle}";
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";

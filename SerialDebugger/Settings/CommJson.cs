@@ -12,6 +12,9 @@ namespace SerialDebugger.Settings
 
         public class Comm
         {
+            [JsonPropertyName("display_id")]
+            public bool DisplayId { get; set; } = false;
+
             // 送信設定
             [JsonPropertyName("tx")]
             public CommTx Tx { get; set; }

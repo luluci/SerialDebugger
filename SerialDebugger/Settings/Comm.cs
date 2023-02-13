@@ -18,6 +18,8 @@ namespace SerialDebugger.Settings
 
     class Comm : BindableBase, IDisposable
     {
+        public bool DisplayId { get; set; }
+
         public ReactiveCollection<TxFrame> Tx { get; set; }
         public Dictionary<string, int> TxNameDict { get; set; }
         public bool TxInvertBit { get; set; }
@@ -64,6 +66,9 @@ namespace SerialDebugger.Settings
             {
                 return;
             }
+
+            // 全体オプション
+            DisplayId = json.DisplayId;
 
             if (!(json.Tx is null))
             {

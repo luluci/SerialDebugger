@@ -152,7 +152,16 @@ namespace SerialDebugger.Comm
                 }
             }
             // Frame名称作成
-            grid.Children.Add(Gui.MakeTextBlockStyle2(frame.Name, 0, 0, -1, 5));
+            string name;
+            if (Setting.Data.Comm.DisplayId)
+            {
+                name = $"[{frame.Id}] {frame.Name}";
+            }
+            else
+            {
+                name = frame.Name;
+            }
+            grid.Children.Add(Gui.MakeTextBlockStyle2(name, 0, 0, -1, 5));
             // column作成: byte
             grid.Children.Add(Gui.MakeTextBlockStyle1("Byte", 1, setting.Gui.ColOrder[(int)SettingGui.Col.ByteIndex]));
             // column作成: bit
@@ -178,7 +187,15 @@ namespace SerialDebugger.Comm
                 // 送信ボタン作成
                 grid.Children.Add(MakeButtonLoadStore(frame.Buffers[i], $"TxFrames[{frame_no}].Buffers[{i}]", "OnClickTxDataSend", 0, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1));
                 // 表示ラベル
-                grid.Children.Add(Gui.MakeTextBlockStyle1(frame.Buffers[i].Name, 1, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1));
+                if (Setting.Data.Comm.DisplayId)
+                {
+                    name = $"[{frame.Buffers[i].Id}] {frame.Buffers[i].Name}";
+                }
+                else
+                {
+                    name = frame.Buffers[i].Name;
+                }
+                grid.Children.Add(Gui.MakeTextBlockStyle1(name, 1, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1));
             }
 
             return width;
@@ -286,7 +303,16 @@ namespace SerialDebugger.Comm
                             int inner_idx = 0;
                             foreach (var inner in field.InnerFields)
                             {
-                                grid.Children.Add(MakeNameGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", inner.Name, bit+inner_idx, setting.Gui.ColOrder[(int)SettingGui.Col.FieldName], inner.BitSize));
+                                string name;
+                                if (Setting.Data.Comm.DisplayId)
+                                {
+                                    name = $"[{field.Id}] {inner.Name}";
+                                }
+                                else
+                                {
+                                    name = inner.Name;
+                                }
+                                grid.Children.Add(MakeNameGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", name, bit+inner_idx, setting.Gui.ColOrder[(int)SettingGui.Col.FieldName], inner.BitSize));
                                 inner_idx += inner.BitSize;
                             }
                             //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));

@@ -82,6 +82,8 @@
 	},
 	
 	"comm": {
+		"display_id": true,
+	
 		"rx": {
 			"invert_bit": true,
 			"enable_multi_match": true,

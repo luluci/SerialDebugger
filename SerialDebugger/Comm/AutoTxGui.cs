@@ -10,6 +10,8 @@ using System.Windows.Media;
 
 namespace SerialDebugger.Comm
 {
+    using Setting = SerialDebugger.Settings.Settings;
+
     class AutoTxGui
     {
         // GUI Resource
@@ -106,7 +108,18 @@ namespace SerialDebugger.Comm
         public static Border MakeJobName(AutoTxJob job, string path)
         {
             var cb = new CheckBox();
-            cb.Content = job.Alias;
+            string name;
+            if (Setting.Data.Comm.DisplayId)
+            {
+                name = $"[{job.Id}] {job.Alias}";
+            }
+            else
+            {
+                name = job.Alias;
+            }
+            cb.Content = name;
+
+
             var bind = new Binding(path + ".IsActive.Value");
             cb.SetBinding(CheckBox.IsCheckedProperty, bind);
             cb.FontWeight = FontWeights.Bold;
@@ -210,7 +223,18 @@ namespace SerialDebugger.Comm
         {
             var border = MakeActionBase(path, is_first);
             var tb = new TextBlock();
-            tb.Text = action.Alias;
+
+
+            string name;
+            if (Setting.Data.Comm.DisplayId)
+            {
+                name = $"[{action.Id}] {action.Alias}";
+            }
+            else
+            {
+                name = action.Alias;
+            }
+            tb.Text = name;
             
             border.Child = tb;
             return border;

@@ -155,7 +155,16 @@ namespace SerialDebugger.Comm
             }
 
             // Frame名称作成
-            grid.Children.Add(Gui.MakeTextBlockStyle2(frame.Name, 0, 0, -1, 3));
+            string name;
+            if (Setting.Data.Comm.DisplayId)
+            {
+                name = $"[{frame.Id}] {frame.Name}";
+            }
+            else
+            {
+                name = frame.Name;
+            }
+            grid.Children.Add(Gui.MakeTextBlockStyle2(name, 0, 0, -1, 3));
             // column作成: byte
             grid.Children.Add(Gui.MakeTextBlockStyle1("Byte", 1, ColOrder[(int)SettingGui.Col.ByteIndex]));
             // column作成: bit
@@ -282,7 +291,16 @@ namespace SerialDebugger.Comm
                         int inner_idx = 0;
                         foreach (var inner in field.InnerFields)
                         {
-                            grid.Children.Add(MakeNameGui(field, $"RxFrames[{frame_no}].Fields[{field_pos}]", inner.Name, bit + inner_idx, ColOrder[(int)SettingGui.Col.FieldName], inner.BitSize));
+                            string name;
+                            if (Setting.Data.Comm.DisplayId)
+                            {
+                                name = $"[{field.Id}] {inner.Name}";
+                            }
+                            else
+                            {
+                                name = inner.Name;
+                            }
+                            grid.Children.Add(MakeNameGui(field, $"RxFrames[{frame_no}].Fields[{field_pos}]", name, bit + inner_idx, ColOrder[(int)SettingGui.Col.FieldName], inner.BitSize));
                             inner_idx += inner.BitSize;
                         }
 
@@ -454,11 +472,23 @@ namespace SerialDebugger.Comm
             Grid.SetRow(cb, row);
             Grid.SetColumn(cb, col);
 
+            // Frame名称作成
+            string name;
+            if (Setting.Data.Comm.DisplayId)
+            {
+                name = $"[{buffer.Id}] {buffer.Name}";
+            }
+            else
+            {
+                name = buffer.Name;
+            }
+            cb.Content = name;
+
             // Binding
             var bind = new Binding(path + ".IsActive.Value");
             cb.SetBinding(CheckBox.IsCheckedProperty, bind);
-            var bind_text = new Binding(path + ".Name");
-            cb.SetBinding(CheckBox.ContentProperty, bind_text);
+            //var bind_text = new Binding(path + ".Name");
+            //cb.SetBinding(CheckBox.ContentProperty, bind_text);
 
             //
             var border = Gui.MakeBorder1();

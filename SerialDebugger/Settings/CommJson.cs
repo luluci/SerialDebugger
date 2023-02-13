@@ -109,6 +109,9 @@ namespace SerialDebugger.Settings
 
         public class CommRx
         {
+            [JsonPropertyName("invert_bit")]
+            public bool InvertBit { get; set; } = false;
+
             [JsonPropertyName("enable_multi_match")]
             public bool MultiMatch { get; set; } = false;
 
@@ -177,6 +180,9 @@ namespace SerialDebugger.Settings
 
         public class CommTx
         {
+            [JsonPropertyName("invert_bit")]
+            public bool InvertBit { get; set; } = false;
+
             [JsonPropertyName("frames")]
             public IList<CommTxFrame> Frames { get; set; }
         }

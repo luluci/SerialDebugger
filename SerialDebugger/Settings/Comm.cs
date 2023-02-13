@@ -20,6 +20,7 @@ namespace SerialDebugger.Settings
     {
         public ReactiveCollection<TxFrame> Tx { get; set; }
         public Dictionary<string, int> TxNameDict { get; set; }
+        public bool TxInvertBit { get; set; }
         // 受信解析
         public ReactiveCollection<RxFrame> Rx { get; set; }
         public Dictionary<string, int> RxNameDict { get; set; }
@@ -29,6 +30,7 @@ namespace SerialDebugger.Settings
             public int PatternId { get; set; } = -1;
         }
         public Dictionary<string, RxPatternInfo> RxPatternDict { get; set; }
+        public bool RxInvertBit { get; set; }
         public bool RxMultiMatch { get; set; }
         // 自動送信
         public ReactiveCollection<AutoTxJob> AutoTx { get; set; }
@@ -63,25 +65,29 @@ namespace SerialDebugger.Settings
                 return;
             }
 
-            if (!(json.Tx is null) && !(json.Tx.Frames is null))
+            if (!(json.Tx is null))
             {
-                // TxFrameコレクション作成
-                int i = 0;
-                foreach (var frame in json.Tx.Frames)
+                if (!(json.Tx.Frames is null))
                 {
-                    var f = await MakeTxFrameAsync(i, frame);
-
-                    if (TxNameDict.TryGetValue(f.Name, out int value))
+                    //
+                    TxInvertBit = json.Tx.InvertBit;
+                    // TxFrameコレクション作成
+                    int i = 0;
+                    foreach (var frame in json.Tx.Frames)
                     {
-                        // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
-                        throw new Exception($"tx: frames[{i}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
+                        var f = await MakeTxFrameAsync(i, frame);
+
+                        if (TxNameDict.TryGetValue(f.Name, out int value))
+                        {
+                            // Frame.NameはAutoTxからの参照に使うためユニークである必要がある。
+                            throw new Exception($"tx: frames[{i}]: 同じ名前({f.Name})が存在します。frame.nameにはユニークな名前を設定してください。");
+                        }
+                        TxNameDict.Add(f.Name, f.Id);
+
+                        Tx.Add(f);
+                        i++;
                     }
-                    TxNameDict.Add(f.Name, f.Id);
-
-                    Tx.Add(f);
-                    i++;
                 }
-
             }
 
             // RxFrame作成
@@ -89,6 +95,7 @@ namespace SerialDebugger.Settings
             if (!(json.Rx is null))
             {
                 // 
+                RxInvertBit = json.Rx.InvertBit;
                 RxMultiMatch = json.Rx.MultiMatch;
                 // Frames解析
                 if (!(json.Rx.Frames is null))

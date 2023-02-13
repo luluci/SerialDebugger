@@ -487,7 +487,7 @@ return true;
                 serialPort = serialSetting.vm.GetSerialPort();
                 serialPort.Open();
                 // 解析クラス初期化
-                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames, Setting.Data.Comm.RxMultiMatch);
+                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames, Setting.Data.Comm.RxMultiMatch, Setting.Data.Comm.RxInvertBit);
                 // COM切断を有効化
                 IsSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM切断";

@@ -47,17 +47,19 @@ namespace SerialDebugger.Serial
         SerialPort serial;
         public IList<Comm.RxFrame> RxFramesRef;
         bool MultiMatch;
+        bool InvertBit;
 
         // 解析結果
         public RxData Result { get; set; }
         public List<RxMatchResult> MatchResult;
         public int MatchResultPos { get; set; }
 
-        public RxAnalyzer(SerialPort serial, IList<Comm.RxFrame> rxFrames, bool multiMatch)
+        public RxAnalyzer(SerialPort serial, IList<Comm.RxFrame> rxFrames, bool multiMatch, bool invertBit)
         {
             this.serial = serial;
             RxFramesRef = rxFrames;
             MultiMatch = multiMatch;
+            InvertBit = invertBit;
 
             // 受信ハンドラ登録
             HasRecieve = false;
@@ -212,6 +214,10 @@ namespace SerialDebugger.Serial
             {
                 // 解析対象データ
                 var ch = Result.RxBuff[Result.RxBuffTgtPos];
+                if (InvertBit)
+                {
+                    ch = (byte)~ch;
+                }
                 // 解析
                 foreach (var frame in RxFramesRef)
                 {

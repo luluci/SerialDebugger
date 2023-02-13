@@ -83,6 +83,7 @@
 	
 	"comm": {
 		"rx": {
+			"invert_bit": true,
 			"enable_multi_match": true,
 			"frames": [
 				{
@@ -608,10 +609,11 @@
 		},
 	
 		"tx": {
+			"invert_bit": true,
 			"frames": [
 				{
 					"name": "Frame_A",
-					"as_ascii": true,
+					"as_ascii": false,
 					"fields": [
 						{
 							"name": "field1_1",

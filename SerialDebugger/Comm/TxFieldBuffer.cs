@@ -11,6 +11,7 @@ using Reactive.Bindings.Extensions;
 namespace SerialDebugger.Comm
 {
     using Utility;
+    using Setting = Settings.Settings;
 
     public class TxFieldBuffer : BindableBase, IDisposable
     {
@@ -90,6 +91,11 @@ namespace SerialDebugger.Comm
             {
                 for (int i = 0; i < Buffer.Count; i++)
                 {
+                    var data = Buffer[i];
+                    if (Setting.Data.Comm.TxInvertBit)
+                    {
+                        data = (byte)~data;
+                    }
                     // HEXをASCII化
                     var ch = Utility.HexAscii.AsciiTbl[Buffer[i]];
                     // little-endianで格納
@@ -99,7 +105,18 @@ namespace SerialDebugger.Comm
             }
             else
             {
-                Buffer.CopyTo(Data, 0);
+                if (Setting.Data.Comm.TxInvertBit)
+                {
+                    for (int i = 0; i < Buffer.Count; i++)
+                    {
+                        var data = (byte)~Buffer[i];
+                        Data[i] = data;
+                    }
+                }
+                else
+                {
+                    Buffer.CopyTo(Data, 0);
+                }
             }
             // 変更フラグを下す
             foreach (var field in FieldValues)

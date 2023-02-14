@@ -107,13 +107,16 @@ namespace SerialDebugger.Settings
                 {
                     try
                     {
-                        // 
-                        var info = new SettingInfo
+                        if (Path.GetExtension(file) == ".json")
                         {
-                            FilePath = file
-                        };
-                        await InitSettingFileAsync(file, info);
-                        list.Add(info);
+                            // 
+                            var info = new SettingInfo
+                            {
+                                FilePath = file
+                            };
+                            await InitSettingFileAsync(file, info);
+                            list.Add(info);
+                        }
                     }
                     catch (Exception e)
                     {

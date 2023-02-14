@@ -14,6 +14,8 @@ namespace SerialDebugger.Script
     using System.Text.Json.Serialization;
     using System.Text.Unicode;
 
+    using Logger = Log.Log;
+
     public static class Interpreter
     {
         public static EngineWebView2 Engine;
@@ -113,6 +115,26 @@ namespace SerialDebugger.Script
             wv.WebMessageReceived += webView_WebMessageReceived;
 
 
+        }
+
+        public async Task LoadSettingsScript(List<string> scripts)
+        {
+            foreach (var script in scripts)
+            {
+                var load_script = $@"
+(() => {{
+    var sc = document.createElement('script');
+    sc.src = '../Settings/{script}';
+    document.body.appendChild(sc);
+    return true;
+}})();
+";
+                var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(load_script);
+                if (result != "true")
+                {
+                    Logger.Add($"script: {script}の読み込みでエラーが発生しました。");
+                }
+            }
         }
 
 

@@ -250,6 +250,7 @@ namespace SerialDebugger
                     try
                     {
                         //var z = await Script.Interpreter.Engine.wv.ExecuteScriptAsync("debug()");
+
 var script = @"
 (() => {
 try {
@@ -264,6 +265,7 @@ catch (e) {
 return true;
 })();
 ";
+                        //script = @"import { test_js_test } from 'test.js';";
                         //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync("CommDebug()");
                         var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(script);
                         int i;
@@ -373,6 +375,7 @@ return true;
             {
                 await Setting.LoadAsync(data);
             }
+            // Script
             Script.Interpreter.Engine.Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
             Comm.Gui.Init(data);
             // GUI作成

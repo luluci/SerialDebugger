@@ -38,6 +38,10 @@
 		"polling_cycle": 200
 	},
 	
+	"script": [
+		"95_Format_test_Script_1.js"
+	],
+	
 	"comm": {
 		"tx": {
 			"frames": [

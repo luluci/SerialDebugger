@@ -21,10 +21,12 @@ namespace SerialDebugger.Script
         public ReactiveCollection<Comm.RxFrame> RxFramesRef { get; set; }
         // Comm: AutoTx
         public ReactiveCollection<Comm.AutoTxJob> AutoTxJobsRef { get; set; }
+        // Serial: RxAnalyzer
+        public Serial.RxAnalyzer RxAnalyzerRef { get; set; }
         // WebView2向けI/F
         public CommTxFramesIf Tx { get; set; }
         public CommAutoTxJobsIf AutoTx { get; set; }
-
+        public SerialMatchResultsIf RxMatch { get; set; }
 
         public int DebugValue { get; set; } = 0;
 
@@ -32,6 +34,7 @@ namespace SerialDebugger.Script
         {
             Tx = new CommTxFramesIf();
             AutoTx = new CommAutoTxJobsIf();
+            RxMatch = new SerialMatchResultsIf();
         }
 
         public void Init(ReactiveCollection<Comm.TxFrame> tx, ReactiveCollection<Comm.RxFrame> rx, ReactiveCollection<Comm.AutoTxJob> autotx)
@@ -43,6 +46,11 @@ namespace SerialDebugger.Script
             //
             Tx.TxFramesRef = tx;
             AutoTx.AutoTxJobsRef = autotx;
+        }
+        public void Init(Serial.RxAnalyzer analyzer)
+        {
+            RxAnalyzerRef = analyzer;
+            RxMatch.RxAnalyzerRef = analyzer;
         }
 
 
@@ -74,6 +82,63 @@ namespace SerialDebugger.Script
         }
     }
 
+
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class SerialMatchResultsIf
+    {
+        public Serial.RxAnalyzer RxAnalyzerRef { get; set; }
+        public RxMatchResultIf RxMatchResultIf { get; set; } = new RxMatchResultIf();
+        // I/F: WebView2 -> C#
+        public bool Result { get; set; } = true;
+
+        public int Count
+        {
+            get
+            {
+                return RxAnalyzerRef.MatchResultPos;
+            }
+        }
+
+        [System.Runtime.CompilerServices.IndexerName("Items")]
+        public RxMatchResultIf this[int match_idx]
+        {
+            get
+            {
+                return RxMatchResultIf.RxMatchResultNode(RxAnalyzerRef.MatchResult[match_idx]);
+            }
+        }
+
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class RxMatchResultIf
+    {
+        public Serial.RxMatchResult RxMatchResultRef { get; set; }
+
+        public int FrameId
+        {
+            get
+            {
+                return RxMatchResultRef.PatternId;
+            }
+        }
+        public int PatternId
+        {
+            get
+            {
+                return RxMatchResultRef.PatternId;
+            }
+        }
+
+        public RxMatchResultIf RxMatchResultNode(Serial.RxMatchResult node)
+        {
+            RxMatchResultRef = node;
+            return this;
+        }
+    }
 
 
 

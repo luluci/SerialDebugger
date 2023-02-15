@@ -172,6 +172,19 @@
 								{ "type": "Any" },
 								{ "type": "Any" }
 							]
+						},
+						{
+							"name": "Rx_Pattern_2",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 2 },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
 						}
 					]
 				}
@@ -182,12 +195,12 @@
 			"jobs": [
 				{
 					"name": "Job_Auto_1",
-					"alias": "job2を有効にする",
+					"alias": "Frame_Aを繰り返す",
 					"active": false,
 					"actions": [
 						{ "type": "Log", "log": "<Job_Auto_1 start.>" },
 						{ "type": "Send", "tx_frame": "Frame_A" },
-						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_1" ] },
+						{ "type": "Script", "rx_handler": "Job1_0_RxMatch()" },
 						{ "type": "Script", "auto_tx_handler": "Job1_0_Format5()" },
 						{ "type": "Wait", "wait_time": 2000 },
 						{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }

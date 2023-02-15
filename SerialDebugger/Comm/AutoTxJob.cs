@@ -378,10 +378,9 @@ namespace SerialDebugger.Comm
             if (action.HasRxHandler)
             {
                 // AutoTxイベントハンドラを持っていたらScript実行
-                Script.Interpreter.Engine.Comm.AutoTx.Result = true;
                 await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(action.RxHandler);
                 // false時のみ再判定
-                if (!Script.Interpreter.Engine.Comm.AutoTx.Result)
+                if (!Script.Interpreter.Engine.Comm.RxMatch.Result)
                 {
                     result = false;
                 }

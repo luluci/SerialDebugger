@@ -102,9 +102,13 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("rx_patterns")]
             public IList<string> RxPatternNames { get; set; }
 
-
-            [JsonPropertyName("script")]
-            public string Script { get; set; } = string.Empty;
+            // Script
+            // 
+            [JsonPropertyName("auto_tx_handler")]
+            public string AutoTxHandler { get; set; } = string.Empty;
+            // 受信イベントハンドラ
+            [JsonPropertyName("rx_handler")]
+            public string RxHandler { get; set; } = string.Empty;
 
         }
 

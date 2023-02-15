@@ -1,0 +1,84 @@
+{
+	"name": "テストパターン_Script_2",
+	
+	"gui": {
+		"column_order":
+			{
+				"byte_index": 0,
+				"bit_index": 1,
+				"field_value": 2,
+				"field_name": 3,
+				"field_input": 4,
+				"tx_bytes": 5,
+				"spacer": 6,
+				"tx_buffer": 7
+			},
+		"column_width":
+			{
+				"byte_index": 25,
+				"bit_index": 25,
+				"field_value": 40,
+				"field_name": 100,
+				"field_input": 110,
+				"tx_bytes": 50,
+				"spacer": 20,
+				"tx_buffer": 80
+			}
+	},
+	
+	"serial": {
+		"baudrate": 300,
+		"data_bits": 8,
+		"parity": "null",
+		"stop_bits": 1,
+		"rts_cts": true,
+		"xon_xoff": true,
+		"dtr_str": true,
+		"tx_timeout": 700,
+		"polling_cycle": 200
+	},
+	
+	"script": [
+		"95_Format_test_Script_1.js"
+	],
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "script_1",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Script",
+							"script": {
+								"mode": "Exec",
+								"count": 10,
+								"script": "key = i * 2 + (i%2 == 0 ? 0x80 : 0x00);   value = key + ' h';"
+							}
+						}
+					]
+				},
+				{
+					"name": "script_2",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Script",
+							"script": {
+								"mode": "Call",
+								"count": 10,
+								"script": "Setting_Selecter_Script_2"
+							}
+						}
+					],
+					"backup_buffer_size": 2
+				}
+			]
+		}
+	}
+}

@@ -56,7 +56,10 @@ namespace SerialDebugger.Comm
         // Jump
         public ReactivePropertySlim<int> JumpTo { get; private set; }
         // Script
-        public ReactivePropertySlim<string> ScriptName { get; private set; }
+        public string AutoTxHandler { get; private set; }
+        public string RxHandler { get; private set; }
+        public bool HasAutoTxHandler { get; private set; } = false;
+        public bool HasRxHandler { get; private set; } = false;
         // Activate AutoTx
         public string AutoTxJobName { get; private set; }
         public int AutoTxJobIndex { get; set; }
@@ -173,19 +176,43 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeScriptAction(int id, string alias, string script_func, bool immediate)
+        public static AutoTxAction MakeScriptAction(int id, string alias, string autotx_handler, string rx_handler, bool immediate)
         {
             var action = new AutoTxAction(id, alias)
             {
                 Type = AutoTxActionType.Script,
                 Immediate = immediate,
             };
-            action.ScriptName = new ReactivePropertySlim<string>(script_func);
-            action.ScriptName.AddTo(action.Disposables);
 
+
+            if (!Object.ReferenceEquals(autotx_handler, string.Empty))
+            {
+                action.AutoTxHandler = autotx_handler;
+                action.HasAutoTxHandler = true;
+            }
+
+            if (!Object.ReferenceEquals(rx_handler, string.Empty))
+            {
+                action.RxHandler = rx_handler;
+                action.HasRxHandler = true;
+            }
+            
             if (Object.ReferenceEquals(action.Alias, string.Empty))
             {
-                action.Alias = $"Script [{action.ScriptName}]";
+                var sb = new StringBuilder(autotx_handler.Length + rx_handler.Length + 1);
+                if (action.HasAutoTxHandler)
+                {
+                    sb.Append(autotx_handler);
+                    if (action.HasRxHandler)
+                    {
+                        sb.Append("/");
+                    }
+                }
+                if (action.HasRxHandler)
+                {
+                    sb.Append(rx_handler);
+                }
+                action.Alias = $"Script [{sb.ToString()}]";
             }
 
             return action;

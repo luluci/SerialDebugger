@@ -235,6 +235,20 @@ namespace SerialDebugger.Comm
                     }
                     break;
 
+                case AutoTxActionType.Script:
+                    if (await ExecScriptRx())
+                    {
+                        // 処理終了からの時間を計測
+                        CycleTimer.StartBy(analyzer.Result.TimeStamp);
+                        // 受信判定一致していたら次のActionに移行
+                        if (NextAction())
+                        {
+                            // 通常Execを実施
+                            await Exec(serial, TxFrames, RxFrames, AutoTxJobs);
+                        }
+                    }
+                    break;
+
                 default:
                     // 受信イベント以外は終了
                     return;
@@ -328,13 +342,54 @@ namespace SerialDebugger.Comm
         private async Task<bool> ExecScript()
         {
             bool result = true;
-
             var action = Actions[ActiveActionIndex];
-            // Script実行
-            var check = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(action.ScriptName.Value);
-            // false時のみ再判定
-            if (check == "false")
+
+            if (action.HasAutoTxHandler)
             {
+                // AutoTxイベントハンドラを持っていたらScript実行
+                Script.Interpreter.Engine.Comm.AutoTx.Result = true;
+                await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(action.AutoTxHandler);
+                // false時のみ再判定
+                if (!Script.Interpreter.Engine.Comm.AutoTx.Result)
+                {
+                    result = false;
+                }
+                else
+                {
+                    // 処理終了からの時間を計測
+                    CycleTimer.Start();
+                }
+            }
+            else
+            {
+                // AutoTxイベントハンドラを持っていない場合、必ずRxイベントハンドラを持っている
+                // Rxイベントハンドラにより状態遷移するため、AutoTxは常にfalse
+                result = false;
+            }
+
+            return result;
+        }
+
+        private async Task<bool> ExecScriptRx()
+        {
+            bool result = true;
+            var action = Actions[ActiveActionIndex];
+
+            if (action.HasRxHandler)
+            {
+                // AutoTxイベントハンドラを持っていたらScript実行
+                Script.Interpreter.Engine.Comm.AutoTx.Result = true;
+                await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(action.RxHandler);
+                // false時のみ再判定
+                if (!Script.Interpreter.Engine.Comm.AutoTx.Result)
+                {
+                    result = false;
+                }
+            }
+            else
+            {
+                // Rxイベントハンドラを持っていない場合、必ずAutoTxイベントハンドラを持っている
+                // AutoTxイベントハンドラにより状態遷移するため、Rxは常にfalse
                 result = false;
             }
 

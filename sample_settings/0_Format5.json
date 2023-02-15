@@ -81,6 +81,10 @@
 		"polling_cycle": 100
 	},
 	
+	"script": [
+		"0_Format5.js"
+	],
+	
 	"comm": {
 		"rx": {
 			"enable_multi_match": true,
@@ -184,7 +188,7 @@
 						{ "type": "Log", "log": "<Job_Auto_1 start.>" },
 						{ "type": "Send", "tx_frame": "Frame_A" },
 						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_1" ] },
-						{ "type": "Script", "script": "Job1_0_Format5()" },
+						{ "type": "Script", "auto_tx_handler": "Job1_0_Format5()" },
 						{ "type": "Wait", "wait_time": 2000 },
 						{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }
 					]

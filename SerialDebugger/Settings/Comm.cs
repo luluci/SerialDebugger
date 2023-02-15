@@ -637,12 +637,12 @@ namespace SerialDebugger.Settings
         }
         private AutoTxAction MakeAutoTxActionScript(int id, Json.CommAutoTxAction action)
         {
-            if (Object.ReferenceEquals(action.Script, string.Empty))
+            if (Object.ReferenceEquals(action.AutoTxHandler, string.Empty) && Object.ReferenceEquals(action.RxHandler, string.Empty))
             {
-                throw new Exception($"actions[{id}](Script): スクリプト(Script)を指定してください。");
+                throw new Exception($"actions[{id}](Script): イベントハンドラ(auto_tx_handler/rx_handler)を指定してください。");
             }
 
-            var act = AutoTxAction.MakeScriptAction(id, action.Alias, action.Script, action.Immediate);
+            var act = AutoTxAction.MakeScriptAction(id, action.Alias, action.AutoTxHandler, action.RxHandler, action.Immediate);
 
             return act;
         }

@@ -32,40 +32,15 @@ namespace SerialDebugger.Script
 
     public class EngineWebView2
     {
-        [ClassInterface(ClassInterfaceType.AutoDual)]
-        [ComVisible(true)]
-        public class EvalExecResult
-        {
-            [System.Runtime.CompilerServices.IndexerName("Items")]
-            public string this[int index]
-            {
-                get { return list[index]; }
-                set { list[index] = value; }
-            }
-            public Dictionary<int, string> list = new Dictionary<int, string>();
-
-            public Int64 Key { get; set; }
-            public string Value { get; set; }
-
-            public void result(Int64 key, string value)
-            {
-                this.Key = key;
-                this.Value = value;
-            }
-
-            public void Test(string value)
-            {
-                this.Value = value;
-            }
-        };
-        public EvalExecResult evalExecResult = new EvalExecResult();
-
         // WebView2
         public WebView2 wv;
         // json
         JsonSerializerOptions json_opt;
-        //
+        // WebView2用通信操作I/F
         public CommIf Comm { get; set; }
+
+        // Load済みScriptDict
+        Dictionary<string, bool> LoadedScript;
 
         public EngineWebView2()
         {
@@ -85,6 +60,8 @@ namespace SerialDebugger.Script
 
             //
             Comm = new CommIf();
+            //
+            LoadedScript = new Dictionary<string, bool>();
         }
 
         public async Task Init()
@@ -121,7 +98,9 @@ namespace SerialDebugger.Script
         {
             foreach (var script in scripts)
             {
-                var load_script = $@"
+                if (!LoadedScript.TryGetValue(script, out bool value))
+                {
+                    var load_script = $@"
 (() => {{
     var sc = document.createElement('script');
     sc.src = '../Settings/{script}';
@@ -129,14 +108,54 @@ namespace SerialDebugger.Script
     return true;
 }})();
 ";
-                var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(load_script);
-                if (result != "true")
-                {
-                    Logger.Add($"script: {script}の読み込みでエラーが発生しました。");
+                    var result = await wv.CoreWebView2.ExecuteScriptAsync(load_script);
+                    if (result == "true")
+                    {
+                        LoadedScript.Add(script, true);
+                    }
+                    else
+                    {
+                        Logger.Add($"script: {script}の読み込みでエラーが発生しました。");
+                    }
                 }
             }
         }
 
+
+        private void webView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            var s = e.TryGetWebMessageAsString();
+            //MessageBox.Show(s);
+        }
+
+
+        [ClassInterface(ClassInterfaceType.AutoDual)]
+        [ComVisible(true)]
+        public class EvalExecResult
+        {
+            [System.Runtime.CompilerServices.IndexerName("Items")]
+            public string this[int index]
+            {
+                get { return list[index]; }
+                set { list[index] = value; }
+            }
+            public Dictionary<int, string> list = new Dictionary<int, string>();
+
+            public Int64 Key { get; set; }
+            public string Value { get; set; }
+
+            public void result(Int64 key, string value)
+            {
+                this.Key = key;
+                this.Value = value;
+            }
+
+            public void Test(string value)
+            {
+                this.Value = value;
+            }
+        };
+        public EvalExecResult evalExecResult = new EvalExecResult();
 
         public async Task EvalTest()
         {
@@ -195,11 +214,6 @@ namespace SerialDebugger.Script
         }
 
 
-        private void webView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
-        {
-            var s = e.TryGetWebMessageAsString();
-            //MessageBox.Show(s);
-        }
 
     }
 

@@ -573,73 +573,7 @@ namespace SerialDebugger.Comm
         private async Task<int> MakeSelectModeScriptAsync(Selecter selecter)
         {
             SelectsValueCheckTable = new Dictionary<Int64, int>();
-            switch (selecter.Mode)
-            {
-                case "Exec":
-                    return await MakeSelectModeScriptExecAsync(selecter);
-                case "Call":
-                    return await MakeSelectModeScriptCallAsync(selecter);
-                default:
-                    return -1;
-            }
-        }
-        private async Task<int> MakeSelectModeScriptExecAsync(Selecter selecter)
-        {
-            int index = 0;
-            int selectIndex = 0;
-
-            // Script初期化
-            await Script.Interpreter.Engine.EvalInit(selecter.Script);
-
-            for (int i=0; i<selecter.Count; i++)
-            {
-                // Script評価
-                var result = await Script.Interpreter.Engine.EvalExec(i);
-                if (!(result.Item2 is null) && result.Item1 <= Max)
-                {
-                    Selects.Add(new Select(result.Item1, result.Item2));
-                    // SelectIndex
-                    if (result.Item1 == InitValue)
-                    {
-                        selectIndex = index;
-                    }
-                    //
-                    SelectsValueCheckTable.Add(result.Item1, index);
-                    //
-                    index++;
-                }
-            }
-
-            return selectIndex;
-        }
-        private async Task<int> MakeSelectModeScriptCallAsync(Selecter selecter)
-        {
-            int index = 0;
-            int selectIndex = 0;
-
-            // Script初期化
-            //await Script.Interpreter.Engine.EvalInit(selecter.Script);
-
-            for (int i = 0; i < selecter.Count; i++)
-            {
-                // Script評価
-                var result = await Script.Interpreter.Engine.Call($"{selecter.Script}({i})");
-                if (!(result.Item2 is null) && result.Item1 <= Max)
-                {
-                    Selects.Add(new Select(result.Item1, result.Item2));
-                    // SelectIndex
-                    if (result.Item1 == InitValue)
-                    {
-                        selectIndex = index;
-                    }
-                    //
-                    SelectsValueCheckTable.Add(result.Item1, index);
-                    //
-                    index++;
-                }
-            }
-
-            return selectIndex;
+            return await Script.Interpreter.Engine.MakeFieldSelecter(this);
         }
         
         #region IDisposable Support

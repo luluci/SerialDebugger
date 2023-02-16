@@ -38,6 +38,7 @@ namespace SerialDebugger.Script
         JsonSerializerOptions json_opt;
         // WebView2用通信操作I/F
         public CommIf Comm { get; set; }
+        public SettingsIf Settings { get; set; }
 
         // Load済みScriptDict
         Dictionary<string, bool> LoadedScript;
@@ -60,6 +61,7 @@ namespace SerialDebugger.Script
 
             //
             Comm = new CommIf();
+            Settings = new SettingsIf();
             //
             LoadedScript = new Dictionary<string, bool>();
         }
@@ -70,12 +72,21 @@ namespace SerialDebugger.Script
             await wv.EnsureCoreWebView2Async();
 
             // ツール側インターフェース登録
+            // Commオブジェクト登録
             wv.CoreWebView2.AddHostObjectToScript("Comm", Comm);
-            // Delayを入れないと次のExecuteScriptAsyncが失敗する
-            await Task.Delay(10);
-            //
+            wv.CoreWebView2.AddHostObjectToScript("Settings", Settings);
+            // デフォルトスクリプトをLoad
+            await RunScriptLoaded("Comm_Loaded()");
+            await RunScriptLoaded("Settings_Loaded()");
+            
+            // JavaScript側からの呼び出し
+            wv.WebMessageReceived += webView_WebMessageReceived;
+        }
+
+        public async Task RunScriptLoaded(string handler)
+        {
             int limit = 0;
-            while (await wv.ExecuteScriptAsync("Comm_Loaded()") != "true")
+            while (await wv.ExecuteScriptAsync(handler) != "true")
             {
                 limit++;
                 if (limit > 50)
@@ -84,14 +95,6 @@ namespace SerialDebugger.Script
                 }
                 await Task.Delay(100);
             }
-
-            //
-            wv.CoreWebView2.AddHostObjectToScript("evalExecResult", evalExecResult);
-
-            // JavaScript側からの呼び出し
-            wv.WebMessageReceived += webView_WebMessageReceived;
-
-
         }
 
         public async Task LoadSettingsScript(List<string> scripts)
@@ -121,6 +124,63 @@ namespace SerialDebugger.Script
             }
         }
 
+        public async Task<int> MakeFieldSelecter(Comm.Field field)
+        {
+            // field参照登録
+            Settings.Init(field);
+            // Script作成
+            var script = MakeFieldSelecterScript(field.selecter);
+            // Script実行
+            await wv.ExecuteScriptAsync(script);
+            //
+            if (Settings.Field.Result)
+            {
+                return Settings.Field.SelectIndex;
+            }
+            else
+            {
+                throw new Exception(Settings.Field.Message);
+            }
+        }
+
+        public string MakeFieldSelecterScript(Comm.Field.Selecter selecter)
+        {
+            string parts;
+            switch (selecter.Mode)
+            {
+                case "Exec":
+                    parts = $@"
+const exec_func = (i) => {{
+    {selecter.Script};
+    return {{key: key, value: value}};
+}}
+MakeFieldExecScript(exec_func, {selecter.Count});
+";
+                    break;
+
+                case "Call":
+                    parts = $@"{selecter.Script}({selecter.Count})";
+                    break;
+
+                default:
+                    throw new Exception("invalid Script Mode!");
+            }
+
+            string comm = $@"
+(() => {{
+    try {{
+        {parts}
+        Settings.Field.Result = true;
+    }}
+    catch (e) {{
+        Settings.Field.Message = e.message;
+        Settings.Field.Result = false;
+    }}
+}})()
+";
+            return comm;
+        }
+
 
         private void webView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {
@@ -128,106 +188,6 @@ namespace SerialDebugger.Script
             //MessageBox.Show(s);
         }
 
-
-        [ClassInterface(ClassInterfaceType.AutoDual)]
-        [ComVisible(true)]
-        public class EvalExecResult
-        {
-            [System.Runtime.CompilerServices.IndexerName("Items")]
-            public string this[int index]
-            {
-                get { return list[index]; }
-                set { list[index] = value; }
-            }
-            public Dictionary<int, string> list = new Dictionary<int, string>();
-
-            public Int64 Key { get; set; }
-            public string Value { get; set; }
-
-            public void result(Int64 key, string value)
-            {
-                this.Key = key;
-                this.Value = value;
-            }
-
-            public void Test(string value)
-            {
-                this.Value = value;
-            }
-        };
-        public EvalExecResult evalExecResult = new EvalExecResult();
-
-        public async Task EvalTest()
-        {
-            evalExecResult.Value = "test_setted";
-            await wv.CoreWebView2.ExecuteScriptAsync($@"
-                var eval_test = (i) => {{
-                    const test = chrome.webview.hostObjects.sync.evalExecResult;
-                    test.Key = 55;
-                    test.Value = 'test';
-                    test[100] = 'test 100';
-                    test.Test('test_');
-                    return test.Value;
-                }}
-            ");
-            var result = await wv.CoreWebView2.ExecuteScriptAsync($"eval_test(0)");
-            return;
-        }
-
-
-        public async Task EvalInit(string script)
-        {
-            await wv.ExecuteScriptAsync($@"
-                var eval_exec_func = (i) => {{
-                    {script};
-                    return {{key: key, value: value}};
-                }}
-            ");
-        }
-
-        public async Task<(Int64, string)> EvalExec(int i)
-        {
-            try
-            {
-                var json = await wv.ExecuteScriptAsync($"eval_exec_func({i})");
-                var value = JsonSerializer.Deserialize<Json.EvalExecResult>(json, json_opt);
-                return (value.Key, value.Value);
-            }
-            catch
-            {
-                return (0, null);
-            }
-        }
-
-        public async Task<(Int64, string)> Call(string script)
-        {
-            try
-            {
-                var json = await wv.ExecuteScriptAsync(script);
-                var value = JsonSerializer.Deserialize<Json.EvalExecResult>(json, json_opt);
-                return (value.Key, value.Value);
-            }
-            catch
-            {
-                return (0, null);
-            }
-        }
-
-
-
     }
-
-
-    public class Json
-    {
-        public class EvalExecResult
-        {
-            [JsonPropertyName("key")]
-            public Int64 Key { get; set; }
-
-            [JsonPropertyName("value")]
-            public string Value { get; set; }
-        }
-    }
-
+    
 }

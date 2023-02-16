@@ -16,11 +16,11 @@ namespace SerialDebugger.Script
     {
         // Commデータへの参照
         // Comm: Tx
-        public ReactiveCollection<Comm.TxFrame> TxFramesRef { get; set; }
+        public ReactiveCollection<SerialDebugger.Comm.TxFrame> TxFramesRef { get; set; }
         // Comm: Rx
-        public ReactiveCollection<Comm.RxFrame> RxFramesRef { get; set; }
+        public ReactiveCollection<SerialDebugger.Comm.RxFrame> RxFramesRef { get; set; }
         // Comm: AutoTx
-        public ReactiveCollection<Comm.AutoTxJob> AutoTxJobsRef { get; set; }
+        public ReactiveCollection<SerialDebugger.Comm.AutoTxJob> AutoTxJobsRef { get; set; }
         // Serial: RxAnalyzer
         public Serial.RxAnalyzer RxAnalyzerRef { get; set; }
         // WebView2向けI/F
@@ -37,7 +37,7 @@ namespace SerialDebugger.Script
             RxMatch = new SerialMatchResultsIf();
         }
 
-        public void Init(ReactiveCollection<Comm.TxFrame> tx, ReactiveCollection<Comm.RxFrame> rx, ReactiveCollection<Comm.AutoTxJob> autotx)
+        public void Init(ReactiveCollection<SerialDebugger.Comm.TxFrame> tx, ReactiveCollection<SerialDebugger.Comm.RxFrame> rx, ReactiveCollection<SerialDebugger.Comm.AutoTxJob> autotx)
         {
             //
             TxFramesRef = tx;
@@ -148,7 +148,7 @@ namespace SerialDebugger.Script
     {
         // Commデータへの参照
         // Comm: AutoTx
-        public ReactiveCollection<Comm.AutoTxJob> AutoTxJobsRef { get; set; }
+        public ReactiveCollection<SerialDebugger.Comm.AutoTxJob> AutoTxJobsRef { get; set; }
         // I/F: C# -> WebView2
         public CommAutoTxActionsIf CommAutoTxActionsIf { get; set; } = new CommAutoTxActionsIf();
         // I/F: WebView2 -> C#
@@ -163,7 +163,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public CommAutoTxJobsIf AutoTxJobs(ReactiveCollection<Comm.AutoTxJob> autotx)
+        public CommAutoTxJobsIf AutoTxJobs(ReactiveCollection<SerialDebugger.Comm.AutoTxJob> autotx)
         {
             AutoTxJobsRef = autotx;
             return this;
@@ -176,7 +176,7 @@ namespace SerialDebugger.Script
     {
         // Commデータへの参照
         // Comm: AutoTx
-        public ReactiveCollection<Comm.AutoTxAction> AutoTxActionsRef { get; set; }
+        public ReactiveCollection<SerialDebugger.Comm.AutoTxAction> AutoTxActionsRef { get; set; }
         //
         public CommAutoTxActionIf CommAutoTxActionIf { get; set; } = new CommAutoTxActionIf();
 
@@ -189,7 +189,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public CommAutoTxActionsIf AutoTxAction(ReactiveCollection<Comm.AutoTxAction> actions)
+        public CommAutoTxActionsIf AutoTxAction(ReactiveCollection<SerialDebugger.Comm.AutoTxAction> actions)
         {
             AutoTxActionsRef = actions;
             return this;
@@ -202,10 +202,10 @@ namespace SerialDebugger.Script
     {
         // Commデータへの参照
         // Comm: AutoTx
-        public Comm.AutoTxAction ActionRef { get; set; }
+        public SerialDebugger.Comm.AutoTxAction ActionRef { get; set; }
 
 
-        public CommAutoTxActionIf AutoTxAction(Comm.AutoTxAction action)
+        public CommAutoTxActionIf AutoTxAction(SerialDebugger.Comm.AutoTxAction action)
         {
             ActionRef = action;
             return this;
@@ -220,7 +220,7 @@ namespace SerialDebugger.Script
     {
         // Commデータへの参照
         // Comm: Tx
-        public ReactiveCollection<Comm.TxFrame> TxFramesRef { get; set; }
+        public ReactiveCollection<SerialDebugger.Comm.TxFrame> TxFramesRef { get; set; }
         //
         public CommTxFieldBuffersIf CommTxBufferIf { get; set; } = new CommTxFieldBuffersIf();
         
@@ -233,7 +233,7 @@ namespace SerialDebugger.Script
             }
         }
         
-        public CommTxFramesIf TxFrames(ReactiveCollection<Comm.TxFrame> tx)
+        public CommTxFramesIf TxFrames(ReactiveCollection<SerialDebugger.Comm.TxFrame> tx)
         {
             TxFramesRef = tx;
             return this;
@@ -252,7 +252,7 @@ namespace SerialDebugger.Script
     {
         // Commデータへの参照
         // Comm: Tx
-        public ReactiveCollection<Comm.TxFieldBuffer> TxFieldBuffersRef { get; set; }
+        public ReactiveCollection<SerialDebugger.Comm.TxFieldBuffer> TxFieldBuffersRef { get; set; }
         //
         public CommTxFieldBufferIf CommTxFieldBufferIf { get; set; } = new CommTxFieldBufferIf();
 
@@ -265,7 +265,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public CommTxFieldBuffersIf TxBuffer(ReactiveCollection<Comm.TxFieldBuffer> tx)
+        public CommTxFieldBuffersIf TxBuffer(ReactiveCollection<SerialDebugger.Comm.TxFieldBuffer> tx)
         {
             TxFieldBuffersRef = tx;
             return this;
@@ -278,7 +278,7 @@ namespace SerialDebugger.Script
     {
         // Commデータへの参照
         // Comm: Tx
-        public Comm.TxFieldBuffer TxFieldBufferRef { get; set; }
+        public SerialDebugger.Comm.TxFieldBuffer TxFieldBufferRef { get; set; }
         
         [System.Runtime.CompilerServices.IndexerName("Items")]
         public Int64 this[int field_id]
@@ -294,7 +294,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public CommTxFieldBufferIf TxFieldBuffer(Comm.TxFieldBuffer tx)
+        public CommTxFieldBufferIf TxFieldBuffer(SerialDebugger.Comm.TxFieldBuffer tx)
         {
             TxFieldBufferRef = tx;
             return this;

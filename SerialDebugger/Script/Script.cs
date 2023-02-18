@@ -7,14 +7,16 @@ using System.Threading.Tasks;
 namespace SerialDebugger.Script
 {
     using Microsoft.Web.WebView2.Core;
-    using Microsoft.Web.WebView2.WinForms;
+    using Microsoft.Web.WebView2.Wpf;
     using System.Runtime.InteropServices;
     using System.Text.Encodings.Web;
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using System.Text.Unicode;
-
+    using System.Windows.Forms;
+    using System.Reactive.Disposables;
     using Logger = Log.Log;
+    using Utility;
 
     public static class Interpreter
     {
@@ -30,27 +32,37 @@ namespace SerialDebugger.Script
         
     }
 
-    public class EngineWebView2
+    public class EngineWebView2 : BindableBase, IDisposable
     {
+        //
+        public View View { get; set; }
         // WebView2
-        public WebView2 wv;
+        public WebView2 WebView2;
         // json
         JsonSerializerOptions json_opt;
         // WebView2用通信操作I/F
         public CommIf Comm { get; set; }
         public SettingsIf Settings { get; set; }
-
+        
         // Load済みScriptDict
         Dictionary<string, bool> LoadedScript;
 
         public EngineWebView2()
         {
-            string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-            string SettingPath = rootPath + @"\Script";
-            wv = new WebView2
-            {
-                Source = new Uri($@"{SettingPath}\index.html"),
-            };
+            View = new View();
+            WebView2 = View.WebView2;
+
+            // WebView2
+            var pos_left = View.Left;
+            var dispWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
+            View.Left = dispWidth + 1;
+            View.Show();
+            View.Hide();
+
+            //string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            //string SettingPath = rootPath + @"\Script";
+            //WebView2.Source = new Uri($@"{SettingPath}\index.html");
+            WebView2.CoreWebView2InitializationCompleted += webView2CoreWebView2InitializationCompleted;
 
             json_opt = new JsonSerializerOptions
             {
@@ -66,27 +78,49 @@ namespace SerialDebugger.Script
             LoadedScript = new Dictionary<string, bool>();
         }
 
+        private void webView2CoreWebView2InitializationCompleted(object sender, EventArgs e)
+        {
+        }
+
         public async Task Init()
         {
             // WebView2初期化
-            await wv.EnsureCoreWebView2Async();
+            await WebView2.EnsureCoreWebView2Async();
+
+            //
+            View.Left = double.NaN;
 
             // ツール側インターフェース登録
             // Commオブジェクト登録
-            wv.CoreWebView2.AddHostObjectToScript("Comm", Comm);
-            wv.CoreWebView2.AddHostObjectToScript("Settings", Settings);
+            WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
+            WebView2.CoreWebView2.AddHostObjectToScript("Settings", Settings);
             // デフォルトスクリプトをLoad
             await RunScriptLoaded("Comm_Loaded()");
             await RunScriptLoaded("Settings_Loaded()");
-            
+
             // JavaScript側からの呼び出し
-            wv.WebMessageReceived += webView_WebMessageReceived;
+            WebView2.WebMessageReceived += webView_WebMessageReceived;
+        }
+
+        public void Close()
+        {
+            (this as IDisposable)?.Dispose();
+        }
+
+        public void ShowView()
+        {
+            View.Show();
+        }
+
+        public async Task<string> ExecuteScriptAsync(string script)
+        {
+            return await WebView2.ExecuteScriptAsync(script);
         }
 
         public async Task RunScriptLoaded(string handler)
         {
             int limit = 0;
-            while (await wv.ExecuteScriptAsync(handler) != "true")
+            while (await WebView2.ExecuteScriptAsync(handler) != "true")
             {
                 limit++;
                 if (limit > 50)
@@ -111,7 +145,7 @@ namespace SerialDebugger.Script
     return true;
 }})();
 ";
-                    var result = await wv.CoreWebView2.ExecuteScriptAsync(load_script);
+                    var result = await WebView2.CoreWebView2.ExecuteScriptAsync(load_script);
                     if (result == "true")
                     {
                         LoadedScript.Add(script, true);
@@ -131,7 +165,7 @@ namespace SerialDebugger.Script
             // Script作成
             var script = MakeFieldSelecterScript(field.selecter);
             // Script実行
-            await wv.ExecuteScriptAsync(script);
+            await WebView2.ExecuteScriptAsync(script);
             //
             if (Settings.Field.Result)
             {
@@ -188,6 +222,44 @@ MakeFieldExecScript(exec_func, {selecter.Count});
             //MessageBox.Show(s);
         }
 
+        #region IDisposable Support
+        private CompositeDisposable Disposables { get; } = new CompositeDisposable();
+
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
+                    this.Disposables.Dispose();
+                    (View.DataContext as IDisposable)?.Dispose();
+                }
+
+                // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージド リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~TxFrame() {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
+        void IDisposable.Dispose()
+        {
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
-    
+
 }

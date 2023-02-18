@@ -60,5 +60,10 @@ namespace SerialDebugger
             if (window.DataContext is IClosing)
                 e.Cancel = (window.DataContext as IClosing).OnClosing();
         }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            (vm as IDisposable)?.Dispose();
+        }
     }
 }

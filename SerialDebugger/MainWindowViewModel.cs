@@ -87,7 +87,7 @@ namespace SerialDebugger
         bool IsRxRunning = false;
         Serial.RxAnalyzer rxAnalyzer;
         CancellationTokenSource tokenSource;
-
+        
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
 
@@ -269,10 +269,11 @@ return true;
 ";
                         //script = @"import { test_js_test } from 'test.js';";
                         //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync("CommDebug()");
-                        var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(script);
+                        //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(script);
                         int i;
                         i = 0;
                         i++;
+                        Script.Interpreter.Engine.ShowView();
                     }
                     catch (Exception e)
                     {
@@ -787,6 +788,10 @@ return true;
         {
             if (IsSerialOpen.Value) return true;
 
+
+
+            Script.Interpreter.Engine.Close();
+
             return false;
         }
         #endregion
@@ -804,6 +809,8 @@ return true;
                 {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
                     this.Disposables.Dispose();
+
+                    Script.Interpreter.Engine.Close();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
@@ -814,10 +821,11 @@ return true;
         }
 
         // TODO: 上の Dispose(bool disposing) にアンマネージド リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
-        // ~TxFrame() {
-        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
-        //   Dispose(false);
-        // }
+        //~MainWindowViewModel()
+        //{
+        //    // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //    Dispose(false);
+        //}
 
         // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
         void IDisposable.Dispose()

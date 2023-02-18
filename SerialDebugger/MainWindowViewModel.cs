@@ -62,6 +62,7 @@ namespace SerialDebugger
         public ReactiveCollection<Comm.RxFrame> RxFrames { get; set; }
         // Comm: AutoTx
         public ReactiveCollection<Comm.AutoTxJob> AutoTxJobs { get; set; }
+        public ReactiveCollection<Comm.AutoTxJob> EmptyAutoTxJobs { get; set; }
         public ReactivePropertySlim<int> AutoTxShortcutSelectedIndex { get; set; }
         public ReactivePropertySlim<string> AutoTxShortcutButtonDisp { get; set; }
         public ReactiveCommand OnClickAutoTxShortcut { get; set; }
@@ -98,11 +99,11 @@ namespace SerialDebugger
             BaseSerialTxOrig = window.BaseSerialTx.Children[0];
             BaseSerialRxOrig = window.BaseSerialRx.Children[0];
             BaseSerialAutoTxOrig = window.BaseSerialAutoTx.Children[0];
-            BaseSerialTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
+            BaseSerialTxMsg = new ReactivePropertySlim<string>();
             BaseSerialTxMsg.AddTo(Disposables);
-            BaseSerialRxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
+            BaseSerialRxMsg = new ReactivePropertySlim<string>();
             BaseSerialRxMsg.AddTo(Disposables);
-            BaseSerialAutoTxMsg = new ReactivePropertySlim<string>("設定ファイルを読み込んでいます...");
+            BaseSerialAutoTxMsg = new ReactivePropertySlim<string>();
             BaseSerialAutoTxMsg.AddTo(Disposables);
 
             //
@@ -166,6 +167,7 @@ namespace SerialDebugger
             RxFrames.AddTo(Disposables);
             AutoTxJobs = new ReactiveCollection<Comm.AutoTxJob>();
             AutoTxJobs.AddTo(Disposables);
+            EmptyAutoTxJobs = AutoTxJobs;
             // 送信ショートカット
             TxShortcut = new ReactiveCollection<TxShortcutNode>();
             TxShortcut.AddTo(Disposables);
@@ -301,6 +303,8 @@ return true;
 
         public async Task InitAsync()
         {
+            // 
+            InitGui();
             // 設定ファイル読み込み
             await Setting.InitAsync(Settings);
 
@@ -312,10 +316,7 @@ return true;
                 var result = await LoadTxAsync();
                 if (!result)
                 {
-                    WindowTitle.Value = $"{ToolTitle}";
-                    BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
-                    BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
-                    BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
+                    SetMsgNoSettings();
                 }
             }
             else
@@ -329,9 +330,36 @@ return true;
 
         public async Task UpdateTxAsync()
         {
-            // 設定ファイルを切り替えたときにログクリア
-            Logger.Clear();
-            // 現在表示中のGUIを破棄
+            try
+            {
+                // 設定ファイルを切り替えたときにログクリア
+                Logger.Clear();
+                // 現在表示中のGUIを破棄
+                InitGui();
+
+                // GUI再構築するため明示的にGC起動しておく
+                await Task.Run(() => { GC.Collect(); });
+                //Logger.Add($"GC: {GC.GetTotalMemory(false)}");
+                var result = await LoadTxAsync();
+                if (!result)
+                {
+                    SetMsgNoSettings();
+                }
+            }
+            catch (Exception ex)
+            {
+                WindowTitle.Value = $"{ToolTitle}";
+                SetMsgNoSettings();
+                Logger.AddException(ex, "設定ファイル読み込みエラー:");
+            }
+        }
+
+        /// <summary>
+        /// GUI表示初期設定
+        /// </summary>
+        public void InitGui()
+        {
+            WindowTitle.Value = $"{ToolTitle}";
             window.BaseSerialTx.Children.Clear();
             window.BaseSerialRx.Children.Clear();
             window.BaseSerialAutoTx.Children.Clear();
@@ -341,24 +369,14 @@ return true;
             window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
             window.BaseSerialRx.Children.Add(BaseSerialRxOrig);
             window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
+            TxShortcut.Clear();
+        }
 
-            try
-            {
-                // GUI再構築するため明示的にGC起動しておく
-                await Task.Run(() => { GC.Collect(); });
-                //Logger.Add($"GC: {GC.GetTotalMemory(false)}");
-                await LoadTxAsync();
-            }
-            catch (Exception ex)
-            {
-                Settings[SettingsSelectIndex.Value].Comm.ClearDict();// 暫定
-                //MessageBox.Show($"Setting File Load Error: {ex.Message}");
-                WindowTitle.Value = $"{ToolTitle}";
-                BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
-                BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
-                BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
-                Logger.AddException(ex, "設定ファイル読み込みエラー:");
-            }
+        public void SetMsgNoSettings()
+        {
+            BaseSerialTxMsg.Value = "有効な設定が存在しません。";
+            BaseSerialRxMsg.Value = "有効な設定が存在しません。";
+            BaseSerialAutoTxMsg.Value = "有効な設定が存在しません。";
         }
 
         public async Task<bool> LoadTxAsync()
@@ -396,7 +414,6 @@ return true;
                 window.BaseSerialTx.Children.Clear();
                 window.BaseSerialTx.Children.Add(tx);
                 // ショートカット作成
-                TxShortcut.Clear();
                 foreach (var frame in TxFrames)
                 {
                     foreach (var fb in frame.Buffers)
@@ -408,12 +425,16 @@ return true;
                         });
                     }
                 }
+                if (TxShortcut.Count > 0)
+                {
+                    TxShortcutSelectedIndex.Value = 0;
+                }
             }
             else
             {
                 BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
             }
-            //
+            // Rx設定
             if (data.Comm.Rx.Count > 0)
             {
                 RxFrames = data.Comm.Rx;
@@ -431,20 +452,6 @@ return true;
             if (data.Comm.AutoTx.Count > 0)
             {
                 AutoTxJobs = data.Comm.AutoTx;
-                {
-                    // Binding先インスタンスを切り替えたため、再接続しないとGUIに反映されない
-                    // 新インスタンスにBinding設定
-                    var bind = new Binding("AutoTxJobs");
-                    window.AutoTxShortcut.SetBinding(ComboBox.ItemsSourceProperty, bind);
-                    AutoTxShortcutSelectedIndex.Value = 0;
-                    AutoTxShortcutSelectedIndex.ForceNotify();
-                    // AutoTxイベント購読
-                    AutoTxJobs.ObserveElementObservableProperty(x => x.IsActive).Subscribe(x =>
-                    {
-                        // 
-                        AutoTxShortcutSelectedIndex.ForceNotify();
-                    });
-                }
                 // GUI作成
                 var autotx = Comm.AutoTxGui.Make(data);
                 // GUI反映
@@ -453,10 +460,28 @@ return true;
             }
             else
             {
+                AutoTxJobs = EmptyAutoTxJobs;
                 BaseSerialAutoTxMsg.Value = "有効な自動送信設定が存在しません。";
             }
+            BindAutoTxShortcut();
 
             return true;
+        }
+
+        private void BindAutoTxShortcut()
+        {
+            // Binding先インスタンスを切り替えたため、再接続しないとGUIに反映されない
+            // 新インスタンスにBinding設定
+            var bind = new Binding("AutoTxJobs");
+            window.AutoTxShortcut.SetBinding(ComboBox.ItemsSourceProperty, bind);
+            AutoTxShortcutSelectedIndex.Value = 0;
+            AutoTxShortcutSelectedIndex.ForceNotify();
+            // AutoTxイベント購読
+            AutoTxJobs.ObserveElementObservableProperty(x => x.IsActive).Subscribe(x =>
+            {
+                // 
+                AutoTxShortcutSelectedIndex.ForceNotify();
+            });
         }
 
         private void InitComm()

@@ -45,17 +45,9 @@ namespace SerialDebugger
                 await Script.Interpreter.Init();
                 // 通信定義GUI作成
                 await vm.InitAsync();
-
-                //await Script.Interpreter.Engine.EvalTest();
-                //await Script.Interpreter.Engine.EvalTest();
-                //await Script.Interpreter.Engine.EvalInit("key = i * 2 + (i%2 == 0 ? 0x80 : 0x00);   value = key + ' h';");
-                //var result = await Script.Interpreter.Engine.EvalExec(0);
-                //result = await Script.Interpreter.Engine.EvalExec(1);
-                //result = await Script.Interpreter.Engine.EvalExec(2);
             }
             catch (Exception ex)
             {
-                //MessageBox.Show($"init exception: {ex.Message}");
                 Logger.AddException(ex, "初期化時エラー:");
             }
         }

@@ -51,10 +51,14 @@ namespace SerialDebugger.Settings
             //Select(0);
         }
 
-        static public async Task LoadAsync(SettingInfo info)
+        static public async Task<bool> LoadAsync(SettingInfo info)
         {
-            await Impl.LoadAsync(info);
-            Data = info;
+            var result = await Impl.LoadAsync(info);
+            if (result)
+            {
+                Data = info;
+            }
+            return result;
         }
 
         static public void Select(int idx)
@@ -147,18 +151,28 @@ namespace SerialDebugger.Settings
             info.Log.AnalyzeJson(json.Log);
         }
 
-        public async Task LoadAsync(SettingInfo info)
+        public async Task<bool> LoadAsync(SettingInfo info)
         {
-            // jsonファイル解析
-            using (var stream = new FileStream(info.FilePath, FileMode.Open, FileAccess.Read))
+            try
             {
-                // jsonファイルパース
-                var json = await JsonSerializer.DeserializeAsync<Json.Settings>(stream, jsonOptions);
-                // json読み込み
-                await MakeSettingAsync(json, info);
+                // jsonファイル解析
+                using (var stream = new FileStream(info.FilePath, FileMode.Open, FileAccess.Read))
+                {
+                    // jsonファイルパース
+                    var json = await JsonSerializer.DeserializeAsync<Json.Settings>(stream, jsonOptions);
+                    // json読み込み
+                    await MakeSettingAsync(json, info);
+                }
+                //
+                info.IsLoaded = true;
+                return true;
             }
-            //
-            info.IsLoaded = true;
+            catch (Exception ex)
+            {
+                info.Comm.ClearDict();
+                Logger.AddException(ex, "設定ファイル読み込みエラー:");
+            }
+            return false;
         }
 
         private async Task MakeSettingAsync(Json.Settings json, SettingInfo info)

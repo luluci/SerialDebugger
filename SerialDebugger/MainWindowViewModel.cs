@@ -307,19 +307,15 @@ return true;
             // 有効な設定ファイルを読み込んでいたら
             if (Settings.Count > 0)
             {
+                // 最初に取得したファイルを読み込む
                 SettingsSelectIndex.Value = 0;
-                try
+                var result = await LoadTxAsync();
+                if (!result)
                 {
-                    await LoadTxAsync();
-                }
-                catch (Exception ex)
-                {
-                    Settings[SettingsSelectIndex.Value].Comm.ClearDict();// 暫定
                     WindowTitle.Value = $"{ToolTitle}";
                     BaseSerialTxMsg.Value = "有効な送信設定が存在しません。";
                     BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
                     BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
-                    Logger.AddException(ex, "設定ファイル読み込みエラー:");
                 }
             }
             else
@@ -365,7 +361,7 @@ return true;
             }
         }
 
-        public async Task LoadTxAsync()
+        public async Task<bool> LoadTxAsync()
         {
             var data = Settings[SettingsSelectIndex.Value];
             // ログ設定更新
@@ -373,7 +369,11 @@ return true;
             // 未ロードファイルならロード処理
             if (!data.IsLoaded)
             {
-                await Setting.LoadAsync(data);
+                var result = await Setting.LoadAsync(data);
+                if (!result)
+                {
+                    return false;
+                }
             }
             // Script
             Script.Interpreter.Engine.Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
@@ -455,6 +455,8 @@ return true;
             {
                 BaseSerialAutoTxMsg.Value = "有効な自動送信設定が存在しません。";
             }
+
+            return true;
         }
 
         private void InitComm()

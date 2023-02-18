@@ -446,7 +446,7 @@ return true;
             }
             else
             {
-                BaseSerialRxMsg.Value = "有効な送信設定が存在しません。";
+                BaseSerialRxMsg.Value = "有効な受信設定が存在しません。";
             }
             // AutoTx設定
             if (data.Comm.AutoTx.Count > 0)

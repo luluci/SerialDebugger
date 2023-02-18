@@ -52,16 +52,14 @@ namespace SerialDebugger.Script
             View = new View();
             WebView2 = View.WebView2;
 
-            // WebView2
-            var pos_left = View.Left;
-            var dispWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
-            View.Left = dispWidth + 1;
+            // Microsoft.Web.WebView2.Wpf.WebView2 は画面表示を行わないと初期化が始まらず EnsureCoreWebView2Async() が終了しない。
+            // ここで一度画面表示を行い、すぐ隠す。画面がちらつくので画面外で実施する。
+            var dispHeight = System.Windows.SystemParameters.PrimaryScreenHeight;
+            View.Top = dispHeight + 1;
             View.Show();
             View.Hide();
 
-            //string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-            //string SettingPath = rootPath + @"\Script";
-            //WebView2.Source = new Uri($@"{SettingPath}\index.html");
+            // 
             WebView2.CoreWebView2InitializationCompleted += webView2CoreWebView2InitializationCompleted;
 
             json_opt = new JsonSerializerOptions
@@ -87,8 +85,8 @@ namespace SerialDebugger.Script
             // WebView2初期化
             await WebView2.EnsureCoreWebView2Async();
 
-            //
-            View.Left = double.NaN;
+            // 初期化のために座標を画面外に設定していたのを初期値に戻す。
+            View.Top = double.NaN;
 
             // ツール側インターフェース登録
             // Commオブジェクト登録

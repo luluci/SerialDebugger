@@ -38,11 +38,6 @@ namespace SerialDebugger.Script
             if (window.DataContext is IClosing)
                 e.Cancel = (window.DataContext as IClosing).OnClosing();
         }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            int i = 0;
-            i++;
-        }
+        
     }
 }

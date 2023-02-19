@@ -61,28 +61,29 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 
 ---
 
-    {
-        "name", "Setting Name",
-        "log": {
-            ...
-        },
-        "output": {
-            ...
-        },
-        "gui": {
-            ...
-        },
-        "serial": {
-            ...
-        },
-        "script": {
-            ...
-        },
-        "comm": {
-            ...
-        }
-    }
-
+```json
+{
+	"name": "Setting Name",
+	"log": {
+		...
+	},
+	"output": {
+		...
+	},
+	"gui": {
+		...
+	},
+	"serial": {
+		...
+	},
+	"script": {
+		...
+	},
+	"comm": {
+		...
+	}
+}
+```
 
 ### name
 
@@ -108,18 +109,20 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 
 ---
 
-	"serial": {
-		"baudrate": 9600,
-		"data_bits": 8,
-		"parity": "None",
-		"stop_bits": 0,
-		"rts_cts": false,
-		"xon_xoff": false,
-		"dtr_str": false,
-		"tx_timeout": 500,
-		"rx_timeout": 500,
-		"polling_cycle": 100
-	}
+```json
+"serial": {
+	"baudrate": 9600,
+	"data_bits": 8,
+	"parity": "None",
+	"stop_bits": 0,
+	"rts_cts": false,
+	"xon_xoff": false,
+	"dtr_str": false,
+	"tx_timeout": 500,
+	"rx_timeout": 500,
+	"polling_cycle": 100
+}
+```
 
 ### script
 
@@ -129,10 +132,11 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 
 ---
 
-	"script": [
-		"<JavaScriptファイル>.js"
-	]
-
+```json
+"script": [
+	"<JavaScriptファイル>.js"
+]
+```
 
 ### comm
 
@@ -145,18 +149,20 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 
 ---
 
-	"comm": {
-		"display_id": false
-		"tx": {
-			...
-		},
-		"rx": {
-			...
-		},
-		"auto_tx": {
-			...
-		}
+```json
+"comm": {
+	"display_id": false,
+	"tx": {
+		...
+	},
+	"rx": {
+		...
+	},
+	"auto_tx": {
+		...
 	}
+}
+```
 
 #### tx
 
@@ -172,21 +178,23 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 
 ---
 
-	"tx": {
-		"invert_bit": false,
-		"frames": [
-			{
-				"name": "frame_name",
-				"as_ascii", false,
-				"fields": [ ... ],
-				"backup_buffer_size", 1,
-				"backup_buffers": [ ... ]
-			},
-			{
-				...
-			}
-		]
-	}
+```json
+"tx": {
+	"invert_bit": false,
+	"frames": [
+		{
+			"name": "frame_name",
+			"as_ascii": false,
+			"fields": [ ... ],
+			"backup_buffer_size": 1,
+			"backup_buffers": [ ... ]
+		},
+		{
+			...
+		}
+	]
+}
+```
 
 ---
 
@@ -203,32 +211,34 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 | max | number | (不使用)
 | type | string | field入力方式指定。type指定に対応した unit/dict/time/script/checksum/char/string のいずれかを指定する。詳細は後述。
 
-	{
-		"name": "field_name",
-		"bit_size": 8,
-		"multi_name": [
-			{
-				"name": "inner_name_1",
-				"bit_size": 3,
-			},
-			{
-				"name": "inner_name_2",
-				"bit_size": 5,
-			}
-		]
-		"value": 8,
-		"min": 8,
-		"max": 8,
-		"base": 8,
-		"type": "Fix",
-		"unit": { ... },
-		"dict": [ ... ],
-		"time": { ... },
-		"script": { ... },
-		"checksum": { ... },
-		"char": "C",
-		"string": "String"
-	}
+```json
+{
+	"name": "field_name",
+	"bit_size": 8,
+	"multi_name": [
+		{
+			"name": "inner_name_1",
+			"bit_size": 3,
+		},
+		{
+			"name": "inner_name_2",
+			"bit_size": 5,
+		}
+	],
+	"value": 8,
+	"min": 8,
+	"max": 8,
+	"base": 8,
+	"type": "Fix",
+	"unit": { ... },
+	"dict": [ ... ],
+	"time": { ... },
+	"script": { ... },
+	"checksum": { ... },
+	"char": "C",
+	"string": "String"
+}
+```
 
 ###### field.Fix
 
@@ -238,16 +248,18 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 ----|----|---- 
 | type | string | "Fix" or 省略
 
-	{
-		"name": "field_name", "bit_size": 8, "value": 8
-	}
-
+```json
+{
+	"name": "field_name", "bit_size": 8, "value": 8
+}
+```
 or
-
-	{
-		"name": "field_name", "bit_size": 8, "value": 8,
-		"type": "Edit"
-	}
+```json
+{
+	"name": "field_name", "bit_size": 8, "value": 8,
+	"type": "Edit"
+}
+```
 
 ###### field.Edit
 
@@ -257,10 +269,12 @@ or
 ----|----|---- 
 | type | string | "Edit"
 
-	{
-		"name": "field_name", "bit_size": 8, "value": 8,
-		"type": "Edit"
-	}
+```json
+{
+	"name": "field_name", "bit_size": 8, "value": 8,
+	"type": "Edit"
+}
+```
 
 ###### field.Unit
 
@@ -281,27 +295,30 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 disp_strをコンボボックス上の表示とする。valueが対応する設定値となる。
 
-
-	double value = value_min;
-	double disp = disp_min;
-	for (; disp < disp_max && value < (field最大値); disp += lsb, value++) {
-		disp_str = disp.ToString(format) + unit;
-	}
+```cs
+double value = value_min;
+double disp = disp_min;
+for (; disp < disp_max && value < (field最大値); disp += lsb, value++) {
+	disp_str = disp.ToString(format) + unit;
+}
+```
 
 ---
 
-	{
-		"name": "field_name", "bit_size": 8, "value": 8,
-		"type": "Unit",
-		"unit": {
-			"unit": " Hz",
-			"lsb": 0.1,
-			"disp_max": 100.0,
-			"disp_min": 50.0,
-			"value_min": 50.0,
-			"format": "F1"
-		}
+```json
+{
+	"name": "field_name", "bit_size": 8, "value": 8,
+	"type": "Unit",
+	"unit": {
+		"unit": " Hz",
+		"lsb": 0.1,
+		"disp_max": 100.0,
+		"disp_min": 50.0,
+		"value_min": 50.0,
+		"format": "F1"
 	}
+}
+```
 
 ↓
 
@@ -328,18 +345,19 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ---
 
-	{
-		"name": "field_name",
-		"bit_size": 4,
-		"value": 0,
-		"type": "Dict",
-		"dict": [
-			{ "value": 0, "disp": "設定0" },
-			{ "value": 1, "disp": "設定1" },
-			{ "value": 2, "disp": "設定2" }
-		]
-	}
-
+```json
+{
+	"name": "field_name",
+	"bit_size": 4,
+	"value": 0,
+	"type": "Dict",
+	"dict": [
+		{ "value": 0, "disp": "設定0" },
+		{ "value": 1, "disp": "設定1" },
+		{ "value": 2, "disp": "設定2" }
+	]
+}
+```
 
 ###### field.Time
 
@@ -351,6 +369,10 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ###### field.Script
 
+
+#### rx
+
+#### auto_tx
 
 
 ### gui
@@ -378,32 +400,34 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ---
 
-	"gui": {
-		"window": {
-			"width": number,
-			"height": number
-		},
-		"column_order": {
-			"byte_index": 0,
-			"bit_index": 1,
-			"field_value": 2,
-			"field_name": 3,
-			"field_input": 4,
-			"tx_bytes": 5,
-			"spacer": 6,
-			"tx_buffer": 7
-		},
-		"column_width": {
-			"byte_index": 25,
-			"bit_index": 25,
-			"field_value": 40,
-			"field_name": 80,
-			"field_input": 80,
-			"tx_bytes": 50,
-			"spacer": 10,
-			"tx_buffer": 80
-        }
+```json
+"gui": {
+	"window": {
+		"width": 400,
+		"height": 400
+	},
+	"column_order": {
+		"byte_index": 0,
+		"bit_index": 1,
+		"field_value": 2,
+		"field_name": 3,
+		"field_input": 4,
+		"tx_bytes": 5,
+		"spacer": 6,
+		"tx_buffer": 7
+	},
+	"column_width": {
+		"byte_index": 25,
+		"bit_index": 25,
+		"field_value": 40,
+		"field_name": 80,
+		"field_input": 80,
+		"tx_bytes": 50,
+		"spacer": 10,
+		"tx_buffer": 80
 	}
+}
+```
 
 ### log
 
@@ -440,41 +464,42 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ---
 
-    "output": {
-        "drag_drop": {  
-            "body": {
-                "begin":    "string",
-                "end":      "string"
-            },
-            "item": {
-                "begin":    "string",
-                "end":      "string"
-            },
-            "frame_name": {
-                "begin":    "string",
-                "end":      "string"
-            },
-            "field_name": {
-                "begin":    "string",
-                "end":      "string"
-            },
-            "field_value": {
-                "begin":    "string",
-                "end":      "string"
-            },
-            "field_inner_name": {
-                "begin":    "string",
-                "end":      "string"
-                    
-            },
-            "field_inner_value": {
-                "begin":    "string",
-                "end":      "string"
-                    
-            },
-            "value_format": "Input"
-        }
-    }
-
+```json
+"output": {
+	"drag_drop": {  
+		"body": {
+			"begin":    "string",
+			"end":      "string"
+		},
+		"item": {
+			"begin":    "string",
+			"end":      "string"
+		},
+		"frame_name": {
+			"begin":    "string",
+			"end":      "string"
+		},
+		"field_name": {
+			"begin":    "string",
+			"end":      "string"
+		},
+		"field_value": {
+			"begin":    "string",
+			"end":      "string"
+		},
+		"field_inner_name": {
+			"begin":    "string",
+			"end":      "string"
+				
+		},
+		"field_inner_value": {
+			"begin":    "string",
+			"end":      "string"
+				
+		},
+		"value_format": "Input"
+	}
+}
+```
 
 

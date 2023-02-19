@@ -26,8 +26,6 @@ namespace SerialDebugger.Settings
             // 自動送信
             [JsonPropertyName("auto_tx")]
             public CommAutoTx AutoTx { get; set; }
-
-            // rx_autoresp
         }
 
         public class CommAutoTx

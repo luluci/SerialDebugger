@@ -17,6 +17,11 @@ namespace SerialDebugger.Comm
         public int Pos { get; set; }
         public bool IsActive { get; set; }
 
+        // Script
+        // 受信解析開始時スクリプト
+        public string RxBeginScript { get; set; } = string.Empty;
+        public bool HasRxBeginScript { get; set; } = false;
+
         public RxAnalyzer()
         {
             Rules = new List<RxAnalyzeRule>();
@@ -24,7 +29,40 @@ namespace SerialDebugger.Comm
             IsActive = true;
         }
 
-        public bool Match(byte data)
+        public void Build()
+        {
+            // Rulesの必要な情報を構築
+            // Script/RxBeginをまとめて実行するスクリプト文字列を作成
+            var sb_script = new StringBuilder();
+            foreach (var rule in Rules)
+            {
+                switch (rule.Type)
+                {
+                    case RxAnalyzeRuleType.Script:
+                        if (!Object.ReferenceEquals(rule.RxBegin, string.Empty))
+                        {
+                            sb_script.AppendLine($"{rule.RxBegin};");
+                        }
+                        break;
+
+                    default:
+                        // none
+                        break;
+                }
+            }
+            // Script
+            if (sb_script.Length > 0)
+            {
+                RxBeginScript = $@"
+(() => {{
+    {sb_script.ToString()}
+}})();
+";
+                HasRxBeginScript = true;
+            }
+        }
+
+        public async Task<bool> Match(byte data)
         {
             if (Rules.Count <= Pos)
             {
@@ -55,9 +93,7 @@ namespace SerialDebugger.Comm
                         return false;
 
                     case RxAnalyzeRuleType.Script:
-                        // 未実装: 常に失敗
-                        IsActive = false;
-                        return false;
+                        return await MatchScript(rule, data);
 
                     case RxAnalyzeRuleType.ActivateAutoTx:
                         match = MatchActivateAutoTx(rule);
@@ -135,6 +171,45 @@ namespace SerialDebugger.Comm
                 return false;
             }
 
+        }
+
+        private async Task<bool> MatchScript(RxAnalyzeRule rule, byte data)
+        {
+            var result = false;
+            var temp = Script.Interpreter.Engine.Comm.Rx;
+
+            // WebView2はUIスレッドからしか実行できないのでInvokeする
+            Script.Interpreter.Engine.Comm.Rx.Data = data;
+            Script.Interpreter.Engine.Comm.Rx.Result = Script.CommRxFramesIf.MatchFailed;
+            await Dispatcher.InvokeAsync((Action)(async () => {
+                Script.Interpreter.Engine.Comm.Rx.Sync = false;
+                await Script.Interpreter.Engine.ExecuteScriptAsync(rule.RxRecieved);
+                Script.Interpreter.Engine.Comm.Rx.Sync = true;
+            }));
+            // Invokeが完了するまで待機する
+            await Task.Run(async () =>
+            {
+                while (!Script.Interpreter.Engine.Comm.Rx.Sync)
+                {
+                    await Task.Delay(10);
+                }
+            });
+
+            switch (Script.Interpreter.Engine.Comm.Rx.Result)
+            {
+                case Script.CommRxFramesIf.MatchProgress:
+                    // 
+                    break;
+                case Script.CommRxFramesIf.MatchSuccess:
+                    result = true;
+                    break;
+                case Script.CommRxFramesIf.MatchFailed:
+                    //
+                    IsActive = false;
+                    break;
+            }
+
+            return result;
         }
 
         private bool MatchActivateAutoTx(RxAnalyzeRule rule)

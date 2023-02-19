@@ -35,7 +35,8 @@ namespace SerialDebugger.Comm
         // Timeout
         public int Msec { get; set; }
         // Script
-        public string Script { get; set; }
+        public string RxBegin { get; set; }
+        public string RxRecieved { get; set; }
         // Activate AutoTx
         public string AutoTxJobName { get; set; }
         public int AutoTxJobIndex { get; set; }

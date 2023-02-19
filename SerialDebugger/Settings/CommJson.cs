@@ -166,8 +166,11 @@ namespace SerialDebugger.Settings
             public int Msec { get; set; } = -1;
 
             // Script
-            [JsonPropertyName("script")]
-            public string Script { get; set; } = string.Empty;
+            [JsonPropertyName("rx_begin")]
+            public string RxBegin { get; set; } = string.Empty;
+
+            [JsonPropertyName("rx_recived")]
+            public string RxRecieved { get; set; } = string.Empty;
 
             // Activate
             [JsonPropertyName("auto_tx_job")]

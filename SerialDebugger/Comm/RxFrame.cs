@@ -187,10 +187,10 @@ namespace SerialDebugger.Comm
                                     throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Script,Activateはバイト境界に配置してください。");
                                 }
                                 // Rule追加
-                                var rule = new RxAnalyzeRule(match.Script);
+                                var rule = new RxAnalyzeRule(Id, match.RxBegin, match.RxRecieved);
                                 pattern.Analyzer.Rules.Add(rule);
                                 // Disp
-                                match.Disp.Value = $"Script[{match.Script}]";
+                                match.Disp.Value = $"Script[{match.RxRecieved}]";
                             }
                             break;
 
@@ -280,6 +280,9 @@ namespace SerialDebugger.Comm
                 {
                     DispMaxLength = pattern.Analyzer.Rules.Count;
                 }
+
+                // Analyzer構築
+                pattern.Analyzer.Build();
             }
 
         }
@@ -299,8 +302,9 @@ namespace SerialDebugger.Comm
             var chars = new char[Fields.Count];
             var prev_char_id = -1;
             var chars_size = 0;
-            foreach (var field in Fields)
+            for (int i = 0; i < Fields.Count; i++)
             {
+                var field = Fields[i];
                 // buffからfieldに該当する分のデータを抽出
                 bit_size = field.BitPos + field.BitSize;
                 data = GetInt64(buff, length, field.BytePos, bit_size);
@@ -362,9 +366,13 @@ namespace SerialDebugger.Comm
                 }
 
                 // 該当するmatchを取得
-                while (!Object.ReferenceEquals(pattern.Matches[idx].FieldRef, field))
+                while (idx < pattern.Matches.Count && !Object.ReferenceEquals(pattern.Matches[idx].FieldRef, field))
                 {
                     idx++;
+                }
+                if (idx >= pattern.Matches.Count)
+                {
+                    break;
                 }
                 match = pattern.Matches[idx];
                 switch (match.Type)
@@ -378,8 +386,20 @@ namespace SerialDebugger.Comm
                         match.Disp.Value = str;
                         break;
 
-                    case RxMatchType.Timeout:
                     case RxMatchType.Script:
+                        i += Script.Interpreter.Engine.Comm.Rx.Log[Id].Count;
+                        for (int j = 0; j < Script.Interpreter.Engine.Comm.Rx.Log[Id].Count; j++)
+                        {
+                            // separator
+                            if (!is_first)
+                            {
+                                log.Append(", ");
+                            }
+                            log.Append(Script.Interpreter.Engine.Comm.Rx.Log[Id][j]);
+                        }
+                        break;
+
+                    case RxMatchType.Timeout:
                     default:
                         // 表示なし
                         break;

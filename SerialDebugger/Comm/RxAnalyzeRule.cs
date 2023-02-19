@@ -24,7 +24,10 @@ namespace SerialDebugger.Comm
         public byte Value { get; set; }
         public byte Mask { get; set; }
         public int Timeout { get; set; }
-        public string Script { get; set; }
+
+        // Script
+        public string RxBegin { get; set; }
+        public string RxRecieved { get; set; }
 
         public RxAnalyzeRule(byte value, byte mask)
         {
@@ -50,11 +53,12 @@ namespace SerialDebugger.Comm
             Timeout = msec;
         }
 
-        public RxAnalyzeRule(string script)
+        public RxAnalyzeRule(int frame_id, string begin, string recieved)
         {
             // Script
             Type = RxAnalyzeRuleType.Script;
-            Script = script;
+            RxBegin = $"{begin}({frame_id})";
+            RxRecieved = $"{recieved}({frame_id})";
         }
 
         public RxAnalyzeRule(RxMatch match)

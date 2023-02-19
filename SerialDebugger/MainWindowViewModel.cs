@@ -540,7 +540,7 @@ return true;
                 while (IsRxRunning)
                 {
                     // 受信開始前に初期化
-                    rxAnalyzer.Init();
+                    await rxAnalyzer.Init();
                     // 受信解析, 一連の受信シーケンスが完了するまでawait
                     // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
                     await rxAnalyzer.Run(serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);

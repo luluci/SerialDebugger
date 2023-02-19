@@ -333,7 +333,7 @@ namespace SerialDebugger.Settings
                 throw new Exception($"matches[{id}]: 不正なtype指定です: {match.Type}");
             }
 
-            if (!Object.ReferenceEquals(match.Script, string.Empty))
+            if (!Object.ReferenceEquals(match.RxBegin, string.Empty) || !Object.ReferenceEquals(match.RxRecieved, string.Empty))
             {
                 return RxMatchType.Script;
             }
@@ -394,15 +394,18 @@ namespace SerialDebugger.Settings
 
         private RxMatch MakeRxMatchScript(int id, Json.CommRxMatch match)
         {
-            if (Object.ReferenceEquals(match.Script, string.Empty))
+            // Beginは必須ではない
+            // Recievedは必須
+            if (Object.ReferenceEquals(match.RxRecieved, string.Empty))
             {
-                throw new Exception($"matches[{id}]: 不正なscript指定です: {match.Script}");
+                throw new Exception($"matches[{id}]: 不正なscript指定です: {match.RxRecieved}");
             }
 
             return new RxMatch
             {
                 Type = RxMatchType.Script,
-                Script = match.Script,
+                RxBegin = match.RxBegin,
+                RxRecieved = match.RxRecieved,
             };
         }
 

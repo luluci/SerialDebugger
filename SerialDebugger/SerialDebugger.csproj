@@ -87,6 +87,9 @@
     <Compile Include="Comm\FieldValue.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Script\Comm.cs" />
+    <Compile Include="Script\CommAutoTx.cs" />
+    <Compile Include="Script\CommRx.cs" />
+    <Compile Include="Script\CommTx.cs" />
     <Compile Include="Script\Script.cs" />
     <Compile Include="Script\Settings.cs" />
     <Compile Include="Script\View.xaml.cs">

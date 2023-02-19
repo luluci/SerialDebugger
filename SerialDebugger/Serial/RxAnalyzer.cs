@@ -85,7 +85,7 @@ namespace SerialDebugger.Serial
             MatchResultPos = 0;
         }
 
-        public void Init()
+        public async Task Init()
         {
             // 解析ルール初期化
             // 解析
@@ -98,6 +98,11 @@ namespace SerialDebugger.Serial
                         var analyzer = pattern.Analyzer;
                         analyzer.Pos = 0;
                         analyzer.IsActive = true;
+                        // Script初期化
+                        if (analyzer.HasRxBeginScript)
+                        {
+                            await Script.Interpreter.Engine.ExecuteScriptAsync(analyzer.RxBeginScript);
+                        }
                     }
                 }
             }
@@ -106,6 +111,8 @@ namespace SerialDebugger.Serial
             Result.RxBuffTgtPos = 0;
             //
             MatchResultPos = 0;
+            //
+            Script.Interpreter.Engine.Comm.Rx.Init();
         }
 
         public Task Run(int timeout, int polling, CancellationToken ct)
@@ -173,7 +180,7 @@ namespace SerialDebugger.Serial
                         var len = serial.Read(Result.RxBuff, Result.RxBuffOffset, RxData.BuffSize - Result.RxBuffOffset);
                         Result.RxBuffOffset += len;
                         // 受信解析
-                        if (Analyze())
+                        if (await Analyze())
                         {
                             Result.Type = RxDataType.Match;
                             Result.TimeStamp = endTimer.GetTime();
@@ -205,7 +212,7 @@ namespace SerialDebugger.Serial
             HasRecieve = true;
         }
 
-        private bool Analyze()
+        private async Task<bool> Analyze()
         {
             bool result = false;
 
@@ -228,7 +235,7 @@ namespace SerialDebugger.Serial
                             var analyzer = pattern.Analyzer;
                             if (analyzer.IsActive)
                             {
-                                if (analyzer.Match(ch))
+                                if (await analyzer.Match(ch))
                                 {
                                     // パターンマッチ成功ならマッチしたインスタンスを登録
                                     MatchResult[MatchResultPos].FrameId = frame.Id;

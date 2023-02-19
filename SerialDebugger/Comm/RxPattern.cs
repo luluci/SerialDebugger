@@ -42,9 +42,6 @@ namespace SerialDebugger.Comm
             Analyzer = new RxAnalyzer();
         }
 
-
-
-
         #region IDisposable Support
         private CompositeDisposable Disposables { get; } = new CompositeDisposable();
 

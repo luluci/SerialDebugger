@@ -518,7 +518,7 @@ return true;
                 serialPort = serialSetting.vm.GetSerialPort();
                 serialPort.Open();
                 // 解析クラス初期化
-                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames, Setting.Data.Comm.RxMultiMatch, Setting.Data.Comm.RxInvertBit);
+                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames, Setting.Data.Comm.RxMultiMatch, Setting.Data.Comm.RxInvertBit, Setting.Data.Comm.RxHasScriptMatch);
                 // Script
                 Script.Interpreter.Engine.Comm.Init(rxAnalyzer);
                 // COM切断を有効化

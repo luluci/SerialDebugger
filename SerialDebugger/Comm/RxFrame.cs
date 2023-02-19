@@ -33,6 +33,8 @@ namespace SerialDebugger.Comm
 
         public ReactiveCollection<RxPattern> Patterns { get; set; }
 
+        public bool HasScriptMatch { get; set; } = false;
+
         public RxFrame(int id, string name)
         {
             // 基本情報
@@ -181,6 +183,7 @@ namespace SerialDebugger.Comm
 
                         case RxMatchType.Script:
                             {
+                                HasScriptMatch = true;
                                 // 1frameの途中で時間待ちをできるように1バイト境界に配置を前提とする。
                                 if (bit_pos > 0)
                                 {
@@ -387,6 +390,7 @@ namespace SerialDebugger.Comm
                         break;
 
                     case RxMatchType.Script:
+                        // Scriptでマッチした分をログに出力
                         i += Script.Interpreter.Engine.Comm.Rx.Log[Id].Count;
                         for (int j = 0; j < Script.Interpreter.Engine.Comm.Rx.Log[Id].Count; j++)
                         {

@@ -34,6 +34,7 @@ namespace SerialDebugger.Settings
         public Dictionary<string, RxPatternInfo> RxPatternDict { get; set; }
         public bool RxInvertBit { get; set; }
         public bool RxMultiMatch { get; set; }
+        public bool RxHasScriptMatch { get; set; } = false;
         // 自動送信
         public ReactiveCollection<AutoTxJob> AutoTx { get; set; }
         public Dictionary<string, int> AutoTxJobNameDict { get; set; }
@@ -235,6 +236,10 @@ namespace SerialDebugger.Settings
                         i++;
                     }
                     f.BuildPattern();
+                    if (f.HasScriptMatch)
+                    {
+                        RxHasScriptMatch = true;
+                    }
                 }
 
                 return f;

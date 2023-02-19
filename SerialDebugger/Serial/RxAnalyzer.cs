@@ -48,18 +48,20 @@ namespace SerialDebugger.Serial
         public IList<Comm.RxFrame> RxFramesRef;
         bool MultiMatch;
         bool InvertBit;
+        bool HasScriptMatch;
 
         // 解析結果
         public RxData Result { get; set; }
         public List<RxMatchResult> MatchResult;
         public int MatchResultPos { get; set; }
 
-        public RxAnalyzer(SerialPort serial, IList<Comm.RxFrame> rxFrames, bool multiMatch, bool invertBit)
+        public RxAnalyzer(SerialPort serial, IList<Comm.RxFrame> rxFrames, bool multiMatch, bool invertBit, bool hasScript)
         {
             this.serial = serial;
             RxFramesRef = rxFrames;
             MultiMatch = multiMatch;
             InvertBit = invertBit;
+            HasScriptMatch = hasScript;
 
             // 受信ハンドラ登録
             HasRecieve = false;
@@ -112,7 +114,10 @@ namespace SerialDebugger.Serial
             //
             MatchResultPos = 0;
             //
-            Script.Interpreter.Engine.Comm.Rx.Init();
+            if (HasScriptMatch)
+            {
+                Script.Interpreter.Engine.Comm.Rx.Init();
+            }
         }
 
         public Task Run(int timeout, int polling, CancellationToken ct)

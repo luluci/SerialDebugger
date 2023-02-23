@@ -66,7 +66,8 @@ namespace SerialDebugger
         public ReactivePropertySlim<int> AutoTxShortcutSelectedIndex { get; set; }
         public ReactivePropertySlim<string> AutoTxShortcutButtonDisp { get; set; }
         public ReactiveCommand OnClickAutoTxShortcut { get; set; }
-
+        // Script
+        public ReactiveCommand OnClickOpenScript { get; set; }
         // Log
         public ReactiveCollection<string> Log { get; set; }
         // ベースGUI
@@ -236,7 +237,15 @@ namespace SerialDebugger
                     }
                 })
                 .AddTo(Disposables);
-            
+
+            // Script
+            OnClickOpenScript = new ReactiveCommand();
+            OnClickOpenScript.Subscribe((x)=>
+            {
+                Script.Interpreter.Engine.ShowView(window);
+            })
+            .AddTo(Disposables);
+
             // test
             OnClickTestSend = new ReactiveCommand();
             OnClickTestSend.Subscribe(async (x) =>
@@ -265,7 +274,6 @@ return true;
                         int i;
                         i = 0;
                         i++;
-                        Script.Interpreter.Engine.ShowView();
                         await Task.Delay(1);
                     }
                     catch (Exception e)

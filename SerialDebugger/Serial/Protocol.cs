@@ -158,6 +158,7 @@ namespace SerialDebugger.Serial
 
         public void Stop()
         {
+            // 通信終了通知
             CancelTokenSource.Cancel();
         }
 
@@ -165,7 +166,7 @@ namespace SerialDebugger.Serial
         public async Task Init()
         {
             // 解析ルール初期化
-            // 解析
+            // 解析状況をリセットする
             foreach (var frame in RxFrames)
             {
                 foreach (var pattern in frame.Patterns)
@@ -175,7 +176,7 @@ namespace SerialDebugger.Serial
                         var analyzer = pattern.Analyzer;
                         analyzer.Pos = 0;
                         analyzer.IsActive = true;
-                        // Script初期化
+                        // 受信解析Script初期設定
                         if (analyzer.HasRxBeginScript)
                         {
                             await Script.Interpreter.Engine.ExecuteScriptAsync(analyzer.RxBeginScript);
@@ -186,9 +187,9 @@ namespace SerialDebugger.Serial
             // 受信バッファ初期化
             Result.RxBuffOffset = 0;
             Result.RxBuffTgtPos = 0;
-            //
+            // 結果初期化
             MatchResultPos = 0;
-            //
+            // Script I/F初期化
             if (HasScriptMatch)
             {
                 Script.Interpreter.Engine.Comm.Rx.Init();

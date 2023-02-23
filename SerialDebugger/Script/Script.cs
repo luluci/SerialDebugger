@@ -85,9 +85,6 @@ namespace SerialDebugger.Script
             // WebView2初期化
             await WebView2.EnsureCoreWebView2Async();
 
-            // 初期化のために座標を画面外に設定していたのを初期値に戻す。
-            View.Top = double.NaN;
-
             // ツール側インターフェース登録
             // Commオブジェクト登録
             WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
@@ -105,9 +102,13 @@ namespace SerialDebugger.Script
             (this as IDisposable)?.Dispose();
         }
 
-        public void ShowView()
+        public void ShowView(MainWindow window)
         {
-            View.Show();
+            if (!View.IsVisible)
+            {
+                View.Top = window.Top + 10;
+                View.Show();
+            }
         }
 
         public async Task<string> ExecuteScriptAsync(string script)

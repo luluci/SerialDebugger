@@ -42,6 +42,7 @@
                     <ComboBox x:Name="AutoTxShortcut" ItemsSource="{Binding AutoTxJobs}" DisplayMemberPath="Alias" SelectedIndex="{Binding AutoTxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
                     <Button Content="{Binding AutoTxShortcutButtonDisp.Value}" Command="{Binding OnClickAutoTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
                 </StackPanel>
+                <Button Content="Script" ToolTip="WebView2ウインドウを開く" Command="{Binding OnClickOpenScript}" Margin="10,5,0,0" Width="45" Height="20" />
                 <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}"  Margin="10,5,0,0" Width="80"/>
             </WrapPanel>
         </Grid>

@@ -1,5 +1,5 @@
 ﻿// C# 連携オブジェクト
-// C#内でWebView2初期化後にComm_Loaded()を呼び出して初期設定している。
+// C#内でWebView2初期化後にJavaScript初期設定を実施。
 // chrome.webview.hostObjects.*で直接参照すればいいが長くなるので。
 var Comm;
 var CommAsync;
@@ -7,8 +7,6 @@ var CommAsync;
 const Comm_Loaded = () => {
 	Comm = chrome.webview.hostObjects.sync.Comm;
     CommAsync = chrome.webview.hostObjects.Comm;
-
-    return true;
 }
 
 // ↑変更しないこと↑

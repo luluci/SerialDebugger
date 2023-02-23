@@ -43,6 +43,7 @@ namespace SerialDebugger.Script
         // WebView2用通信操作I/F
         public CommIf Comm { get; set; }
         public SettingsIf Settings { get; set; }
+        public UtilityIf Utility { get; set; }
         
         // Load済みScriptDict
         Dictionary<string, bool> LoadedScript;
@@ -72,6 +73,7 @@ namespace SerialDebugger.Script
             //
             Comm = new CommIf();
             Settings = new SettingsIf();
+            Utility = new UtilityIf();
             //
             LoadedScript = new Dictionary<string, bool>();
         }
@@ -87,11 +89,11 @@ namespace SerialDebugger.Script
 
             // ツール側インターフェース登録
             // Commオブジェクト登録
-            WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
+            WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
             WebView2.CoreWebView2.AddHostObjectToScript("Settings", Settings);
+            WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
             // デフォルトスクリプトをLoad
-            await RunScriptLoaded("Comm_Loaded()");
-            await RunScriptLoaded("Settings_Loaded()");
+            await RunScriptLoaded("csLoaded()");
 
             // JavaScript側からの呼び出し
             WebView2.WebMessageReceived += webView_WebMessageReceived;

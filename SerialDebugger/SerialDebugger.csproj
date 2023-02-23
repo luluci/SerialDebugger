@@ -92,6 +92,7 @@
     <Compile Include="Script\CommTx.cs" />
     <Compile Include="Script\Script.cs" />
     <Compile Include="Script\Settings.cs" />
+    <Compile Include="Script\Utility.cs" />
     <Compile Include="Script\View.xaml.cs">
       <DependentUpon>View.xaml</DependentUpon>
     </Compile>
@@ -197,6 +198,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Script\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Script\Utility.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

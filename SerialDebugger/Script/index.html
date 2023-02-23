@@ -2,12 +2,29 @@
 <html lang="ja">
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+	<!-- Utilityスクリプト定義ファイル -->
+	<script type="text/javascript" src="./Utility.js"></script>
 	<!-- Settings/Field/Script要素用スクリプト定義ファイル -->
 	<script type="text/javascript" src="./Settings.js"></script>
 	<!-- AutoTx/Rx Scriptノードからの通信データ操作用スクリプト定義ファイル -->
 	<script type="text/javascript" src="./Comm.js"></script>
 
     <script language="javascript" type="text/javascript">
+		// C#側からWebView2の初期化が完了したらJavaScriptの初期化としてコールされる
+		const csLoaded = () => {
+			try {
+				Utility_Loaded();
+				Settings_Loaded();
+				Comm_Loaded();
+			} catch (msg) {
+				chrome.webview.hostObjects.sync.Utility.Log(msg);
+				return false;
+			}
+			Utility.Log("<WebView2/JavaScript Loaded.>");
+			return true;
+		}
+		// ↑変更しないこと↑
+
 		const test_func = () => {
 			let hoge = "str";
 			//hoge.sonzai_sinai_kannsuu();

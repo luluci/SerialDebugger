@@ -186,6 +186,7 @@ namespace SerialDebugger.Script
                 case "Exec":
                     parts = $@"
 const exec_func = (i) => {{
+    let key; let value;
     {selecter.Script};
     return {{key: key, value: value}};
 }}

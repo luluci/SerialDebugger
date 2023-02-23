@@ -10,6 +10,7 @@
 	<script type="text/javascript" src="./Comm.js"></script>
 
     <script language="javascript" type="text/javascript">
+		// C# -> WebView2 Event Handler
 		// C#側からWebView2の初期化が完了したらJavaScriptの初期化としてコールされる
 		const csLoaded = () => {
 			try {
@@ -23,7 +24,8 @@
 			Utility.Log("<WebView2/JavaScript Loaded.>");
 			return true;
 		}
-		// ↑変更しないこと↑
+		// ↑ロジックを理解した上で変更すること↑
+
 
 		const test_func = () => {
 			let hoge = "str";

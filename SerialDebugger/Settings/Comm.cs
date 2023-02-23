@@ -1031,6 +1031,10 @@ namespace SerialDebugger.Settings
             {
                 throw new Exception($"fields[{id}]({field.Name}): type:TimeではTimeオブジェクトを指定してください。");
             }
+            if (time.Elapse <= 0.0)
+            {
+                throw new Exception($"fields[{id}]({field.Name}): Time: elapse({time.Elapse})は1以上を指定してください。");
+            }
             // Selecter作成
             var selecter = Field.MakeSelecterTime(time.Elapse, time.Begin, time.End, time.ValueMin);
             // Field生成

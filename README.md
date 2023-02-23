@@ -164,7 +164,7 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 }
 ```
 
-#### tx
+### tx
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -196,9 +196,7 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 }
 ```
 
----
-
-##### fields
+### fields
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -210,6 +208,8 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 | min | number | (不使用)
 | max | number | (不使用)
 | type | string | field入力方式指定。type指定に対応した unit/dict/time/script/checksum/char/string のいずれかを指定する。詳細は後述。
+
+---
 
 ```json
 {
@@ -240,13 +240,15 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 }
 ```
 
-###### field.Fix
+### field.Fix
 
 初期値で固定。
 
 | Setting | Format | Description |
 ----|----|---- 
 | type | string | "Fix" or 省略
+
+---
 
 ```json
 {
@@ -261,7 +263,7 @@ or
 }
 ```
 
-###### field.Edit
+### field.Edit
 
 テキストボックスでの設定値変更可能。
 
@@ -276,7 +278,7 @@ or
 }
 ```
 
-###### field.Unit
+### field.Unit
 
 unit設定から生成する入力値をコンボボックスから指定。  
 bit_sizeが2以上のときは直接編集するエディットボックスも表示する。
@@ -284,12 +286,13 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 | Setting | Format | Description |
 ----|----|---- 
 | type | string | "Unit"
-| unit | string | unitから生成する数値の接尾辞として付与する。
-| lsb | number | "lsb > 0" のときは "disp_max > disp_min" とすること。<br>"lsb < 0" のときは "disp_max < disp_min" とすること。<br>"lsb = 0" は設定不可。
-| disp_max | number |^
-| disp_min | number |^
-| value_min | number |^
-| format | string |^
+| unit | object | 
+| unit.unit | string | unitから生成する数値の接尾辞として付与する。
+| unit.lsb | number | "lsb > 0" のときは "disp_max > disp_min" とすること。<br>"lsb < 0" のときは "disp_max < disp_min" とすること。<br>"lsb = 0" は設定不可。
+| unit.disp_max | number |^
+| unit.disp_min | number |^
+| unit.value_min | number |^
+| unit.format | string |^
 
 ---
 
@@ -322,16 +325,18 @@ for (; disp < disp_max && value < (field最大値); disp += lsb, value++) {
 
 ↓
 
-	{
-		50: "50.0 Hz",
-		51: "50.1 Hz",
-		52: "50.2 Hz",
-			...
-		254: "70.4 Hz",
-		255: "70.5 Hz"
-	}
+```
+{
+	50: "50.0 Hz",
+	51: "50.1 Hz",
+	52: "50.2 Hz",
+		...
+	254: "70.4 Hz",
+	255: "70.5 Hz"
+}
+```
 
-###### field.Dict
+### field.Dict
 
 dict設定した値をコンボボックスから指定。  
 bit_sizeが2以上のときは直接編集するエディットボックスも表示する。
@@ -359,20 +364,215 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 }
 ```
 
-###### field.Time
+### field.Time
 
-###### field.Char
+time設定から生成する入力値をコンボボックスから指定。  
+bit_sizeが2以上のときは直接編集するエディットボックスも表示する。
 
-###### field.String
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Time"
+| time | object | 
+| time.elapse | number | 0.0より大きな値を指定すること。
+| time.begin | string | "HH:mm"のフォーマットで文字列で指定する。
+| time.end | string | "HH:mm"のフォーマットで文字列で指定する。
+| time.value_min | number | 
 
-###### field.Checksum
+---
 
-###### field.Script
+```json
+{
+	"name": "field_name",
+	"bit_size": 4,
+	"value": 0,
+	"type": "Time",
+	"time": {
+		"elapse": 10,
+		"begin": "10:00",
+		"end": "12:00",
+		"value_min": 10
+	}
+}
+```
+
+↓
+
+```
+{
+	10: "10:00",
+	11: "10:10",
+	12: "10:20",
+		...
+	21: "11:50",
+	22: "12:00"
+}
+```
+
+### field.Char
+
+テキストボックスで文字を入力する。
+
+| Setting | Format | Description |
+----|----|---- 
+| name | string | nameの指定が必須。Charでmulti_nameは指定不可。
+| bit_size | number | 強制的に8bitフィールドとする。省略可
+| type | string | "Char"
+| char | string | 任意の一文字。文字列で入力するが、先頭の一文字以外は無視する。
+
+---
+
+```json
+{
+	"name": "field_name",
+	"type": "Char", "char": "A"
+}
+```
+
+### field.String
+
+Charのシンタックスシュガー。stringで指定した分だけCharとして展開する。
+
+| Setting | Format | Description |
+----|----|---- 
+| name | string | nameの指定が必須。Charでmulti_nameは指定不可。
+| bit_size | number | 強制的に8bitフィールドとする。省略可
+| type | string | "String"
+| string | string | 文字列
+
+---
+
+```json
+{
+	"name": "str",
+	"type": "string", "char": "ABC"
+}
+```
+↓
+```json
+{ "name": "str[0]", "type": "Char", "char": "A" },
+{ "name": "str[1]", "type": "Char", "char": "B" },
+{ "name": "str[2]", "type": "Char", "char": "C" }
+```
+
+### field.Checksum
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Checksum"
+| checksum | object | 
+| checksum.begin | number | チェックサム計算範囲。バイト単位で指定。begin以上end以下の範囲でサムを取る。<br>省略時は0
+| checksum.end | number | 省略時は本fieldの手前までを計算範囲とする。checksumフィールドをまたいだ指定は不可。
+| checksum.method | string | "2compl" or "1compl" or "Sum" or 省略<br>2compl: 2の補数<br>1compl: 1の補数<br>Sum or 省略時: サムのみ
+
+---
+
+```json
+{
+	"name": "Checksum",
+	"bit_size": 8,
+	"value": 0,
+	"type": "Checksum",
+	"checksum": {
+		"begin": 1,
+		"begin": 4,
+		"method": "2compl"
+	}
+}
+```
+
+### field.Script
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Script"
+| script | object | 
+| script.mode | string | "Exec" or "Call"<br>Exec: Scriptに指定した文字列をスクリプトとして実行する。<br>Call: Scriptに指定した文字列を関数としてコールする。
+| script.count | number | Scriptの実行回数を指定する。
+| script.script | string | JavaScriptコード。
+
+---
+
+```json
+{
+	"name": "field1",
+	"bit_size": 8,
+	"value": 1,
+	"type": "Script",
+	"script": {
+		"mode": "Exec",
+		"count": 10,
+		"script": "key = i * 2 + (i%2 == 0 ? 0x80 : 0x00);   value = key + ' h';"
+	}
+},
+{
+	"name": "field2",
+	"bit_size": 8,
+	"value": 0,
+	"type": "Script",
+	"script": {
+		"mode": "Call",
+		"count": 10,
+		"script": "Setting_Selecter_Script_2"
+	}
+}
+```
+↓
+#### Exec
+count, scriptを下記のようなコードに展開する。
+scriptで指定したコードを自動的に関数として作成する。
+MakeFieldExecScriptがcount分だけその関数をコールする。
+scriptで指定するコードは*key*と*value*を作成する必要がある。
+```js
+(() => {
+	try {
+		const exec_func = (i) => {
+			let key; let value;
+			key = i * 2 + (i%2 == 0 ? 0x80 : 0x00);   value = key + ' h';;
+			return {key: key, value: value};
+		}
+		MakeFieldExecScript(exec_func, 10);
+		Settings.Field.Result = true;
+	}
+	catch (e) {
+		Settings.Field.Message = e.message;
+		Settings.Field.Result = false;
+	}
+})()
+```
+
+#### Call
+count, scriptを下記のようなコードに展開する。
+scriptで指定した関数にcountを引数として指定するコードに展開する。
+scriptで指定する関数は内部でcountを元にループすることを想定。
+JavaScript(WebView2)→C#のI/Fとして*Settings.Field.AddSelecter(key, value);*を用意している。このI/Fで*key*と*value*のペアを指定することで現在作成中のfieldのコンボボックスに表示する入力値として追加できる。
+```js
+(() => {
+	try {
+		Setting_Selecter_Script_2(10);
+		Settings.Field.Result = true;
+	}
+	catch (e) {
+		Settings.Field.Message = e.message;
+		Settings.Field.Result = false;
+	}
+})()
+```
+
+#### MakeFieldExecScript
+Settings.jsにて定義している。
+```js
+const MakeFieldExecScript = (func, count) => {
+    for (let i = 0; i < count; i++) {
+        const result = func(i);
+        Settings.Field.AddSelecter(result.key, result.value);
+    }
+}
+```
 
 
-#### rx
+### rx
 
-#### auto_tx
+### auto_tx
 
 
 ### gui
@@ -385,7 +585,7 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ---
 
-#### column_order, column_width
+### column_order, column_width
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -449,7 +649,7 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 ----|----|---- 
 | drag_drop | object | GUI上の通信フィールド名称部分をDrag&Drop可能。フィールド名称、設定値をテキストでエクスポートする。本設定で対象情報の前後にテキストを挿入可能。html形式でのDropデータ作成を想定している。
 
-#### drag_drop
+### drag_drop
 
 | Setting | Format | Description |
 ----|----|---- 

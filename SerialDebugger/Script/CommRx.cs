@@ -50,7 +50,10 @@ namespace SerialDebugger.Script
         {
             RxFramesRef = rx;
 
-            Log.Capacity = rx.Count;
+            if (Log.Capacity < rx.Count)
+            {
+                Log.Capacity = rx.Count;
+            }
             for (int i = 0; i<rx.Count; i++)
             {
                 if (Log.Count <= i)
@@ -78,7 +81,7 @@ namespace SerialDebugger.Script
     [ComVisible(true)]
     public class SerialMatchResultsIf
     {
-        public Serial.RxAnalyzer RxAnalyzerRef { get; set; }
+        public Serial.Protocol ProtocolRef { get; set; }
         public RxMatchResultIf RxMatchResultIf { get; set; } = new RxMatchResultIf();
         // I/F: WebView2 -> C#
         // AutoTxのRxMatchResultが条件と一致したかの判定結果応答に使う
@@ -88,7 +91,7 @@ namespace SerialDebugger.Script
         {
             get
             {
-                return RxAnalyzerRef.MatchResultPos;
+                return ProtocolRef.MatchResultPos;
             }
         }
 
@@ -97,7 +100,7 @@ namespace SerialDebugger.Script
         {
             get
             {
-                return RxMatchResultIf.RxMatchResultNode(RxAnalyzerRef.MatchResult[match_idx]);
+                return RxMatchResultIf.RxMatchResultNode(ProtocolRef.MatchResult[match_idx]);
             }
         }
 

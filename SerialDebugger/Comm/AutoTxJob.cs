@@ -152,7 +152,7 @@ namespace SerialDebugger.Comm
             }
         }
         
-        public async Task Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs)
+        public async Task ExecCycle(Serial.Protocol protocol)
         {
             bool check = true;
             while (check)
@@ -162,14 +162,14 @@ namespace SerialDebugger.Comm
                 switch (Actions[ActiveActionIndex].Type)
                 {
                     case AutoTxActionType.Send:
-                        ExecSend(serial, TxFrames);
+                        ActSend(protocol.Serial, protocol.TxFrames);
                         // 次のActionに移行
                         check = NextAction();
                         break;
 
                     case AutoTxActionType.Wait:
                         // 時間経過判定
-                        if (ExecWait())
+                        if (ActWait())
                         {
                             // 時間経過していたら次のActionに移行
                             check = NextAction();
@@ -177,25 +177,25 @@ namespace SerialDebugger.Comm
                         break;
 
                     case AutoTxActionType.Jump:
-                        ExecJump();
+                        ActJump();
                         check = true;
                         break;
 
                     case AutoTxActionType.Script:
-                        if (await ExecScript())
+                        if (await ActScriptCycle())
                         {
                             check = NextAction();
                         }
                         break;
 
                     case AutoTxActionType.ActivateAutoTx:
-                        ExecActivateAutoTx(AutoTxJobs);
+                        ActActivateAutoTx(protocol.AutoTxJobs);
                         // 次のActionに移行
                         check = NextAction();
                         break;
 
                     case AutoTxActionType.ActivateRx:
-                        ExecActivateRx(RxFrames);
+                        ActActivateRx(protocol.RxFrames);
                         // 次のActionに移行
                         check = NextAction();
                         break;
@@ -205,7 +205,7 @@ namespace SerialDebugger.Comm
                         break;
 
                     case AutoTxActionType.Log:
-                        ExecLog();
+                        ActLog();
                         // 次のActionに移行
                         check = NextAction();
                         break;
@@ -216,35 +216,35 @@ namespace SerialDebugger.Comm
             }
         }
 
-        public async Task Exec(SerialPort serial, IList<Comm.TxFrame> TxFrames, IList<Comm.RxFrame> RxFrames, IList<Comm.AutoTxJob> AutoTxJobs, Serial.RxAnalyzer analyzer)
+        public async Task ExecRecv(Serial.Protocol protocol)
         {
             switch (Actions[ActiveActionIndex].Type)
             {
                 case AutoTxActionType.Recv:
-                    var result = ExecRecv(analyzer);
+                    var result = ActRecv(protocol);
                     if (result)
                     {
                         // 処理終了からの時間を計測
-                        CycleTimer.StartBy(analyzer.Result.TimeStamp);
+                        CycleTimer.StartBy(protocol.Result.TimeStamp);
                         // 受信判定一致していたら次のActionに移行
                         if (NextAction())
                         {
                             // 通常Execを実施
-                            await Exec(serial, TxFrames, RxFrames, AutoTxJobs);
+                            await ExecCycle(protocol);
                         }
                     }
                     break;
 
                 case AutoTxActionType.Script:
-                    if (await ExecScriptRx())
+                    if (await ActScriptRx())
                     {
                         // 処理終了からの時間を計測
-                        CycleTimer.StartBy(analyzer.Result.TimeStamp);
+                        CycleTimer.StartBy(protocol.Result.TimeStamp);
                         // 受信判定一致していたら次のActionに移行
                         if (NextAction())
                         {
                             // 通常Execを実施
-                            await Exec(serial, TxFrames, RxFrames, AutoTxJobs);
+                            await ExecCycle(protocol);
                         }
                     }
                     break;
@@ -285,7 +285,7 @@ namespace SerialDebugger.Comm
             return false;
         }
 
-        private void ExecSend(SerialPort serial, IList<Comm.TxFrame> TxFrames)
+        private void ActSend(SerialPort serial, IList<Comm.TxFrame> TxFrames)
         {
             var action = Actions[ActiveActionIndex];
             var frame = TxFrames[action.TxFrameIndex];
@@ -304,7 +304,7 @@ namespace SerialDebugger.Comm
             Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
         }
 
-        private bool ExecWait()
+        private bool ActWait()
         {
             bool result = false;
 
@@ -329,7 +329,7 @@ namespace SerialDebugger.Comm
             return result;
         }
 
-        private void ExecJump()
+        private void ActJump()
         {
             // 現在Action終了
             Actions[ActiveActionIndex].IsActive.Value = false;
@@ -339,7 +339,7 @@ namespace SerialDebugger.Comm
             Actions[ActiveActionIndex].IsActive.Value = true;
         }
 
-        private async Task<bool> ExecScript()
+        private async Task<bool> ActScriptCycle()
         {
             bool result = true;
             var action = Actions[ActiveActionIndex];
@@ -370,7 +370,7 @@ namespace SerialDebugger.Comm
             return result;
         }
 
-        private async Task<bool> ExecScriptRx()
+        private async Task<bool> ActScriptRx()
         {
             bool result = true;
             var action = Actions[ActiveActionIndex];
@@ -395,21 +395,21 @@ namespace SerialDebugger.Comm
             return result;
         }
 
-        private void ExecActivateAutoTx(IList<Comm.AutoTxJob> AutoTxJobs)
+        private void ActActivateAutoTx(IList<Comm.AutoTxJob> AutoTxJobs)
         {
             var action = Actions[ActiveActionIndex];
 
             AutoTxJobs[action.AutoTxJobIndex].IsActive.Value = action.AutoTxState;
         }
 
-        private void ExecActivateRx(IList<Comm.RxFrame> RxFrames)
+        private void ActActivateRx(IList<Comm.RxFrame> RxFrames)
         {
             var action = Actions[ActiveActionIndex];
 
             RxFrames[action.RxFrameIndex].Patterns[action.RxPatternIndex].IsActive.Value = action.RxState;
         }
 
-        private bool ExecRecv(Serial.RxAnalyzer analyzer)
+        private bool ActRecv(Serial.Protocol protocol)
         {
             var action = Actions[ActiveActionIndex];
 
@@ -421,9 +421,9 @@ namespace SerialDebugger.Comm
             //
             foreach (var item in action.Recvs)
             {
-                for (int a_idx = 0; a_idx < analyzer.MatchResultPos; a_idx++)
+                for (int a_idx = 0; a_idx < protocol.MatchResultPos; a_idx++)
                 {
-                    var match = analyzer.MatchResult[a_idx];
+                    var match = protocol.MatchResult[a_idx];
                     if (item.FrameId == match.FrameId && item.PatternId == match.PatternId)
                     {
                         return true;
@@ -434,7 +434,7 @@ namespace SerialDebugger.Comm
             return false;
         }
 
-        private void ExecLog()
+        private void ActLog()
         {
             // Log出力
             var action = Actions[ActiveActionIndex];

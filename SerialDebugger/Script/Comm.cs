@@ -21,8 +21,8 @@ namespace SerialDebugger.Script
         public ReactiveCollection<SerialDebugger.Comm.RxFrame> RxFramesRef { get; set; }
         // Comm: AutoTx
         public ReactiveCollection<SerialDebugger.Comm.AutoTxJob> AutoTxJobsRef { get; set; }
-        // Serial: RxAnalyzer
-        public Serial.RxAnalyzer RxAnalyzerRef { get; set; }
+        // Serial: Protocol
+        public Serial.Protocol ProtocolRef { get; set; }
         // WebView2向けI/F
         public CommTxFramesIf Tx { get; set; }
         public CommAutoTxJobsIf AutoTx { get; set; }
@@ -50,10 +50,10 @@ namespace SerialDebugger.Script
             AutoTx.AutoTxJobsRef = autotx;
             Rx.RxFrames(rx);
         }
-        public void Init(Serial.RxAnalyzer analyzer)
+        public void Init(Serial.Protocol protocol)
         {
-            RxAnalyzerRef = analyzer;
-            RxMatch.RxAnalyzerRef = analyzer;
+            ProtocolRef = protocol;
+            RxMatch.ProtocolRef = protocol;
         }
 
 

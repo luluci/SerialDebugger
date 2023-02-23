@@ -176,24 +176,28 @@ namespace SerialDebugger.Comm
         private async Task<bool> MatchScript(RxAnalyzeRule rule, byte data)
         {
             var result = false;
-            var temp = Script.Interpreter.Engine.Comm.Rx;
-
-            // WebView2はUIスレッドからしか実行できないのでInvokeする
+            // Script引数,戻り値初期化
             Script.Interpreter.Engine.Comm.Rx.Data = data;
             Script.Interpreter.Engine.Comm.Rx.Result = Script.CommRxFramesIf.MatchFailed;
-            await Dispatcher.InvokeAsync((Action)(async () => {
-                Script.Interpreter.Engine.Comm.Rx.Sync = false;
-                await Script.Interpreter.Engine.ExecuteScriptAsync(rule.RxRecieved);
-                Script.Interpreter.Engine.Comm.Rx.Sync = true;
-            }));
-            // Invokeが完了するまで待機する
-            await Task.Run(async () =>
-            {
-                while (!Script.Interpreter.Engine.Comm.Rx.Sync)
-                {
-                    await Task.Delay(10);
-                }
-            });
+
+            // UIスレッドで実行している場合、WebView2/Script実行
+            await Script.Interpreter.Engine.ExecuteScriptAsync(rule.RxRecieved);
+
+            //// WebView2はUIスレッドからしか実行できないのでInvokeする
+            //var temp = Script.Interpreter.Engine.Comm.Rx;
+            //await Dispatcher.InvokeAsync((Action)(async () => {
+            //    Script.Interpreter.Engine.Comm.Rx.Sync = false;
+            //    await Script.Interpreter.Engine.ExecuteScriptAsync(rule.RxRecieved);
+            //    Script.Interpreter.Engine.Comm.Rx.Sync = true;
+            //}));
+            //// Invokeが完了するまで待機する
+            //await Task.Run(async () =>
+            //{
+            //    while (!Script.Interpreter.Engine.Comm.Rx.Sync)
+            //    {
+            //        await Task.Delay(10);
+            //    }
+            //});
 
             switch (Script.Interpreter.Engine.Comm.Rx.Result)
             {

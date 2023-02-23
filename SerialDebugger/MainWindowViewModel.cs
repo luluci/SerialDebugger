@@ -80,16 +80,12 @@ namespace SerialDebugger
 
         // シリアル通信管理変数
         SerialPort serialPort;
-        //定期処理関連
-        DispatcherTimer AutoTxTimer;
-        bool IsAutoTxRunning = false;
-        //
-        bool IsRxRunning = false;
-        Serial.RxAnalyzer rxAnalyzer;
-        CancellationTokenSource tokenSource;
+        Serial.Protocol protocol;
         
         // Debug
         public ReactiveCommand OnClickTestSend { get; set; }
+
+
 
         public MainWindowViewModel(MainWindow window)
         {
@@ -240,11 +236,7 @@ namespace SerialDebugger
                     }
                 })
                 .AddTo(Disposables);
-
-            // 定期処理
-            AutoTxTimer = new DispatcherTimer(DispatcherPriority.Normal);
-            AutoTxTimer.Tick += new EventHandler(AutoTxHandler);
-
+            
             // test
             OnClickTestSend = new ReactiveCommand();
             OnClickTestSend.Subscribe(async (x) =>
@@ -274,6 +266,7 @@ return true;
                         i = 0;
                         i++;
                         Script.Interpreter.Engine.ShowView();
+                        await Task.Delay(1);
                     }
                     catch (Exception e)
                     {
@@ -517,54 +510,19 @@ return true;
                 // シリアルポートを開く
                 serialPort = serialSetting.vm.GetSerialPort();
                 serialPort.Open();
-                // 解析クラス初期化
-                rxAnalyzer = new Serial.RxAnalyzer(serialPort, RxFrames, Setting.Data.Comm.RxMultiMatch, Setting.Data.Comm.RxInvertBit, Setting.Data.Comm.RxHasScriptMatch);
+                // 通信設定
+                var polling = serialSetting.vm.PollingCycle.Value;
+                var rx_timeout = serialSetting.vm.RxTimeout.Value;
+                // 通信管理クラス作成
+                protocol = new Serial.Protocol(serialPort, polling, rx_timeout, TxFrames, RxFrames, AutoTxJobs);
                 // Script
-                Script.Interpreter.Engine.Comm.Init(rxAnalyzer);
+                Script.Interpreter.Engine.Comm.Init(protocol);
+                // GUI更新
                 // COM切断を有効化
                 IsSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM切断";
-                // 自動送信設定
-                // 自動送信定義があるとき自動送信定期処理タイマ開始
-                // 自動送信はGUIスレッド上で管理する。
-                if (AutoTxJobs.Count > 0)
-                {
-                    AutoTxTimer.Interval = new TimeSpan(0, 0, 0, 0, serialSetting.vm.PollingCycle.Value);
-                    AutoTxTimer.Start();
-                }
-                
-                // 必ず受信タスクを動かす
-                // COM切断時はタスクキャンセルを実行し、受信タスクが終了したら各種後始末を行う。
-                tokenSource = new CancellationTokenSource();
-                IsRxRunning = true;
-                while (IsRxRunning)
-                {
-                    // 受信開始前に初期化
-                    await rxAnalyzer.Init();
-                    // 受信解析, 一連の受信シーケンスが完了するまでawait
-                    // 受信フレーム受理orタイムアウトによるノイズ受信確定が返ってくる
-                    await rxAnalyzer.Run(serialSetting.vm.RxTimeout.Value, serialSetting.vm.PollingCycle.Value, tokenSource.Token);
-                    switch (rxAnalyzer.Result.Type)
-                    {
-                        case Serial.RxDataType.Cancel:
-                            // 実際はOperationCanceledExceptionをcatchする
-                            IsRxRunning = false;
-                            break;
-
-                        case Serial.RxDataType.Timeout:
-                            Logger.Add($"[Rx][Timeout] {Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset)}");
-                            break;
-
-                        case Serial.RxDataType.Match:
-                            MakeRxLog();
-                            // 処理結果を自動送信処理に通知
-                            await AutoTxExecRxEvent();
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
+                // シリアル通信開始
+                await protocol.Run();
             }
             catch (OperationCanceledException e)
             {
@@ -576,47 +534,16 @@ return true;
             }
             finally
             {
-                //
-                tokenSource.Dispose();
+                // COM終了でプロトコル破棄
+                //protocol.Dispose();
+                protocol = null;
                 // COMポート終了
                 serialPort.Close();
                 serialPort = null;
                 // GUI処理
-                IsRxRunning = false;
                 IsSerialOpen.Value = false;
                 IsEnableSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM接続";
-            }
-        }
-
-        private void MakeRxLog()
-        {
-            int frame_id = 0;
-            int result_idx = 0;
-            while (result_idx < rxAnalyzer.MatchResultPos)
-            {
-                // 先頭要素からログ作成
-                var result = rxAnalyzer.MatchResult[result_idx];
-                var sb = new StringBuilder(result.PatternRef.Name);
-                frame_id = result.FrameId;
-                // 同じFrame内でのパターンマッチは同一ログになる
-                result_idx++;
-                while (result_idx < rxAnalyzer.MatchResultPos && frame_id == rxAnalyzer.MatchResult[result_idx].FrameId)
-                {
-                    sb.Append(",").Append(rxAnalyzer.MatchResult[result_idx].PatternRef.Name);
-
-                    result_idx++;
-                }
-                string log;
-                if (result.PatternRef.IsLogVisualize)
-                {
-                    log = RxFrames[frame_id].MakeLogVisualize(rxAnalyzer.Result.RxBuff, rxAnalyzer.Result.RxBuffOffset, result.PatternRef);
-                }
-                else
-                {
-                    log = Logger.Byte2Str(rxAnalyzer.Result.RxBuff, 0, rxAnalyzer.Result.RxBuffOffset);
-                }
-                Logger.Add($"[Rx][{sb.ToString()}] {log}");
             }
         }
 
@@ -624,12 +551,9 @@ return true;
         {
             try
             {
-                // シリアル通信スレッドメッセージポーリング処理終了
-                TickEventFinish();
                 // スレッド終了メッセージ送信
-                tokenSource.Cancel();
+                protocol.Stop();
                 // 
-                IsRxRunning = false;
                 IsEnableSerialOpen.Value = false;
                 TextSerialOpen.Value = "切断中";
             }
@@ -639,76 +563,6 @@ return true;
             }
         }
 
-
-        private async void AutoTxHandler(object sender, EventArgs e)
-        {
-            AutoTxTimer.Stop();
-            IsAutoTxRunning = true;
-            var timer = new Utility.CycleTimer();
-            var cycle = serialSetting.vm.PollingCycle.Value;
-
-            try
-            {
-                while (IsAutoTxRunning)
-                {
-                    timer.Start();
-
-                    // 自動送信定期処理
-                    foreach (var job in AutoTxJobs)
-                    {
-                        // 有効ジョブを実行
-                        if (job.IsActive.Value)
-                        {
-                            await job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs);
-                        }
-                    }
-
-                    await timer.WaitAsync(cycle);
-                }
-            }
-            catch (Exception exc)
-            {
-                IsAutoTxRunning = false;
-                Logger.AddException(exc);
-            }
-
-        }
-        private async Task AutoTxExecRxEvent()
-        {
-            try
-            {
-                if (IsAutoTxRunning)
-                {
-                    // 受信イベントを通知
-                    foreach (var job in AutoTxJobs)
-                    {
-                        // 有効ジョブを実行
-                        if (job.IsActive.Value)
-                        {
-                            await job.Exec(serialPort, TxFrames, RxFrames, AutoTxJobs, rxAnalyzer);
-                        }
-                    }
-                }
-            }
-            catch (Exception exc)
-            {
-                IsAutoTxRunning = false;
-                Logger.AddException(exc);
-            }
-        }
-
-        
-        private void TickEventFinish()
-        {
-            IsAutoTxRunning = false;
-
-            // 自動送信定期処理タイマ終了
-            if (AutoTxTimer.IsEnabled)
-            {
-                AutoTxTimer.Stop();
-            }
-        }
-        
 
 
 

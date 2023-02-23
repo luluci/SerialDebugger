@@ -116,6 +116,7 @@ namespace SerialDebugger.Serial
             //
             MatchResultPos = 0;
             // AutoTx
+            // 定義が存在する場合のみ処理するためのフラグを作成
             IsAutoTxRunning = AutoTxJobs.Count > 0;
 
             // 受信ハンドラ設定
@@ -391,24 +392,27 @@ namespace SerialDebugger.Serial
         }
 
 
-
-
         public async Task RunResultCheck()
         {
             switch (Result.Type)
             {
                 case RxDataType.Cancel:
-                    // 実際はOperationCanceledExceptionをcatchする
+                    // COM切断により通信終了
                     IsRunning = false;
                     break;
 
                 case RxDataType.Timeout:
+                    // 受信タイムアウトによる受信シーケンス終了
+                    // タイムアウトは1バイト以上の受信があるときのみ発生する。
+                    // 受信バッファをログに出力して次の受信シーケンスに移行する。
                     Logger.Add($"[Rx][Timeout] {Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset)}");
                     break;
 
                 case RxDataType.Match:
+                    // 受信解析で定義したルールにマッチ
+                    // 受信内容をログに出力
                     MakeRxLog();
-                    // 処理結果を自動送信処理に通知
+                    // 受信内容を自動操作に通知
                     await AutoTxExecRxEvent();
                     break;
 

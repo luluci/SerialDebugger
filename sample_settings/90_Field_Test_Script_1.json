@@ -1,5 +1,5 @@
 {
-	"name": "テストパターン_Script_2",
+	"name": "Test_field定義_Script1",
 	
 	"gui": {
 		"column_order":
@@ -39,7 +39,7 @@
 	},
 	
 	"script": [
-		"95_Format_test_Script_1.js"
+		"90_Field_Test_Script_1.js"
 	],
 	
 	"comm": {

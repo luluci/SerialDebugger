@@ -713,6 +713,106 @@ const MakeFieldExecScript = (func, count) => {
 ]
 ```
 
+以下のように展開して実行される。
+
+```js
+Rx_ptn3_init(0,0);
+Rx_ptn3_match(0,0);
+```
+
+#### rx.frames.patterns.Script.rx_recieved
+
+解析対象データは *Comm.Rx.Data* により取得する。  
+判定結果は *Comm.Rx.Result* に設定する。
+
+```js
+const Rx_ptn3_match_body = (frame_id, pattern_id) => {
+	let result = MatchProgress;
+
+	//
+	if (Comm.Rx.Data == 1) {
+		Comm.Rx.AddLog(frame_id, pattern_id, "Frame_1");
+		result = MatchSuccess;
+	} else {
+		result = MatchFailed;
+	}
+
+	Comm.Rx.Result = result;
+}
+```
+
+判定結果用の定義は *Comm.js* にて定義している。
+
+```js
+var MatchProgress;
+var MatchFailed;
+var MatchSuccess;
+
+const Comm_Loaded = () => {
+	Comm = chrome.webview.hostObjects.sync.Comm;
+    CommAsync = chrome.webview.hostObjects.Comm;
+
+    MatchProgress = Comm.Rx.MatchProgress;
+    MatchFailed = Comm.Rx.MatchFailed;
+    MatchSuccess = Comm.Rx.MatchSuccess;
+}
+```
+
+
+---
+
+### rx.frames.patterns.Timeout
+
+| Setting | Format | Description |
+----|----|---- 
+| matches.type | string | "Timeout"
+| matches.number | msec | (msec単位)
+
+```json
+"matches": [
+	{
+		"type": "Timeout",
+		"msec": 100
+	},
+	{
+		"msec": 100
+	}
+]
+```
+
+---
+
+### rx.frames.patterns.Activate
+
+| Setting | Format | Description |
+----|----|---- 
+| matches.type | string | "Activate"
+| matches.auto_tx_job | string | auto_tx.jobs.nameで操作対象を指定する。存在しない名前を指定するとエラー。
+| matches.rx_pattern | string | rx.patterns.nameで操作対象を指定する。存在しない名前を指定するとエラー。
+| matches.state | bool | 有効無効設定値を指定する。(初期値:true)
+
+```json
+"matches": [
+	{
+		"type": "Activate",
+		"auto_tx_job": "job_name",
+		"state": false
+	},
+	{
+		"auto_tx_job": "job_name"
+	},
+	{
+		"rx_pattern": "rx_pattern_name"
+	},
+	{
+		"rx_pattern": "rx_pattern_name",
+		"state": true
+	},
+]
+```
+
+
+---
 
 ### auto_tx
 
@@ -843,5 +943,10 @@ const MakeFieldExecScript = (func, count) => {
 	}
 }
 ```
+
+
+
+## WebView2 / JavaScript 連携詳細
+
 
 

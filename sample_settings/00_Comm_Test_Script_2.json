@@ -1,5 +1,5 @@
 {
-	"name": "Test_通信_Scriptマッチング_1_VisualizeLog",
+	"name": "Test_通信_Scriptマッチング_2_生ログ出力",
 	
 	"gui": {
 		"window":
@@ -94,7 +94,7 @@
 						{
 							"name": "Rx_Pattern_3_Script",
 							"active": true,
-							"log_visualize": true,
+							"log_visualize": false,
 							"matches": [
 								{
 									"type": "Script",

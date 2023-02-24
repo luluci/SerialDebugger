@@ -65,11 +65,11 @@ const Rx_ptn3_match_body = (frame_id, pattern_id) => {
 			break;
 		case 1:
 			Rx_ptn3_state = 2;
-			Comm.Rx.AddLog(frame_id, pattern_id, 0x`any(${toHex(Comm.Rx.Data)})`);
+			Comm.Rx.AddLog(frame_id, pattern_id, `any(0x${toHex(Comm.Rx.Data)})`);
 			break;
 		case 2:
 			Rx_ptn3_state = 3;
-			Comm.Rx.AddLog(frame_id, pattern_id, 0x`any(${toHex(Comm.Rx.Data)})`);
+			Comm.Rx.AddLog(frame_id, pattern_id, `any(0x${toHex(Comm.Rx.Data)})`);
 			result = MatchSuccess;
 			break;
 		default:

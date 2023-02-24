@@ -240,7 +240,7 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 
 ---
 
-### field.Fix
+### fields.Fix
 
 初期値で固定。
 
@@ -263,7 +263,7 @@ or
 
 ---
 
-### field.Edit
+### fields.Edit
 
 テキストボックスでの設定値変更可能。
 
@@ -280,7 +280,7 @@ or
 
 ---
 
-### field.Unit
+### fields.Unit
 
 unit設定から生成する入力値をコンボボックスから指定。  
 bit_sizeが2以上のときは直接編集するエディットボックスも表示する。
@@ -351,7 +351,7 @@ else
 
 ---
 
-### field.Dict
+### fields.Dict
 
 dict設定した値をコンボボックスから指定。  
 bit_sizeが2以上のときは直接編集するエディットボックスも表示する。
@@ -379,7 +379,7 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ---
 
-### field.Time
+### fields.Time
 
 time設定から生成する入力値をコンボボックスから指定。  
 bit_sizeが2以上のときは直接編集するエディットボックスも表示する。
@@ -423,7 +423,7 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ---
 
-### field.Char
+### fields.Char
 
 テキストボックスで文字を入力する。
 
@@ -443,7 +443,7 @@ bit_sizeが2以上のときは直接編集するエディットボックスも�
 
 ---
 
-### field.String
+### fields.String
 
 Charのシンタックスシュガー。stringで指定した分だけCharとして展開する。
 
@@ -469,7 +469,7 @@ Charのシンタックスシュガー。stringで指定した分だけCharとし
 
 ---
 
-### field.Checksum
+### fields.Checksum
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -495,7 +495,7 @@ Charのシンタックスシュガー。stringで指定した分だけCharとし
 
 ---
 
-### field.Script
+### fields.Script
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -675,6 +675,8 @@ const MakeFieldExecScript = (func, count) => {
 
 ### rx.frames.patterns.Any
 
+無条件マッチする。
+
 | Setting | Format | Description |
 ----|----|---- 
 | matches.type | string | "Any"
@@ -816,6 +818,200 @@ const Comm_Loaded = () => {
 
 ### auto_tx
 
+シリアル通信設定から設定できるポーリング周期に基づき、全ジョブに対して1周期に1アクションを実行する。
+アクションはGUIスレッドにて実行する。1周期毎にスレッドを解放して時間待機に入る。
+
+| Setting | Format | Description |
+----|----|---- 
+| jobs | array | 自動操作ジョブ定義を配列で入力する。先頭から順に0始まりでIDを割り振る。
+| jobs.name | string | 自動操作ジョブ名称。各種機能設定からの参照に使う。
+| jobs.alias | string | GUI上表示名。指定したエイリアスをそのまま表示する。
+| jobs.active | bool | 自動操作ジョブ有効無効初期設定。GUI上から操作可能。
+| jobs.actions | array | 自動操作アクション定義を配列で入力する。先頭から順に0始まりでIDを割り振る。
+
+```json
+"auto_tx": {
+	"jobs": [
+		{
+			"name": "Job_Auto_1",
+			"alias": "ジョブ1エイリアス",
+			"active": true,
+			"actions": [ ... ]
+		}
+	]
+}
+```
+
+---
+
+### auto_tx.jobs.actions
+
+type毎に固有のプロパティを設定する。
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Send" or "Wait" or "Recv" or "Jump" or "Script" or "Activate" or "Log"<br>各アクションで使用するプロパティは後述。
+| alias | string | GUI上表示名。指定したエイリアスをそのまま表示する。
+| immediate | bool | 即時実行有効無効設定。有効のとき、1つ前のアクション完了後にスレッドを解放することなくこのアクションを実行する。Waitアクションの場合はスレッドをロックしてスリープする。
+
+```json
+"actions": [
+	{ "type": "Log", "log": "<Job_Auto_1 start.>" },
+	{ "type": "Send", "tx_frame": "Frame_A" },
+	{ "type": "Script", "rx_handler": "Job1_0_RxMatch()" },
+	{ "type": "Script", "auto_tx_handler": "Job1_0_Format5()" },
+	{ "type": "Wait", "wait_time": 2000 },
+	{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }
+]
+```
+
+---
+
+### auto_tx.jobs.actions.Send
+
+txで定義した送信フレームを指定して送信する。
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Send"
+| tx_frame | string | 送信フレーム名称
+| tx_frame_buff_index | number | 送信フレームバッファIDを指定する。<br>0:メインバッファ<br>1～:バックアップバッファ<br>(省略時:0)
+| tx_frame_buff_offset | number | 送信バッファのうち、何バイト目から送信するかを指定可能。(省略時:0)
+| tx_frame_buff_length | number | 送信バッファから何バイト送信するかを指定可能。(省略時:バッファ全体)
+
+```json
+"actions": [
+	{ "type": "Send", "tx_frame": "Frame_A" },
+	{
+		"type": "Send",
+		"tx_frame": "Frame_A",
+		"tx_frame_buff_index": 1,
+		"tx_frame_buff_offset": 2,
+		"tx_frame_buff_length": 4
+	}
+]
+```
+
+---
+
+### auto_tx.jobs.actions.Wait
+
+前のアクション完了から、指定した時間が経過するまで待機する。  
+ポーリングで周期時間でアクションを実行するため、ポーリング時間設定値により誤差が出るため注意。  
+immediateを指定した場合、スレッドをロックして時間経過を待機するため誤差が小さくなるが、GUIが応答なしになるため注意。
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Wait"
+| wait_time | number | (ms単位)
+
+```json
+"actions": [
+	{ "type": "Wait", "wait_time": 2000 }
+]
+```
+
+---
+
+### auto_tx.jobs.actions.Recv
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Recv"
+| rx_patterns | array | 受信待機対象とする受信パターン名称(rx.frames.patterns.name)を指定する。複数指定可能。0個指定でAnyマッチ。
+
+```json
+"actions": [
+	{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_1" ] },
+	{ "type": "Recv", "rx_patterns": [] }
+]
+```
+
+---
+
+### auto_tx.jobs.actions.Jump
+
+指定したアクションに実行個所を移動する。これによりauto_txの繰り返し実行ができる。
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Jump"
+| jump_to | number | アクションIDを指定する。
+
+```json
+"actions": [
+	{ "type": "Jump", "jump_to": 0 }
+]
+```
+
+---
+
+### auto_tx.jobs.actions.Script
+
+指定したJavaScriptを実行する。auto_tx_handlerとrx_handlerのどちらかあるいは両方を指定する。
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Script"
+| auto_tx_handler | string | 周期処理時に実行する。
+| rx_handler | string | 受信パターンマッチング成功時に実行する。
+
+```json
+"actions": [
+	{ "type": "Script", "rx_handler": "Job1_0_RxMatch()" },
+	{ "type": "Script", "auto_tx_handler": "Job1_0_Format5()" }
+]
+```
+
+---
+
+### auto_tx.jobs.actions.Activate
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Activate"
+| auto_tx_job | string | auto_tx.jobs.nameで操作対象を指定する。存在しない名前を指定するとエラー。
+| rx_pattern | string | rx.patterns.nameで操作対象を指定する。存在しない名前を指定するとエラー。
+| state | bool | 有効無効設定値を指定する。(初期値:true)
+
+```json
+"actions": [
+	{
+		"type": "Activate",
+		"auto_tx_job": "job_name",
+		"state": false
+	},
+	{
+		"auto_tx_job": "job_name"
+	},
+	{
+		"rx_pattern": "rx_pattern_name"
+	},
+	{
+		"rx_pattern": "rx_pattern_name",
+		"state": true
+	},
+]
+```
+
+---
+
+### auto_tx.jobs.actions.Log
+
+GUI上ログボックスにログを出力する。
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "Log"
+| log | string | ログに出力する文字列。
+
+```json
+"actions": [
+	{ "type": "Log", "log": "<Job_Auto_1 start.>" },
+]
+```
+
+---
 
 ### gui
 
@@ -944,9 +1140,24 @@ const Comm_Loaded = () => {
 }
 ```
 
-
+---
 
 ## WebView2 / JavaScript 連携詳細
 
+C#からのWebView2連携ライブラリを使いindex.htmlを読み込む。
+index.html上でJavaScriptを実行する。
+SerialDebugger標準として *Script/Utility.js* , *Script/Settings.js* , *Script/Comm.js* を提供している。
+これらはindex.htmlからロードしている。また、これらファイルの初期化関数をindex.html内の *csLoaded()* からコールしている。
+*csLoaded()* はC#でWebView2の初期化が完了したらときにC#側からコールされる。
+
+### Script/Utility.js
+
+C# <-> WebView2連携用のユーティリティを提供している。
+
+- Utility
+
+| I/F | Type | Detail | Description |
+----|----|----|---- 
+| Log | Function | void Log(string msg) | GUI上のログブロックにログを出力する。
 
 

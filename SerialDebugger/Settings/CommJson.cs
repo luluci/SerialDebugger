@@ -169,7 +169,7 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("rx_begin")]
             public string RxBegin { get; set; } = string.Empty;
 
-            [JsonPropertyName("rx_recived")]
+            [JsonPropertyName("rx_recieved")]
             public string RxRecieved { get; set; } = string.Empty;
 
             // Activate

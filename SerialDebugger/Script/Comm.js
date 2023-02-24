@@ -4,9 +4,18 @@
 var Comm;
 var CommAsync;
 
+var MatchProgress;
+var MatchFailed;
+var MatchSuccess;
+
+
 const Comm_Loaded = () => {
 	Comm = chrome.webview.hostObjects.sync.Comm;
     CommAsync = chrome.webview.hostObjects.Comm;
+
+    MatchProgress = Comm.Rx.MatchProgress;
+    MatchFailed = Comm.Rx.MatchFailed;
+    MatchSuccess = Comm.Rx.MatchSuccess;
 }
 
 // ↑変更しないこと↑

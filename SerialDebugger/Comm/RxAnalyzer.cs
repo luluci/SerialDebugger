@@ -93,7 +93,15 @@ namespace SerialDebugger.Comm
                         return false;
 
                     case RxAnalyzeRuleType.Script:
-                        return await MatchScript(rule, data);
+                        // Scriptでマッチ判定
+                        // falseのときはマッチング継続中と失敗の2つがあり関数内で必要な処置を実施
+                        // trueのときマッチング成功になるので次の処理へ移る
+                        match = await MatchScript(rule, data);
+                        if (!match)
+                        {
+                            return match;
+                        }
+                        break;
 
                     case RxAnalyzeRuleType.ActivateAutoTx:
                         match = MatchActivateAutoTx(rule);
@@ -178,7 +186,7 @@ namespace SerialDebugger.Comm
             var result = false;
             // Script引数,戻り値初期化
             Script.Interpreter.Engine.Comm.Rx.Data = data;
-            Script.Interpreter.Engine.Comm.Rx.Result = Script.CommRxFramesIf.MatchFailed;
+            Script.Interpreter.Engine.Comm.Rx.Result = Script.CommRxResult.MatchFailed;
 
             // UIスレッドで実行している場合、WebView2/Script実行
             await Script.Interpreter.Engine.ExecuteScriptAsync(rule.RxRecieved);
@@ -201,13 +209,13 @@ namespace SerialDebugger.Comm
 
             switch (Script.Interpreter.Engine.Comm.Rx.Result)
             {
-                case Script.CommRxFramesIf.MatchProgress:
+                case Script.CommRxResult.MatchProgress:
                     // 
                     break;
-                case Script.CommRxFramesIf.MatchSuccess:
+                case Script.CommRxResult.MatchSuccess:
                     result = true;
                     break;
-                case Script.CommRxFramesIf.MatchFailed:
+                case Script.CommRxResult.MatchFailed:
                     //
                     IsActive = false;
                     break;

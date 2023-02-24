@@ -190,7 +190,7 @@ namespace SerialDebugger.Comm
                                     throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Script,Activateはバイト境界に配置してください。");
                                 }
                                 // Rule追加
-                                var rule = new RxAnalyzeRule(Id, match.RxBegin, match.RxRecieved);
+                                var rule = new RxAnalyzeRule(Id, pattern.Id, match.RxBegin, match.RxRecieved);
                                 pattern.Analyzer.Rules.Add(rule);
                                 // Disp
                                 match.Disp.Value = $"Script[{match.RxRecieved}]";
@@ -294,7 +294,8 @@ namespace SerialDebugger.Comm
         {
             var log = new StringBuilder();
 
-            RxMatch match;
+            bool has_match = true;
+            RxMatch match = null;
             int idx = 0;
             bool is_first = true;
             int bit_size = 0;
@@ -305,9 +306,24 @@ namespace SerialDebugger.Comm
             var chars = new char[Fields.Count];
             var prev_char_id = -1;
             var chars_size = 0;
-            for (int i = 0; i < Fields.Count; i++)
+            for (int field_id = 0; field_id < Fields.Count; field_id++)
             {
-                var field = Fields[i];
+                // field参照取得
+                var field = Fields[field_id];
+                // fieldと対応するmatchを取得
+                while (idx < pattern.Matches.Count && !Object.ReferenceEquals(pattern.Matches[idx].FieldRef, field))
+                {
+                    idx++;
+                }
+                if (idx >= pattern.Matches.Count)
+                {
+                    has_match = false;
+                }
+                else
+                {
+                    match = pattern.Matches[idx];
+                }
+
                 // buffからfieldに該当する分のデータを抽出
                 bit_size = field.BitPos + field.BitSize;
                 data = GetInt64(buff, length, field.BytePos, bit_size);
@@ -316,16 +332,17 @@ namespace SerialDebugger.Comm
                 // MSB側の余分ビットを除去
                 data &= field.Mask;
 
-                // ログ作成
-                str = field.MakeDispByValue(data);
                 // Char[]判定
                 if (field.InputType == Field.InputModeType.Char)
                 {
+                    // 文字列ログ作成開始処理
                     if (prev_char_id == -1)
                     {
                         prev_char_id = field.selecter.CharId;
                         char_type_name = field.Name;
                     }
+                    // charは連続しているが異なる文字列定義の境目判定
+                    // 一旦これまでの文字列ログをコミットして新しく文字列ログを作成開始する
                     if (prev_char_id != field.selecter.CharId)
                     {
                         // separator
@@ -346,6 +363,7 @@ namespace SerialDebugger.Comm
                 }
                 else
                 {
+                    // 直前までcharログだったとき、これまでの文字列ログをコミット
                     if (prev_is_char)
                     {
                         // separator
@@ -363,51 +381,62 @@ namespace SerialDebugger.Comm
                     {
                         log.Append(", ");
                     }
-                    log.Append(field.Name).Append("=").Append(str);
+                    // matchに応じてログ作成
+                    if (!has_match)
+                    {
+                        // match定義が無いときはfield定義から作成
+                        str = field.MakeDispByValue(data);
+                        log.Append(field.Name).Append("=").Append(str);
+                    }
+                    else
+                    {
+                        // match定義からログ文字列作成
+                        switch (match.Type)
+                        {
+                            case RxMatchType.Value:
+                                // field定義を使用
+                                str = field.MakeDispByValue(data);
+                                log.Append(field.Name).Append("=").Append(str);
+                                // Valueは固定値なので変化しない
+                                // match.Disp.Value
+                                break;
+
+                            case RxMatchType.Any:
+                                // field定義を使用
+                                str = field.MakeDispByValue(data);
+                                log.Append(field.Name).Append("=").Append(str);
+                                // 受信値に応じて表示を作成
+                                match.Disp.Value = str;
+                                break;
+
+                            case RxMatchType.Script:
+                                // Scriptでマッチした分をログに出力
+                                var script_log = Script.Interpreter.Engine.Comm.Rx.Log[Id][pattern.Id];
+                                field_id += script_log.Count;
+                                for (int match_id = 0; match_id < script_log.Count; match_id++)
+                                {
+                                    // separator
+                                    if (!is_first)
+                                    {
+                                        log.Append(", ");
+                                    }
+                                    log.Append(script_log[match_id]);
+                                    is_first = false;
+                                }
+                                break;
+
+                            case RxMatchType.Timeout:
+                            default:
+                                str = field.MakeDispByValue(data);
+                                // 表示なし
+                                break;
+                        }
+                    }
+
                     is_first = false;
                     prev_is_char = false;
                 }
 
-                // 該当するmatchを取得
-                while (idx < pattern.Matches.Count && !Object.ReferenceEquals(pattern.Matches[idx].FieldRef, field))
-                {
-                    idx++;
-                }
-                if (idx >= pattern.Matches.Count)
-                {
-                    break;
-                }
-                match = pattern.Matches[idx];
-                switch (match.Type)
-                {
-                    case RxMatchType.Value:
-                        // Valueは固定値なので変化しない
-                        break;
-
-                    case RxMatchType.Any:
-                        // 受信値に応じて表示を作成
-                        match.Disp.Value = str;
-                        break;
-
-                    case RxMatchType.Script:
-                        // Scriptでマッチした分をログに出力
-                        i += Script.Interpreter.Engine.Comm.Rx.Log[Id].Count;
-                        for (int j = 0; j < Script.Interpreter.Engine.Comm.Rx.Log[Id].Count; j++)
-                        {
-                            // separator
-                            if (!is_first)
-                            {
-                                log.Append(", ");
-                            }
-                            log.Append(Script.Interpreter.Engine.Comm.Rx.Log[Id][j]);
-                        }
-                        break;
-
-                    case RxMatchType.Timeout:
-                    default:
-                        // 表示なし
-                        break;
-                }
             }
             // Char[]判定
             if (prev_is_char)

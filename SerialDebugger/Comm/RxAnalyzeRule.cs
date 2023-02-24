@@ -53,12 +53,12 @@ namespace SerialDebugger.Comm
             Timeout = msec;
         }
 
-        public RxAnalyzeRule(int frame_id, string begin, string recieved)
+        public RxAnalyzeRule(int frame_id, int ptn_id, string begin, string recieved)
         {
             // Script
             Type = RxAnalyzeRuleType.Script;
-            RxBegin = $"{begin}({frame_id})";
-            RxRecieved = $"{recieved}({frame_id})";
+            RxBegin = $"{begin}({frame_id}, {ptn_id})";
+            RxRecieved = $"{recieved}({frame_id}, {ptn_id})";
         }
 
         public RxAnalyzeRule(RxMatch match)

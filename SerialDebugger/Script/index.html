@@ -25,6 +25,13 @@
 			return true;
 		}
 		// ↑ロジックを理解した上で変更すること↑
+		const zeroPadding = (value, len) => {
+			return value.padStart(len, '0');
+		}
+		const toHex = (value, len) => {
+			return zeroPadding(value.toString(16), len);
+		}
+		// 
 
 
 		const test_func = () => {

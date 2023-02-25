@@ -43,7 +43,7 @@
                     <Button Content="{Binding AutoTxShortcutButtonDisp.Value}" Command="{Binding OnClickAutoTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
                 </StackPanel>
                 <Button Content="Script" ToolTip="WebView2ウインドウを開く" Command="{Binding OnClickOpenScript}" Margin="10,5,0,0" Width="45" Height="20" />
-                <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}"  Margin="10,5,0,0" Width="80"/>
+                <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}" Visibility="{Binding DebugVisible}" Margin="10,5,0,0" Width="80"/>
             </WrapPanel>
         </Grid>
         <Grid Grid.Row="1" Margin="0,0,0,0" Background="#FFDBF5FF">

@@ -82,11 +82,6 @@ namespace SerialDebugger
         // シリアル通信管理変数
         SerialPort serialPort;
         Serial.Protocol protocol;
-        
-        // Debug
-        public ReactiveCommand OnClickTestSend { get; set; }
-
-
 
         public MainWindowViewModel(MainWindow window)
         {
@@ -246,61 +241,8 @@ namespace SerialDebugger
             })
             .AddTo(Disposables);
 
-            // test
-            OnClickTestSend = new ReactiveCommand();
-            OnClickTestSend.Subscribe(async (x) =>
-                {
-                    try
-                    {
-                        //var z = await Script.Interpreter.Engine.wv.ExecuteScriptAsync("debug()");
-
-var script = @"
-(() => {
-try {
-    //throw new Error('error');
-    //Comm.Debug();
-    return CommDebug();
-}
-catch (e) {
-    Comm.Error(e.message);
-    return false;
-}
-return true;
-})();
-";
-                        //script = @"import { test_js_test } from 'test.js';";
-                        //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync("CommDebug()");
-                        //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(script);
-                        int i;
-                        i = 0;
-                        i++;
-                        await Task.Delay(1);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.AddException(e);
-                    }
-                    /*
-                    //SerialWrite_test();
-                    var task = Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync($@"
-
-                        (function () {{
-                            //処理
-                            try {{
-                                return {{ code: -1, result: test_func_async()}};
-                            }} catch (e) {{
-                                return {{ code: -1, result: e.message}};
-                            }}
-                            return 2;
-                        }}())
-                    ");
-                    int i = 0;
-                    i++;
-                    var result = await task;
-                    i++;
-                    */
-                })
-                .AddTo(Disposables);
+            // Debug
+            DebugInit();
         }
 
         public async Task InitAsync()
@@ -644,6 +586,76 @@ return true;
                 Logger.Add("error: COMポート未接続");
             }
         }
+
+
+        // Debug
+        public bool IsDebug { get; set; } = false;
+        public Visibility DebugVisible { get; set; } = Visibility.Collapsed;
+        public ReactiveCommand OnClickTestSend { get; set; }
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        public void DebugInit()
+        {
+            IsDebug = true;
+            DebugVisible = Visibility.Visible;
+            // test
+            OnClickTestSend = new ReactiveCommand();
+            OnClickTestSend.Subscribe(async (x) =>
+            {
+                try
+                {
+                    //var z = await Script.Interpreter.Engine.wv.ExecuteScriptAsync("debug()");
+
+                    var script = @"
+(() => {
+try {
+    //throw new Error('error');
+    //Comm.Debug();
+    return CommDebug();
+}
+catch (e) {
+    Comm.Error(e.message);
+    return false;
+}
+return true;
+})();
+";
+                    //script = @"import { test_js_test } from 'test.js';";
+                    //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync("CommDebug()");
+                    //var result = await Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync(script);
+                    int i;
+                    i = 0;
+                    i++;
+                    await Task.Delay(1);
+                }
+                catch (Exception e)
+                {
+                    Logger.AddException(e);
+                }
+                /*
+                //SerialWrite_test();
+                var task = Script.Interpreter.Engine.wv.CoreWebView2.ExecuteScriptAsync($@"
+
+                    (function () {{
+                        //処理
+                        try {{
+                            return {{ code: -1, result: test_func_async()}};
+                        }} catch (e) {{
+                            return {{ code: -1, result: e.message}};
+                        }}
+                        return 2;
+                    }}())
+                ");
+                int i = 0;
+                i++;
+                var result = await task;
+                i++;
+                */
+            })
+                .AddTo(Disposables);
+        }
+
+
 
         #region IClosing Support
         bool IClosing.OnClosing()

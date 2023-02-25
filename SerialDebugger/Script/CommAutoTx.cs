@@ -19,22 +19,48 @@ namespace SerialDebugger.Script
         // Comm: AutoTx
         public ReactiveCollection<SerialDebugger.Comm.AutoTxJob> AutoTxJobsRef { get; set; }
         // I/F: C# -> WebView2
-        public CommAutoTxActionsIf CommAutoTxActionsIf { get; set; } = new CommAutoTxActionsIf();
+        public CommAutoTxJobIf AutoTxJobIf { get; set; } = new CommAutoTxJobIf();
         // I/F: WebView2 -> C#
         public bool Result { get; set; } = true;
 
         [System.Runtime.CompilerServices.IndexerName("Items")]
-        public CommAutoTxActionsIf this[int job_id]
+        public CommAutoTxJobIf this[int job_id]
         {
             get
             {
-                return CommAutoTxActionsIf.AutoTxAction(AutoTxJobsRef[job_id].Actions);
+                return AutoTxJobIf.AutoTxJob(AutoTxJobsRef[job_id]);
             }
         }
 
         public CommAutoTxJobsIf AutoTxJobs(ReactiveCollection<SerialDebugger.Comm.AutoTxJob> autotx)
         {
             AutoTxJobsRef = autotx;
+            return this;
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommAutoTxJobIf
+    {
+        // Commデータへの参照
+        // Comm: AutoTx
+        public SerialDebugger.Comm.AutoTxJob AutoTxJobRef { get; set; }
+        //
+        public CommAutoTxActionsIf Actions { get; set; } = new CommAutoTxActionsIf();
+
+        public void JumpTo(int id)
+        {
+            if (id < AutoTxJobRef.Actions.Count)
+            {
+                AutoTxJobRef.ActiveActionIndex = id;
+            }
+        }
+
+        public CommAutoTxJobIf AutoTxJob(SerialDebugger.Comm.AutoTxJob job)
+        {
+            AutoTxJobRef = job;
+            Actions.AutoTxActions(job.Actions);
             return this;
         }
     }
@@ -58,7 +84,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public CommAutoTxActionsIf AutoTxAction(ReactiveCollection<SerialDebugger.Comm.AutoTxAction> actions)
+        public CommAutoTxActionsIf AutoTxActions(ReactiveCollection<SerialDebugger.Comm.AutoTxAction> actions)
         {
             AutoTxActionsRef = actions;
             return this;

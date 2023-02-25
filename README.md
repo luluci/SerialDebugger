@@ -1036,8 +1036,6 @@ GUI上ログボックスにログを出力する。
 | spacer | number | 空白スペース列
 | tx_buffer | number | 送信データバックアップ領域表示列
 
----
-
 ```json
 "gui": {
 	"window": {
@@ -1067,6 +1065,8 @@ GUI上ログボックスにログを出力する。
 }
 ```
 
+---
+
 ### log
 
 | Setting | Format | Description |
@@ -1074,18 +1074,20 @@ GUI上ログボックスにログを出力する。
 | directory | string | SerialDebugger.exeがあるフォルダを起点にログファイルを格納するパスを指定する。<br>省略可。省略時はログを保存しない。
 | max_size | number | GUI上ログ表示を何件まで保持するかを設定する。
 
----
-
 	"log": {
 		"directory": "path",
 		"max_size": 100
 	}
+
+---
 
 ### output
 
 | Setting | Format | Description |
 ----|----|---- 
 | drag_drop | object | GUI上の通信フィールド名称部分をDrag&Drop可能。フィールド名称、設定値をテキストでエクスポートする。本設定で対象情報の前後にテキストを挿入可能。html形式でのDropデータ作成を想定している。
+
+---
 
 ### drag_drop
 
@@ -1099,8 +1101,6 @@ GUI上ログボックスにログを出力する。
 | field_inner_name | object | inner_field名称を囲う設定。省略時はfield名称とfield設定値のセットをDropデータから除外する。
 | field_inner_value | object | inner_field設定値を囲う設定。省略時はfield名称とfield設定値のセットをDropデータから除外する。
 | value_format | string | "Input" or 省略<br>"Input"指定時はfieldで定義した入力指定を元にfield設定値をテキスト化する。省略時は16進数文字列となる。
-
----
 
 ```json
 "output": {

@@ -31,6 +31,8 @@ namespace SerialDebugger.Script
         // 受信解析対象 受信データ
         // script文字列に埋め込む場合は毎回string生成になるのでI/Fで渡した方が早いか？
         public byte Data { get; set; } = 0;
+        //public int FrameId { get; set; } = 0;
+        //public int PatternId { get; set; } = 0;
         // I/F: WebView2 -> C#
         // Rxの受信解析結果の応答に使う
         public int MatchProgress { get; } = CommRxResult.MatchProgress;

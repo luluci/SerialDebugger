@@ -107,7 +107,7 @@ namespace SerialDebugger.Comm
 
         public static Border MakeJobName(AutoTxJob job, string path)
         {
-            var cb = new CheckBox();
+            var tb = new TextBlock();
             string name;
             if (Setting.Data.Comm.DisplayId)
             {
@@ -117,9 +117,11 @@ namespace SerialDebugger.Comm
             {
                 name = job.Alias;
             }
-            cb.Content = name;
+            tb.Text = name;
+            tb.TextWrapping = TextWrapping.Wrap;
 
-
+            var cb = new CheckBox();
+            cb.Content = tb;
             var bind = new Binding(path + ".IsActive.Value");
             cb.SetBinding(CheckBox.IsCheckedProperty, bind);
             cb.FontWeight = FontWeights.Bold;
@@ -135,6 +137,7 @@ namespace SerialDebugger.Comm
             border.Child = cb;
             border.Padding = new Thickness(10,10,10,10);
             border.Margin = new Thickness(5, 5, 0, 5);
+            border.MaxWidth = 200;
 
             var bind_bg = new Binding(path + ".IsActive.Value");
             bind_bg.Converter = ActiveJobBGColorConverter;

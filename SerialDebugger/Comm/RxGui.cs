@@ -44,7 +44,7 @@ namespace SerialDebugger.Comm
                 w = MakeBody(Gui.setting, grid3, frame, frame_no);
 
                 //margin_l += (grid1.Width + 50);
-                margin_l += (w + 50);
+                margin_l += (w + 30);
                 frame_no++;
             }
 

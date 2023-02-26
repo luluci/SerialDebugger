@@ -32,16 +32,24 @@
                 </StackPanel>
                 <Button x:Name="BtnSettings" Content="COM設定" Command="{Binding OnClickSerialSetting}" IsEnabled="{Binding IsEnableSerialSetting.Value}"  Height="20" Margin="10,5,0,0" Width="74" FontFamily="Meiryo UI"/>
                 <Button Content="{Binding TextSerialOpen.Value}" Command="{Binding OnClickSerialOpen}" IsEnabled="{Binding IsEnableSerialOpen.Value}" Height="20" Margin="10,5,0,0"  Width="74" FontFamily="Meiryo UI"/>
-                <StackPanel Orientation="Horizontal" Margin="10,5,0,0" Height="22">
-                    <TextBlock Margin="0,3,0,0" Text="送信:"/>
-                    <ComboBox ItemsSource="{Binding TxShortcut}" DisplayMemberPath="Name" SelectedIndex="{Binding TxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
-                    <Button Content="{Binding TxShortcutButtonDisp.Value}" Command="{Binding OnClickTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="10,5,0,0" Height="22">
-                    <TextBlock Margin="0,3,0,0" Text="自動送信:"/>
-                    <ComboBox x:Name="AutoTxShortcut" ItemsSource="{Binding AutoTxJobs}" DisplayMemberPath="Alias" SelectedIndex="{Binding AutoTxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
-                    <Button Content="{Binding AutoTxShortcutButtonDisp.Value}" Command="{Binding OnClickAutoTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
-                </StackPanel>
+                <Grid Margin="10,5,0,0" Height="28">
+                    <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}">
+                        <StackPanel Orientation="Horizontal" Margin="4,2,2,2">
+                            <TextBlock Margin="0,3,0,0" Text="送信:"/>
+                            <ComboBox ItemsSource="{Binding TxShortcut}" DisplayMemberPath="Name" SelectedIndex="{Binding TxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
+                            <Button Content="{Binding TxShortcutButtonDisp.Value}" Command="{Binding OnClickTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <Grid Margin="10,5,0,0" Height="28">
+                    <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}">
+                        <StackPanel Orientation="Horizontal" Margin="4,2,2,2">
+                            <TextBlock Margin="0,3,0,0" Text="自動送信:"/>
+                            <ComboBox x:Name="AutoTxShortcut" ItemsSource="{Binding AutoTxJobs}" DisplayMemberPath="Alias" SelectedIndex="{Binding AutoTxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
+                            <Button Content="{Binding AutoTxShortcutButtonDisp.Value}" Command="{Binding OnClickAutoTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
                 <Button Content="Script" ToolTip="WebView2ウインドウを開く" Command="{Binding OnClickOpenScript}" Margin="10,5,0,0" Width="45" Height="20" />
                 <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}" Visibility="{Binding DebugVisible}" Margin="10,5,0,0" Width="80"/>
             </WrapPanel>

@@ -23,7 +23,7 @@ namespace SerialDebugger.Comm
         public (DateTime, AutoTxActionType, object)[] LogBuffer;
         public int LogBufferHead;
         public int LogBufferTail;
-        public Utility.CycleTimer CycleTimer;
+        public Utility.CycleTimer WaitTimer;
 
         public ReactiveCollection<AutoTxAction> Actions { get; set; }
 
@@ -32,7 +32,7 @@ namespace SerialDebugger.Comm
         public AutoTxJob(int id, string name, string alias, bool active = false)
         {
             Id = id;
-            CycleTimer = new Utility.CycleTimer();
+            WaitTimer = new Utility.CycleTimer();
 
             Name = name;
             IsActive = new ReactivePropertySlim<bool>(active);
@@ -40,7 +40,7 @@ namespace SerialDebugger.Comm
             {
                 if (x)
                 {
-                    CycleTimer.Start();
+                    WaitTimer.Start();
                 }
             });
             IsActive.AddTo(Disposables);
@@ -177,8 +177,16 @@ namespace SerialDebugger.Comm
                         break;
 
                     case AutoTxActionType.Jump:
-                        ActJump();
-                        check = true;
+                        if (ActJump(protocol.AutoTxJobs))
+                        {
+                            // 自分自身のJumpToのとき、対象アクションが次に移動しているので実行する。
+                            check = true;
+                        }
+                        else
+                        {
+                            // 自分以外のJumpToのとき、次のActionに移行
+                            check = NextAction();
+                        }
                         break;
 
                     case AutoTxActionType.Script:
@@ -225,7 +233,7 @@ namespace SerialDebugger.Comm
                     if (result)
                     {
                         // 処理終了からの時間を計測
-                        CycleTimer.StartBy(protocol.Result.TimeStamp);
+                        WaitTimer.StartBy(protocol.Result.TimeStamp);
                         // 受信判定一致していたら次のActionに移行
                         if (NextAction())
                         {
@@ -239,7 +247,7 @@ namespace SerialDebugger.Comm
                     if (await ActScriptRx())
                     {
                         // 処理終了からの時間を計測
-                        CycleTimer.StartBy(protocol.Result.TimeStamp);
+                        WaitTimer.StartBy(protocol.Result.TimeStamp);
                         // 受信判定一致していたら次のActionに移行
                         if (NextAction())
                         {
@@ -299,7 +307,7 @@ namespace SerialDebugger.Comm
             // バッファ送信
             serial.Write(buff, action.TxFrameOffset, action.TxFrameLength);
             // 処理終了からの時間を計測
-            CycleTimer.Start();
+            WaitTimer.Start();
             // Log出力
             Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
         }
@@ -312,16 +320,16 @@ namespace SerialDebugger.Comm
             if (action.Immediate)
             {
                 // 即時実行の場合はスレッドを止める
-                CycleTimer.WaitThread(action.WaitTime.Value);
-                CycleTimer.Start();
+                WaitTimer.WaitThread(action.WaitTime.Value);
+                WaitTimer.Start();
                 result = true;
             }
             else
             {
                 // 即時実行でない場合はポーリング周期で時間計測
-                if (CycleTimer.WaitForMsec(action.WaitTime.Value) <= 0)
+                if (WaitTimer.WaitForMsec(action.WaitTime.Value) <= 0)
                 {
-                    CycleTimer.Start();
+                    WaitTimer.Start();
                     result = true;
                 }
             }
@@ -329,14 +337,34 @@ namespace SerialDebugger.Comm
             return result;
         }
 
-        private void ActJump()
+        private bool ActJump(IList<Comm.AutoTxJob> AutoTxJobs)
         {
             // 現在Action終了
-            Actions[ActiveActionIndex].IsActive.Value = false;
-            // JumpToに移行
-            ActiveActionIndex = Actions[ActiveActionIndex].JumpTo.Value;
-            // Actionを有効にする
-            Actions[ActiveActionIndex].IsActive.Value = true;
+            var action = Actions[ActiveActionIndex];
+            action.IsActive.Value = false;
+            WaitTimer.Start();
+            if (action.AutoTxJobIndex == -1)
+            {
+                // 自分自身のJumpTo
+                ActiveActionIndex = action.JumpTo.Value;
+                // 次Actionを有効にする
+                Actions[ActiveActionIndex].IsActive.Value = true;
+                // 自分自身のJumpToのときtrue
+                return true;
+            }
+            else
+            {
+                // 指定したジョブのJumpTo
+                // Waitタイマはクリアスタートしておく
+                var tgt = AutoTxJobs[action.AutoTxJobIndex];
+                tgt.Actions[tgt.ActiveActionIndex].IsActive.Value = false;
+                tgt.ActiveActionIndex = action.JumpTo.Value;
+                tgt.Actions[tgt.ActiveActionIndex].IsActive.Value = true;
+
+                tgt.WaitTimer.Start();
+                // 指定したジョブのJumpToのときfalse
+                return false;
+            }
         }
 
         private async Task<bool> ActScriptCycle()
@@ -357,7 +385,7 @@ namespace SerialDebugger.Comm
                 else
                 {
                     // 処理終了からの時間を計測
-                    CycleTimer.Start();
+                    WaitTimer.Start();
                 }
             }
             else
@@ -377,7 +405,7 @@ namespace SerialDebugger.Comm
 
             if (action.HasRxHandler)
             {
-                // AutoTxイベントハンドラを持っていたらScript実行
+                // Rxイベントハンドラを持っていたらScript実行
                 await Script.Interpreter.Engine.ExecuteScriptAsync(action.RxHandler);
                 // false時のみ再判定
                 if (!Script.Interpreter.Engine.Comm.RxMatch.Result)
@@ -398,15 +426,15 @@ namespace SerialDebugger.Comm
         private void ActActivateAutoTx(IList<Comm.AutoTxJob> AutoTxJobs)
         {
             var action = Actions[ActiveActionIndex];
-
             AutoTxJobs[action.AutoTxJobIndex].IsActive.Value = action.AutoTxState;
+            WaitTimer.Start();
         }
 
         private void ActActivateRx(IList<Comm.RxFrame> RxFrames)
         {
             var action = Actions[ActiveActionIndex];
-
             RxFrames[action.RxFrameIndex].Patterns[action.RxPatternIndex].IsActive.Value = action.RxState;
+            WaitTimer.Start();
         }
 
         private bool ActRecv(Serial.Protocol protocol)

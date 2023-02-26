@@ -507,6 +507,38 @@ namespace SerialDebugger.Settings
         {
             switch (action.Type)
             {
+                case AutoTxActionType.Jump:
+                    bool set_jobname = false;
+                    // JumpToチェック
+                    if (AutoTxJobNameDict.TryGetValue(action.AutoTxJobName, out int jmpidx))
+                    {
+                        // 自分以外のジョブを指定したときインデックスを記憶しておく
+                        if (job.Id != jmpidx)
+                        {
+                            action.AutoTxJobIndex = jmpidx;
+                            set_jobname = true;
+                        }
+                        // else action.AutoTxJobIndex = -1;
+                    }
+                    else
+                    {
+                        // 未指定のときは自分を指定したと判定
+                        // action.AutoTxJobIndex = -1;
+                    }
+
+                    if (Object.ReferenceEquals(action.Alias, string.Empty))
+                    {
+                        if (set_jobname)
+                        {
+                            action.Alias = $"JumpTo {action.AutoTxJobName}[{action.JumpTo}]";
+                        }
+                        else
+                        {
+                            action.Alias = $"JumpTo [{action.JumpTo}]";
+                        }
+                    }
+                    break;
+
                 case AutoTxActionType.ActivateAutoTx:
                     // Activateチェック
                     if (AutoTxJobNameDict.TryGetValue(action.AutoTxJobName, out int index))
@@ -639,7 +671,7 @@ namespace SerialDebugger.Settings
                 throw new Exception($"actions[{id}](Jump): JumpToを指定してください。");
             }
 
-            var act = AutoTxAction.MakeJumpAction(id, action.Alias, action.JumpTo, action.Immediate);
+            var act = AutoTxAction.MakeJumpAction(id, action.Alias, action.JumpTo, action.AutoTxJobName, action.Immediate);
 
             return act;
         }

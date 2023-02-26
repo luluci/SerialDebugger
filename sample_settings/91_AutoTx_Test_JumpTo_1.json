@@ -1,0 +1,69 @@
+{
+	"name": "Test_AutoTx_JumpTo_1",
+	
+	"comm": {
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_0",
+					"alias": "Test開始",
+					"active": true,
+					"actions": [
+						{ "type": "Wait", "wait_time": 5000 },
+						{ "type": "Activate", "state": true, "auto_tx_job": "Job_1" },
+						{ "type": "Activate", "state": true, "auto_tx_job": "Job_2" },
+						{ "type": "Activate", "state": true, "auto_tx_job": "Job_3" }
+					]
+				},
+				{
+					"name": "Job_1",
+					"alias": "Test実行ジョブ",
+					"active": false,
+					"actions": [
+						{ "type": "Wait", "wait_time": 2000 },
+						{ "type": "Jump", "jump_to": 0, "auto_tx_job": "Job_3" },
+						{ "type": "Jump", "jump_to": 0 }
+					]
+				},
+				{
+					"name": "Job_2",
+					"alias": "Test_OKで到達",
+					"active": false,
+					"actions": [
+						{ "type": "Wait", "wait_time": 50000 },
+						{ "type": "Activate", "state": false, "auto_tx_job": "Job_3" },
+						{ "type": "Activate", "state": false, "auto_tx_job": "Job_1" },
+						{ "type": "Log", "log": "<Test OK>" }
+					]
+				},
+				{
+					"name": "Job_3",
+					"alias": "Test_NGで到達 ()",
+					"active": false,
+					"actions": [
+						{ "type": "Wait", "wait_time": 1000 },
+						{ "type": "Wait", "wait_time": 10000 },
+						{ "type": "Activate", "state": false, "auto_tx_job": "Job_1" },
+						{ "type": "Activate", "state": false, "auto_tx_job": "Job_2" },
+						{ "type": "Log", "log": "<Test NG>" }
+					]
+				}
+			]
+		},
+	
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_1",
+					"fields": [
+						{
+							"name": "field1_1",
+							"bit_size": 8,
+							"value": 1
+						}
+					]
+				}
+			]
+		}
+	}
+}

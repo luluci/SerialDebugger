@@ -105,7 +105,7 @@ namespace SerialDebugger.Comm
             return action;
         }
 
-        public static AutoTxAction MakeJumpAction(int id, string alias, int jumpto, bool immediate)
+        public static AutoTxAction MakeJumpAction(int id, string alias, int jumpto, string job_name, bool immediate)
         {
             var action = new AutoTxAction(id, alias)
             {
@@ -114,11 +114,10 @@ namespace SerialDebugger.Comm
             };
             action.JumpTo = new ReactivePropertySlim<int>(jumpto);
             action.JumpTo.AddTo(action.Disposables);
-
-            if (Object.ReferenceEquals(action.Alias, string.Empty))
-            {
-                action.Alias = $"JumpTo [{action.JumpTo}]";
-            }
+            // ジョブ名称のチェックはAutoTx解析完了後に実施
+            // Alias作成もチェック時に実施
+            action.AutoTxJobName = job_name;
+            action.AutoTxJobIndex = -1;
 
             return action;
         }
@@ -225,6 +224,7 @@ namespace SerialDebugger.Comm
                 Type = AutoTxActionType.ActivateAutoTx,
                 Immediate = immediate,
             };
+            // ジョブ名称のチェックはAutoTx解析完了後に実施
             action.AutoTxJobName = job_name;
             action.AutoTxJobIndex = -1;
             action.AutoTxState = state;

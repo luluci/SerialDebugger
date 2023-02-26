@@ -220,6 +220,11 @@ namespace SerialDebugger.Serial
 
         public SerialPort GetSerialPort()
         {
+            // COMポートチェック
+            if (ComList.Count == 0)
+            {
+                throw new Exception("COMポートが存在しません");
+            }
             // Handshake作成
             var handshake = Handshake.None;
             var rts = RtsListSelectIndex.Value == 1;
@@ -243,13 +248,12 @@ namespace SerialDebugger.Serial
                 txtimeout = TxTimeout.Value;
             }
 
-            return new SerialPort
+            var serial = new SerialPort
             {
                 PortName = ComList[ComListSelectIndex.Value],
                 BaudRate = BaudrateListSelectItem.Value,
                 DataBits = DataBitsList[DataBitsListSelectIndex.Value],
                 Parity = ParityList[ParityListSelectIndex.Value].Parity,
-                StopBits = StopBitsList[StopBitsListSelectIndex.Value].StopBits,
                 // フロー制御
                 DtrEnable = (DtrEnableListSelectIndex.Value == 1),
                 Handshake = handshake,
@@ -257,6 +261,14 @@ namespace SerialDebugger.Serial
                 WriteTimeout = txtimeout,
                 ReadTimeout = 0,
             };
+
+            // StopBits.Noneを指定するとエラーになる
+            if (StopBitsList[StopBitsListSelectIndex.Value].StopBits != StopBits.None)
+            {
+                serial.StopBits = StopBitsList[StopBitsListSelectIndex.Value].StopBits;
+            }
+
+            return serial;
         }
 
         #region IDisposable Support

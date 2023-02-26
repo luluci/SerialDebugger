@@ -869,7 +869,8 @@ type毎に固有のプロパティを設定する。
 
 ### auto_tx.jobs.actions.Send
 
-txで定義した送信フレームを指定して送信する。
+txで定義した送信フレームを指定して送信する。  
+アクション実行時にWaitタイマをリスタートする。
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -898,7 +899,8 @@ txで定義した送信フレームを指定して送信する。
 
 前のアクション完了から、指定した時間が経過するまで待機する。  
 ポーリングで周期時間でアクションを実行するため、ポーリング時間設定値により誤差が出るため注意。  
-immediateを指定した場合、スレッドをロックして時間経過を待機するため誤差が小さくなるが、GUIが応答なしになるため注意。
+immediateを指定した場合、スレッドをロックして時間経過を待機するため誤差が小さくなるが、GUIが応答なしになるため注意。  
+時間待機完了して次のアクションに遷移する時にWaitタイマをリスタートする。
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -914,6 +916,8 @@ immediateを指定した場合、スレッドをロックして時間経過を�
 ---
 
 ### auto_tx.jobs.actions.Recv
+
+パターンマッチング条件成立したときの受信データを受信した時刻でWaitタイマをスタートする。
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -931,16 +935,19 @@ immediateを指定した場合、スレッドをロックして時間経過を�
 
 ### auto_tx.jobs.actions.Jump
 
-指定したアクションに実行個所を移動する。これによりauto_txの繰り返し実行ができる。
+指定したアクションに実行個所を移動する。これによりauto_txの繰り返し実行ができる。  
+アクション実行時にWaitタイマをリスタートする。
 
 | Setting | Format | Description |
 ----|----|---- 
 | type | string | "Jump"
 | jump_to | number | アクションIDを指定する。
+| auto_tx_job | string | auto_tx.jobs.nameで操作対象ジョブを指定できる。存在しない名前を指定するとエラー。<br>省略時は自ジョブを対象とする。
 
 ```json
 "actions": [
-	{ "type": "Jump", "jump_to": 0 }
+	{ "type": "Jump", "jump_to": 0 },
+	{ "type": "Jump", "jump_to": 0, "auto_tx_job": "job_name" }
 ]
 ```
 
@@ -948,7 +955,8 @@ immediateを指定した場合、スレッドをロックして時間経過を�
 
 ### auto_tx.jobs.actions.Script
 
-指定したJavaScriptを実行する。auto_tx_handlerとrx_handlerのどちらかあるいは両方を指定する。
+指定したJavaScriptを実行する。auto_tx_handlerとrx_handlerのどちらかあるいは両方を指定する。  
+rx_handler選択時、パターンマッチング条件成立したときの受信データを受信した時刻でWaitタイマをスタートする。
 
 | Setting | Format | Description |
 ----|----|---- 
@@ -966,6 +974,8 @@ immediateを指定した場合、スレッドをロックして時間経過を�
 ---
 
 ### auto_tx.jobs.actions.Activate
+
+アクション実行時にWaitタイマをリスタートする。
 
 | Setting | Format | Description |
 ----|----|---- 

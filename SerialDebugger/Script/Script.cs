@@ -15,6 +15,9 @@ namespace SerialDebugger.Script
     using System.Text.Unicode;
     using System.Windows.Forms;
     using System.Reactive.Disposables;
+    using Reactive.Bindings;
+    using Reactive.Bindings.Extensions;
+
     using Logger = Log.Log;
     using Utility;
 
@@ -45,6 +48,8 @@ namespace SerialDebugger.Script
         public SettingsIf Settings { get; set; }
         public UtilityIf Utility { get; set; }
         
+        // I/F
+        ReactivePropertySlim<bool> OnLoaded { get; set; }
         // Load済みScriptDict
         Dictionary<string, bool> LoadedScript;
 
@@ -74,6 +79,10 @@ namespace SerialDebugger.Script
             Comm = new CommIf();
             Settings = new SettingsIf();
             Utility = new UtilityIf();
+            //
+            OnLoaded = new ReactivePropertySlim<bool>(false);
+            OnLoaded.AddTo(Disposables);
+            Settings.OnLoaded = OnLoaded;
             //
             LoadedScript = new Dictionary<string, bool>();
         }
@@ -149,17 +158,11 @@ namespace SerialDebugger.Script
     return true;
 }})();
 ";
-                    Settings.ScriptLoaded = false;
+                    Settings.OnLoaded.Value = false;
                     var result = await WebView2.CoreWebView2.ExecuteScriptAsync(load_script);
                     if (result == "true")
                     {
-                        await Task.Run(() =>
-                        {
-                            while (!Settings.ScriptLoaded)
-                            {
-                                Task.Delay(100);
-                            }
-                        });
+                        await Settings.OnLoaded;
                         LoadedScript.Add(script, true);
                     }
                     else

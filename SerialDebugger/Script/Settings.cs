@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reactive.Bindings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,7 +13,18 @@ namespace SerialDebugger.Script
     [ComVisible(true)]
     public class SettingsIf
     {
-        public bool ScriptLoaded { get; set; } = false;
+        public ReactivePropertySlim<bool> OnLoaded { get; set; }
+        public bool ScriptLoaded
+        {
+            get
+            {
+                return OnLoaded.Value;
+            }
+            set
+            {
+                OnLoaded.Value = value;
+            }
+        }
 
         public FieldIf Field { get; set; } = new FieldIf();
 

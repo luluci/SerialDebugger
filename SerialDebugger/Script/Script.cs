@@ -132,7 +132,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public async Task LoadSettingsScript(List<string> scripts)
+        public async Task LoadScriptFile(List<string> scripts)
         {
             foreach (var script in scripts)
             {
@@ -142,13 +142,24 @@ namespace SerialDebugger.Script
 (() => {{
     var sc = document.createElement('script');
     sc.src = '../Settings/{script}';
+    sc.onload = () => {{
+        Settings.ScriptLoaded = true;
+    }};
     document.body.appendChild(sc);
     return true;
 }})();
 ";
+                    Settings.ScriptLoaded = false;
                     var result = await WebView2.CoreWebView2.ExecuteScriptAsync(load_script);
                     if (result == "true")
                     {
+                        await Task.Run(() =>
+                        {
+                            while (!Settings.ScriptLoaded)
+                            {
+                                Task.Delay(100);
+                            }
+                        });
                         LoadedScript.Add(script, true);
                     }
                     else

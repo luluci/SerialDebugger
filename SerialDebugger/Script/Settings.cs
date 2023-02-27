@@ -12,6 +12,7 @@ namespace SerialDebugger.Script
     [ComVisible(true)]
     public class SettingsIf
     {
+        public bool ScriptLoaded { get; set; } = false;
 
         public FieldIf Field { get; set; } = new FieldIf();
 

@@ -186,7 +186,7 @@ namespace SerialDebugger.Settings
                     info.Script.Add(file);
                 }
                 // Commロード前にjsファイルをロード
-                await Script.Interpreter.Engine.LoadSettingsScript(info.Script);
+                await Script.Interpreter.Engine.LoadScriptFile(info.Script);
             }
 
             // Output

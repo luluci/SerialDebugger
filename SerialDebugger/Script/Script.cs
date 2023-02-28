@@ -48,8 +48,6 @@ namespace SerialDebugger.Script
         public SettingsIf Settings { get; set; }
         public UtilityIf Utility { get; set; }
         
-        // I/F
-        ReactivePropertySlim<bool> OnLoaded { get; set; }
         // Load済みScriptDict
         Dictionary<string, bool> LoadedScript;
 
@@ -79,10 +77,7 @@ namespace SerialDebugger.Script
             Comm = new CommIf();
             Settings = new SettingsIf();
             Utility = new UtilityIf();
-            //
-            OnLoaded = new ReactivePropertySlim<bool>(false);
-            OnLoaded.AddTo(Disposables);
-            Settings.OnLoaded = OnLoaded;
+
             //
             LoadedScript = new Dictionary<string, bool>();
         }
@@ -158,11 +153,16 @@ namespace SerialDebugger.Script
     return true;
 }})();
 ";
-                    Settings.OnLoaded.Value = false;
+                    Settings.ScriptLoaded = false;
                     var result = await WebView2.CoreWebView2.ExecuteScriptAsync(load_script);
                     if (result == "true")
                     {
-                        await Settings.OnLoaded;
+                        // Script読み込み完了まで待機, 5秒でタイムアウト
+                        for (int timeup = 0; !Settings.ScriptLoaded && timeup < 50; timeup++)
+                        {
+                            await Task.Delay(100);
+                        }
+                        // ロード済みファイルに登録
                         LoadedScript.Add(script, true);
                     }
                     else

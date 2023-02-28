@@ -13,18 +13,7 @@ namespace SerialDebugger.Script
     [ComVisible(true)]
     public class SettingsIf
     {
-        public ReactivePropertySlim<bool> OnLoaded { get; set; }
-        public bool ScriptLoaded
-        {
-            get
-            {
-                return OnLoaded.Value;
-            }
-            set
-            {
-                OnLoaded.Value = value;
-            }
-        }
+        public bool ScriptLoaded { get; set; } = false;
 
         public FieldIf Field { get; set; } = new FieldIf();
 

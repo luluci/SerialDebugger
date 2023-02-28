@@ -17,6 +17,7 @@ using System.Threading;
 
 namespace SerialDebugger
 {
+    using System.Reactive.Linq;
     using Utility;
     using Logger = Log.Log;
     using Setting = Settings.Settings;
@@ -119,6 +120,7 @@ namespace SerialDebugger
             // 設定ボタン
             IsEnableSerialSetting = IsSerialOpen
                 .Inverse()
+                .CombineLatest(IsEnableSerialOpen, (x, y) => x && y)
                 .ToReadOnlyReactivePropertySlim<bool>();
             OnClickSerialSetting = new ReactiveCommand();
             OnClickSerialSetting
@@ -138,7 +140,9 @@ namespace SerialDebugger
             SettingsSelectIndex
                 .Subscribe(async (int idx) =>
                 {
+                    IsEnableSerialOpen.Value = false;
                     await UpdateTxAsync();
+                    IsEnableSerialOpen.Value = true;
                 })
                 .AddTo(Disposables);
             OnClickTxDataSend = new ReactiveCommand();

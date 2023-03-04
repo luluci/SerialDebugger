@@ -41,11 +41,11 @@ namespace SerialDebugger.Comm
         public bool Immediate { get; set; }
 
         // Send
-        public ReactivePropertySlim<string> TxFrameName { get; private set; }
+        public string TxFrameName { get; private set; }
         public int TxFrameIndex { get; private set; }
         public int TxFrameOffset { get; set; }
         public int TxFrameLength { get; set; }
-        public ReactivePropertySlim<int> TxFrameBuffIndex { get; private set; }
+        public int TxFrameBuffIndex { get; private set; }
 
         /// <summary>
         /// 待機時間(milli sec)
@@ -129,13 +129,11 @@ namespace SerialDebugger.Comm
                 Type = AutoTxActionType.Send,
                 Immediate = immediate,
             };
-            action.TxFrameName = new ReactivePropertySlim<string>(tx_frame_name);
-            action.TxFrameName.AddTo(action.Disposables);
+            action.TxFrameName = tx_frame_name;
             action.TxFrameIndex = tx_frame_idx;
             action.TxFrameOffset = buff_offset;
             action.TxFrameLength = buff_length;
-            action.TxFrameBuffIndex = new ReactivePropertySlim<int>(buff_idx);
-            action.TxFrameBuffIndex.AddTo(action.Disposables);
+            action.TxFrameBuffIndex = buff_idx;
 
             // Validation時に作成
             //if (Object.ReferenceEquals(action.Alias, string.Empty))

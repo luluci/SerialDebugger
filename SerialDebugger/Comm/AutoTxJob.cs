@@ -87,23 +87,30 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.Send:
                     // action.TxFrameIndex 上流でチェック済み
                     var frame = TxFrames[action.TxFrameIndex];
-                    if (action.TxFrameBuffIndex.Value < 0)
+                    if (action.TxFrameBuffIndex < 0)
                     {
-                        throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: 0より大きな値を指定してください。({action.TxFrameBuffIndex.Value})");
+                        throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: 0より大きな値を指定してください。({action.TxFrameBuffIndex})");
                     }
-                    else if (action.TxFrameBuffIndex.Value >= frame.BufferSize)
+                    else if (action.TxFrameBuffIndex >= frame.BufferSize)
                     {
-                        throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: BackupBufferの定義数より大きな値が指定されました。({action.TxFrameBuffIndex.Value})");
+                        throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: BackupBufferの定義数より大きな値が指定されました。({action.TxFrameBuffIndex})");
                     }
-                    var fb = frame.Buffers[action.TxFrameBuffIndex.Value];
-                    // Offset/Length
+                    var fb = frame.Buffers[action.TxFrameBuffIndex];
+                    // Offset
                     if (action.TxFrameOffset == -1)
                     {
                         action.TxFrameOffset = 0;
                     }
+                    // Length
                     if (action.TxFrameLength == -1)
                     {
                         action.TxFrameLength = frame.Length;
+
+                        // 省略時はLengthをOffsetに合わせて自動調整
+                        if ((action.TxFrameOffset + action.TxFrameLength) > frame.Length)
+                        {
+                            action.TxFrameLength = frame.Length - action.TxFrameOffset;
+                        }
                     }
                     if (action.TxFrameOffset >= frame.Length || (action.TxFrameOffset + action.TxFrameLength) > frame.Length)
                     {
@@ -297,8 +304,8 @@ namespace SerialDebugger.Comm
         {
             var action = Actions[ActiveActionIndex];
             var frame = TxFrames[action.TxFrameIndex];
-            var fb = frame.Buffers[action.TxFrameBuffIndex.Value];
-            var buff_idx = action.TxFrameBuffIndex.Value;
+            var fb = frame.Buffers[action.TxFrameBuffIndex];
+            var buff_idx = action.TxFrameBuffIndex;
             string name;
             // バッファ選択
             //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);

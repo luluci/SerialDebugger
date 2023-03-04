@@ -1,0 +1,355 @@
+{
+	"name": "Test_通信_自動送信_Send_1_全バッファ自動送信,受信解析確認",
+	
+	"gui": {
+		"window":
+			{
+				"width": 1200,
+				"height": 700
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"comm": {
+		"display_id": true,
+	
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_0",
+					"alias": "Test開始",
+					"active": true,
+					"actions": [
+						{ "type": "Wait", "wait_time": 5000 },
+						{ "type": "Send", "tx_frame": "Frame_A" },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_A_0" ] },
+						{ "type": "Send", "tx_frame": "Frame_A", "tx_frame_buff_index": 0 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_A_0" ] },
+						{ "type": "Send", "tx_frame": "Frame_A", "tx_frame_buff_index": 1 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_A_1" ] },
+						{ "type": "Send", "tx_frame": "Frame_A", "tx_frame_buff_index": 2 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_A_2" ] },
+						{ "type": "Send", "tx_frame": "Frame_A", "tx_frame_buff_index": 3 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_A_3" ] },
+						{ "type": "Send", "tx_frame": "Frame_A", "tx_frame_buff_length": 2 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_A_short_0" ] },
+						{ "type": "Send", "tx_frame": "Frame_A", "tx_frame_buff_index": 1, "tx_frame_buff_length": 3 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_A_short_1" ] },
+						{ "type": "Send", "tx_frame": "Frame_B" },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_B_0" ] },
+						{ "type": "Send", "tx_frame": "Frame_B", "tx_frame_buff_index": 0 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_B_0" ] },
+						{ "type": "Send", "tx_frame": "Frame_B", "tx_frame_buff_index": 1 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_B_1" ] },
+						{ "type": "Send", "tx_frame": "Frame_B", "tx_frame_buff_index": 2 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_B_2" ] },
+						{ "type": "Send", "tx_frame": "Frame_B", "tx_frame_buff_index": 3 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_B_0" ] },
+						{ "type": "Send", "tx_frame": "Frame_B", "tx_frame_buff_index": 4 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_B_0" ] },
+						{ "type": "Send", "tx_frame": "Frame_B", "tx_frame_buff_offset": 1 },
+						{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_B_offset_0" ] },
+						{ "type": "Log", "log": "<Test OK>" }
+					]
+				}
+			]
+		},
+	
+		"rx": {
+			"frames": [
+				{
+					"name": "Rx_Frame_A",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 240
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_A_0",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 0 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						},
+						{
+							"name": "Rx_Pattern_A_1",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 1 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						},
+						{
+							"name": "Rx_Pattern_A_2",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 2 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						},
+						{
+							"name": "Rx_Pattern_A_3",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 3 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						},
+						{
+							"name": "Rx_Pattern_A_short_0",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 0 },
+								{ "msec": 100 }
+							]
+						},
+						{
+							"name": "Rx_Pattern_A_short_1",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 240 },
+								{ "value": 1 },
+								{ "type": "Any" },
+								{ "msec": 100 }
+							]
+						}
+					]
+				},
+				{
+					"name": "Rx_Frame_B",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 241
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_B_0",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 241 },
+								{ "value": 0 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						},
+						{
+							"name": "Rx_Pattern_B_1",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 241 },
+								{ "value": 1 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						},
+						{
+							"name": "Rx_Pattern_B_2",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 241 },
+								{ "value": 2 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						},
+						{
+							"name": "Rx_Pattern_B_offset_0",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 0 },
+								{ "type": "Any" },
+								{ "type": "Any" }
+							]
+						}
+					]
+				}
+			]
+		},
+		
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_A",
+					"as_ascii": false,
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 240
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"backup_buffer_size": 2,
+					"backup_buffers": [
+						{
+							"name": "設定_Rx_Pattern_1",
+							"value": [ 240, 1, 0, 0 ]
+						},
+						{
+							"name": "設定_Rx_Pattern_2",
+							"value": [ 240, 2, 0, 0 ]
+						},
+						{
+							"name": "設定_Rx_Pattern_3",
+							"value": [ 240, 3, 0, 0 ]
+						}
+					]
+				},
+				{
+					"name": "Frame_B",
+					"as_ascii": false,
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 241
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"backup_buffer_size": 4,
+					"backup_buffers": [
+						{
+							"name": "Frame_B_1",
+							"value": [ 241, 1, 0, 0 ]
+						},
+						{
+							"name": "Frame_B_2",
+							"value": [ 241, 2, 0, 0 ]
+						}
+					]
+				}
+			]
+		}
+	}
+}

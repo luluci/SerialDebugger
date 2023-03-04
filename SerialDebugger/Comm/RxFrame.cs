@@ -145,13 +145,13 @@ namespace SerialDebugger.Comm
                                 throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Matchルールの指定がField定義数の範囲外");
                             }
                             // Value設定値チェック
-                            match.Value = field.LimitValue(match.Value);
+                            match.Value.Value = field.LimitValue(match.Value.Value);
                             //
-                            value |= ((match.Value & field.Mask) << bit_pos);
+                            value |= ((match.Value.Value & field.Mask) << bit_pos);
                             mask |= (field.Mask << bit_pos);
                             bit_pos += field.BitSize;
                             // Disp
-                            match.Disp.Value = match.FieldRef.MakeDispByValue(match.Value);
+                            match.Disp.Value = match.FieldRef.MakeDispByValue(match.Value.Value);
                             break;
 
                         case RxMatchType.Any:
@@ -174,7 +174,7 @@ namespace SerialDebugger.Comm
                                     throw new Exception($"RxFrame({Name})/RxPattern({pattern.Name})/RxMatch[{match_idx}]: Timeout,Script,Activateはバイト境界に配置してください。");
                                 }
                                 // Rule追加
-                                var rule = new RxAnalyzeRule(match.Msec);
+                                var rule = new RxAnalyzeRule(match.Msec.Value);
                                 pattern.Analyzer.Rules.Add(rule);
                                 // Disp
                                 match.Disp.Value = $"Timeout[{match.Msec} ms]";

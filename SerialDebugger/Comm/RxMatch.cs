@@ -31,9 +31,9 @@ namespace SerialDebugger.Comm
 
         // MatchAction
         // PatternMatch
-        public Int64 Value { get; set; }
+        public ReactivePropertySlim<Int64> Value { get; set; }
         // Timeout
-        public int Msec { get; set; }
+        public ReactivePropertySlim<int> Msec { get; set; }
         // Script
         public string RxBegin { get; set; }
         public string RxRecieved { get; set; }
@@ -53,6 +53,10 @@ namespace SerialDebugger.Comm
         {
             Disp = new ReactivePropertySlim<string>();
             Disp.AddTo(Disposables);
+            Value = new ReactivePropertySlim<Int64>();
+            Value.AddTo(Disposables);
+            Msec = new ReactivePropertySlim<int>();
+            Msec.AddTo(Disposables);
         }
 
         #region IDisposable Support

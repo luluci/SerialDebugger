@@ -398,7 +398,7 @@ namespace SerialDebugger.Comm
                         case RxMatchType.Value:
                             for (int bit = 0; bit < match.FieldRef.BitSize; bit++)
                             {
-                                grid.Children.Add(Gui.MakeTextBlockBindBitData(match.FieldRef, $"{bit_no + bit}", $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}].Value", bit, bit_pos + bit, col_bit));
+                                grid.Children.Add(Gui.MakeTextBlockBindBitData(match.FieldRef, $"{bit_no + bit}", $"RxFrames[{frame_no}].Patterns[{ptn_idx}].Matches[{match_idx}].Value.Value", bit, bit_pos + bit, col_bit));
                             }
                             use_bit_no = match.FieldRef.BitSize;
                             use_bit_pos = match.FieldRef.BitSize;

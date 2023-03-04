@@ -376,11 +376,12 @@ namespace SerialDebugger.Settings
                 throw new Exception($"matches[{id}]: 不正なvalue指定です: {match.Value}");
             }
 
-            return new RxMatch
+            var m = new RxMatch
             {
                 Type = RxMatchType.Value,
-                Value = (Int64)match.Value,
             };
+            m.Value.Value = (Int64)match.Value;
+            return m;
         }
 
         private RxMatch MakeRxMatchTimeout(int id, Json.CommRxMatch match)
@@ -390,11 +391,12 @@ namespace SerialDebugger.Settings
                 throw new Exception($"matches[{id}]: 不正なtimeout指定です: {match.Msec}");
             }
 
-            return new RxMatch
+            var m = new RxMatch
             {
                 Type = RxMatchType.Timeout,
-                Msec = match.Msec,
             };
+            m.Msec.Value = match.Msec;
+            return m;
         }
 
         private RxMatch MakeRxMatchScript(int id, Json.CommRxMatch match)

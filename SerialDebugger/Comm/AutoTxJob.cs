@@ -96,15 +96,18 @@ namespace SerialDebugger.Comm
                         throw new Exception($"AutoTx: SendAction: TxFrameBuffIndex: BackupBufferの定義数より大きな値が指定されました。({action.TxFrameBuffIndex})");
                     }
                     var fb = frame.Buffers[action.TxFrameBuffIndex];
+                    var send_fix = 0;
                     // Offset
                     if (action.TxFrameOffset == -1)
                     {
                         action.TxFrameOffset = 0;
+                        send_fix++;
                     }
                     // Length
                     if (action.TxFrameLength == -1)
                     {
                         action.TxFrameLength = frame.Length;
+                        send_fix++;
 
                         // 省略時はLengthをOffsetに合わせて自動調整
                         if ((action.TxFrameOffset + action.TxFrameLength) > frame.Length)
@@ -119,7 +122,15 @@ namespace SerialDebugger.Comm
                     // Aliasチェック
                     if (Object.ReferenceEquals(action.Alias, string.Empty))
                     {
-                        action.Alias = $"Send [{fb.Name}]";
+                        if (send_fix == 2)
+                        {
+                            action.Alias = $"Send [{fb.Name}]";
+                        }
+                        else
+                        {
+                            // Offset/Lengthがデフォルト値でなければ表示作成
+                            action.Alias = $"Send [{fb.Name}[{action.TxFrameOffset}~{action.TxFrameLength}]]";
+                        }
                     }
                     // ASCIIチェック
                     if (frame.AsAscii)
@@ -157,6 +168,11 @@ namespace SerialDebugger.Comm
                 default:
                     throw new Exception("undefined type.");
             }
+        }
+
+        public void Init()
+        {
+            WaitTimer.Start();
         }
         
         public async Task ExecCycle(Serial.Protocol protocol)

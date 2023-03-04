@@ -184,6 +184,11 @@ namespace SerialDebugger.Serial
                     }
                 }
             }
+            // AutoTx初期化
+            foreach (var job in AutoTxJobs)
+            {
+                job.Init();
+            }
             // 受信バッファ初期化
             Result.RxBuffOffset = 0;
             Result.RxBuffTgtPos = 0;

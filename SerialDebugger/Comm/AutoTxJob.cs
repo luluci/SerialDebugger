@@ -29,6 +29,8 @@ namespace SerialDebugger.Comm
 
         public int ActiveActionIndex { get; set; }
 
+        public ReactiveCommand OnClickReset { get; set; }
+
         public AutoTxJob(int id, string name, string alias, bool active = false)
         {
             Id = id;
@@ -52,6 +54,14 @@ namespace SerialDebugger.Comm
             {
                 Alias = Name;
             }
+
+            OnClickReset = new ReactiveCommand();
+            OnClickReset
+                .Subscribe(x =>
+                {
+                    Reset();
+                })
+                .AddTo(Disposables);
         }
 
         public void Add(AutoTxAction action)
@@ -170,8 +180,13 @@ namespace SerialDebugger.Comm
             }
         }
 
-        public void Init()
+        public void Reset()
         {
+            // Action実行状況をリセット
+            Actions[ActiveActionIndex].IsActive.Value = false;
+            ActiveActionIndex = 0;
+            Actions[ActiveActionIndex].IsActive.Value = true;
+            // Waitタイマリスタート
             WaitTimer.Start();
         }
         

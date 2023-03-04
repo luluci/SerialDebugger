@@ -135,12 +135,13 @@ namespace SerialDebugger.Serial
         {
             try
             {
-                IsRunning = true;
+                InitBeforeCommStart();
 
+                IsRunning = true;
                 while (IsRunning)
                 {
                     // 受信開始前に解析情報系を初期化
-                    await Init();
+                    await InitBeforeRx();
                     // 受信,自動操作ポーリング処理開始
                     // 一連の受信シーケンス完了までループする
                     await RunRxAutoTx(CancelTokenSource.Token);
@@ -162,8 +163,23 @@ namespace SerialDebugger.Serial
             CancelTokenSource.Cancel();
         }
 
+        /// <summary>
+        /// 通信開始前の初期化処理
+        /// </summary>
+        public void InitBeforeCommStart()
+        {
+            // AutoTx初期化
+            foreach (var job in AutoTxJobs)
+            {
+                job.Reset();
+            }
+        }
 
-        public async Task Init()
+        /// <summary>
+        /// 受信シーケンス開始前の初期化処理
+        /// </summary>
+        /// <returns></returns>
+        public async Task InitBeforeRx()
         {
             // 解析ルール初期化
             // 解析状況をリセットする
@@ -183,11 +199,6 @@ namespace SerialDebugger.Serial
                         }
                     }
                 }
-            }
-            // AutoTx初期化
-            foreach (var job in AutoTxJobs)
-            {
-                job.Init();
             }
             // 受信バッファ初期化
             Result.RxBuffOffset = 0;

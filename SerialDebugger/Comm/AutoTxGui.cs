@@ -127,6 +127,18 @@ namespace SerialDebugger.Comm
             cb.FontWeight = FontWeights.Bold;
             cb.Foreground = Brushes.White;
             //cb.Padding = new Thickness(5, 10, 5, 10);
+            // Resetボタン
+            var btn = new Button();
+            btn.Content = "Reset";
+            btn.Margin = new Thickness(5, 10, 5, 0);
+            btn.Width = 70;
+            bind = new Binding(path + ".OnClickReset");
+            btn.SetBinding(Button.CommandProperty, bind);
+            // 
+            var sp = new StackPanel();
+            sp.Orientation = Orientation.Vertical;
+            sp.Children.Add(cb);
+            sp.Children.Add(btn);
             //
             var border = new Border();
             border.BorderThickness = new Thickness(1);
@@ -134,7 +146,7 @@ namespace SerialDebugger.Comm
             border.CornerRadius = new CornerRadius(9, 0, 0, 9);
             //border.Background = ColorFrameNameBg;
             //border.BorderBrush = ColorFrameNameBg;
-            border.Child = cb;
+            border.Child = sp;
             border.Padding = new Thickness(10,10,10,10);
             border.Margin = new Thickness(5, 5, 0, 5);
             border.MaxWidth = 200;

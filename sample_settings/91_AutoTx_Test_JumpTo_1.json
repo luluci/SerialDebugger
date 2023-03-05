@@ -19,6 +19,7 @@
 					"name": "Job_1",
 					"alias": "Test実行ジョブ",
 					"active": false,
+					"editable": true,
 					"actions": [
 						{ "type": "Wait", "wait_time": 2000 },
 						{ "type": "Jump", "jump_to": 0, "auto_tx_job": "Job_3" },

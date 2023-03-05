@@ -827,6 +827,7 @@ const Comm_Loaded = () => {
 | jobs.name | string | 自動操作ジョブ名称。各種機能設定からの参照に使う。
 | jobs.alias | string | GUI上表示名。指定したエイリアスをそのまま表示する。
 | jobs.active | bool | 自動操作ジョブ有効無効初期設定。GUI上から操作可能。
+| jobs.editable | bool | 変更可能な自動操作アクションをGUIから変更可能にする設定。
 | jobs.actions | array | 自動操作アクション定義を配列で入力する。先頭から順に0始まりでIDを割り振る。
 
 ```json
@@ -836,6 +837,7 @@ const Comm_Loaded = () => {
 			"name": "Job_Auto_1",
 			"alias": "ジョブ1エイリアス",
 			"active": true,
+			"editable": true,
 			"actions": [ ... ]
 		}
 	]

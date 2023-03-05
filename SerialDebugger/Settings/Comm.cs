@@ -587,7 +587,7 @@ namespace SerialDebugger.Settings
             try
             {
                 // Job作成
-                var j = new AutoTxJob(id, job.Name, job.Alias, job.Active);
+                var j = new AutoTxJob(id, job.Name, job.Alias, job.Active, job.Editable);
                 // Action解析
                 if (!(job.Actions is null))
                 {

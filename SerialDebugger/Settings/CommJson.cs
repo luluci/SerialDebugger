@@ -45,6 +45,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("active")]
             public bool Active { get; set; } = false;
 
+            [JsonPropertyName("editable")]
+            public bool Editable { get; set; } = false;
+
             [JsonPropertyName("actions")]
             public IList<CommAutoTxAction> Actions { get; set; }
         }

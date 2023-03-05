@@ -34,10 +34,10 @@ namespace SerialDebugger.Comm
 
         public ReactiveCommand OnClickReset { get; set; }
 
-        public AutoTxJob(int id, string name, string alias, bool active = false)
+        public AutoTxJob(int id, string name, string alias, bool active, bool editable)
         {
             Id = id;
-            IsEditable = true;
+            IsEditable = editable;
             WaitTimer = new Utility.CycleTimer();
 
             Name = name;

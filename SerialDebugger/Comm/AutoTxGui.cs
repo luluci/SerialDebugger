@@ -92,7 +92,7 @@ namespace SerialDebugger.Comm
                     sp.Children.Add(sep);
                 }
                 // Action GUI挿入
-                var act = MakeAction(action, path + $".Actions[{i}]", is_first);
+                var act = MakeAction(job, action, path + $".Actions[{i}]", is_first, job.IsEditable);
                 //
                 sp.Children.Add(act);
 
@@ -174,14 +174,31 @@ namespace SerialDebugger.Comm
             return border;
         }
 
-        private static UIElement MakeAction(AutoTxAction action, string path, bool is_first)
+        private static UIElement MakeAction(AutoTxJob job, AutoTxAction action, string path, bool is_first, bool editable)
         {
             switch (action.Type)
             {
+                case AutoTxActionType.Jump:
+                    if (editable)
+                    {
+                        return MakeActionEditJump(job, action, path, is_first);
+                    }
+                    else
+                    {
+                        return MakeActionDisp(action, path, is_first);
+                    }
+                case AutoTxActionType.Recv:
+                    if (editable)
+                    {
+                        return MakeActionDisp(action, path, is_first);
+                        //return MakeActionEditRecv(action, path, is_first);
+                    }
+                    else
+                    {
+                        return MakeActionDisp(action, path, is_first);
+                    }
                 case AutoTxActionType.Send:
                 case AutoTxActionType.Wait:
-                case AutoTxActionType.Recv:
-                case AutoTxActionType.Jump:
                 case AutoTxActionType.Script:
                 case AutoTxActionType.ActivateAutoTx:
                 case AutoTxActionType.ActivateRx:
@@ -255,5 +272,66 @@ namespace SerialDebugger.Comm
             return border;
         }
 
+
+        private static Thickness ActionEditJumpMarginSelectActionId = new Thickness(5, 0, 0, 0);
+        private static UIElement MakeActionEditJump(AutoTxJob job, AutoTxAction action, string path, bool is_first)
+        {
+            var border = MakeActionBase(path, is_first);
+            var item = new StackPanel();
+            item.Orientation = Orientation.Horizontal;
+
+            // Jumpラベル
+            var tb = new TextBlock();
+            string name;
+            if (Setting.Data.Comm.DisplayId)
+            {
+                name = $"[{action.Id}] {action.Alias}";
+            }
+            else
+            {
+                name = action.Alias;
+            }
+            tb.Text = name;
+            item.Children.Add(tb);
+
+            // Jump先
+            if (action.AutoTxJobIndex.Value == -1)
+            {
+                // 自Job内ジャンプ
+                var select_action_id = new ComboBox();
+                select_action_id.Margin = ActionEditJumpMarginSelectActionId;
+                var bind = new Binding($"AutoTxJobs[{job.Id}].ActionIdList");
+                select_action_id.SetBinding(ComboBox.ItemsSourceProperty, bind);
+                bind = new Binding($"AutoTxJobs[{job.Id}].Actions[{action.Id}].JumpTo.Value");
+                select_action_id.SetBinding(ComboBox.SelectedIndexProperty, bind);
+                item.Children.Add(select_action_id);
+            }
+            else
+            {
+                // 他Job内ジャンプ
+                // Job選択ComboBox
+                var select_job_id = new ComboBox();
+                select_job_id.IsSynchronizedWithCurrentItem = true;
+                select_job_id.Margin = ActionEditJumpMarginSelectActionId;
+                var bind = new Binding($"AutoTxJobs");
+                select_job_id.SetBinding(ComboBox.ItemsSourceProperty, bind);
+                select_job_id.DisplayMemberPath = "Name";
+                bind = new Binding($"AutoTxJobs[{job.Id}].Actions[{action.Id}].AutoTxJobIndex.Value");
+                select_job_id.SetBinding(ComboBox.SelectedIndexProperty, bind);
+                item.Children.Add(select_job_id);
+                // Action選択ComboBox
+                var select_action_id = new ComboBox();
+                select_action_id.IsSynchronizedWithCurrentItem = true;
+                select_action_id.Margin = ActionEditJumpMarginSelectActionId;
+                bind = new Binding($"AutoTxJobs/ActionIdList");
+                select_action_id.SetBinding(ComboBox.ItemsSourceProperty, bind);
+                bind = new Binding($"AutoTxJobs[{job.Id}].Actions[{action.Id}].JumpTo.Value");
+                select_action_id.SetBinding(ComboBox.SelectedIndexProperty, bind);
+                item.Children.Add(select_action_id);
+            }
+
+            border.Child = item;
+            return border;
+        }
     }
 }

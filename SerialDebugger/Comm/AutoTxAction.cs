@@ -62,7 +62,7 @@ namespace SerialDebugger.Comm
         public bool HasRxHandler { get; private set; } = false;
         // Activate AutoTx
         public string AutoTxJobName { get; private set; }
-        public int AutoTxJobIndex { get; set; }
+        public ReactivePropertySlim<int> AutoTxJobIndex { get; set; }
         public bool AutoTxState { get; private set; }
         // Activate Rx
         public string RxPatternName { get; private set; }
@@ -117,7 +117,8 @@ namespace SerialDebugger.Comm
             // ジョブ名称のチェックはAutoTx解析完了後に実施
             // Alias作成もチェック時に実施
             action.AutoTxJobName = job_name;
-            action.AutoTxJobIndex = -1;
+            action.AutoTxJobIndex = new ReactivePropertySlim<int>(-1);
+            action.AutoTxJobIndex.AddTo(action.Disposables);
 
             return action;
         }
@@ -224,7 +225,8 @@ namespace SerialDebugger.Comm
             };
             // ジョブ名称のチェックはAutoTx解析完了後に実施
             action.AutoTxJobName = job_name;
-            action.AutoTxJobIndex = -1;
+            action.AutoTxJobIndex = new ReactivePropertySlim<int>(-1);
+            action.AutoTxJobIndex.AddTo(action.Disposables);
             action.AutoTxState = state;
 
             if (Object.ReferenceEquals(action.Alias, string.Empty))

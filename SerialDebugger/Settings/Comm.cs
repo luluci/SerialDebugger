@@ -514,13 +514,10 @@ namespace SerialDebugger.Settings
                     // JumpToチェック
                     if (AutoTxJobNameDict.TryGetValue(action.AutoTxJobName, out int jmpidx))
                     {
-                        // 自分以外のジョブを指定したときインデックスを記憶しておく
-                        if (job.Id != jmpidx)
-                        {
-                            action.AutoTxJobIndex = jmpidx;
-                            set_jobname = true;
-                        }
-                        // else action.AutoTxJobIndex = -1;
+                        // JobNameを指定したときは自分自身が対象でもインデックスを記憶
+                        // EditableのときにJobを選択できるようにする
+                        action.AutoTxJobIndex.Value = jmpidx;
+                        set_jobname = true;
                     }
                     else
                     {
@@ -530,13 +527,20 @@ namespace SerialDebugger.Settings
 
                     if (Object.ReferenceEquals(action.Alias, string.Empty))
                     {
-                        if (set_jobname)
+                        if (job.IsEditable)
                         {
-                            action.Alias = $"JumpTo {action.AutoTxJobName}[{action.JumpTo}]";
+                            action.Alias = "JumpTo";
                         }
                         else
                         {
-                            action.Alias = $"JumpTo [{action.JumpTo}]";
+                            if (set_jobname)
+                            {
+                                action.Alias = $"JumpTo {action.AutoTxJobName}[{action.JumpTo}]";
+                            }
+                            else
+                            {
+                                action.Alias = $"JumpTo [{action.JumpTo}]";
+                            }
                         }
                     }
                     break;
@@ -547,7 +551,7 @@ namespace SerialDebugger.Settings
                     {
                         // 指定された名称のjobが存在すればOK
                         // インデックスを記憶しておく
-                        action.AutoTxJobIndex = index;
+                        action.AutoTxJobIndex.Value = index;
                     }
                     else
                     {
@@ -591,6 +595,7 @@ namespace SerialDebugger.Settings
                     foreach (var action in job.Actions)
                     {
                         j.Actions.Add(MakeAutoTxAction(i, action));
+                        j.ActionIdList.Add(i);
                         i++;
                     }
                 }

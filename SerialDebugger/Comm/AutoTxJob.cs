@@ -20,12 +20,15 @@ namespace SerialDebugger.Comm
         public string Name { get; private set; }
         public string Alias { get; private set; }
         public ReactivePropertySlim<bool> IsActive { get; set; }
+        public bool IsEditable { get; set; }
         public (DateTime, AutoTxActionType, object)[] LogBuffer;
         public int LogBufferHead;
         public int LogBufferTail;
         public Utility.CycleTimer WaitTimer;
 
         public ReactiveCollection<AutoTxAction> Actions { get; set; }
+
+        public ReactiveCollection<int> ActionIdList { get; set; }
 
         public int ActiveActionIndex { get; set; }
 
@@ -34,6 +37,7 @@ namespace SerialDebugger.Comm
         public AutoTxJob(int id, string name, string alias, bool active = false)
         {
             Id = id;
+            IsEditable = true;
             WaitTimer = new Utility.CycleTimer();
 
             Name = name;
@@ -48,6 +52,9 @@ namespace SerialDebugger.Comm
             IsActive.AddTo(Disposables);
             Actions = new ReactiveCollection<AutoTxAction>();
             Actions.AddTo(Disposables);
+
+            ActionIdList = new ReactiveCollection<int>();
+            ActionIdList.AddTo(Disposables);
 
             Alias = alias;
             if (object.ReferenceEquals(Alias, string.Empty))
@@ -381,7 +388,7 @@ namespace SerialDebugger.Comm
             var action = Actions[ActiveActionIndex];
             action.IsActive.Value = false;
             WaitTimer.Start();
-            if (action.AutoTxJobIndex == -1)
+            if (action.AutoTxJobIndex.Value == -1)
             {
                 // 自分自身のJumpTo
                 ActiveActionIndex = action.JumpTo.Value;
@@ -394,7 +401,7 @@ namespace SerialDebugger.Comm
             {
                 // 指定したジョブのJumpTo
                 // Waitタイマはクリアスタートしておく
-                var tgt = AutoTxJobs[action.AutoTxJobIndex];
+                var tgt = AutoTxJobs[action.AutoTxJobIndex.Value];
                 tgt.Actions[tgt.ActiveActionIndex].IsActive.Value = false;
                 tgt.ActiveActionIndex = action.JumpTo.Value;
                 tgt.Actions[tgt.ActiveActionIndex].IsActive.Value = true;
@@ -464,7 +471,7 @@ namespace SerialDebugger.Comm
         private void ActActivateAutoTx(IList<Comm.AutoTxJob> AutoTxJobs)
         {
             var action = Actions[ActiveActionIndex];
-            AutoTxJobs[action.AutoTxJobIndex].IsActive.Value = action.AutoTxState;
+            AutoTxJobs[action.AutoTxJobIndex.Value].IsActive.Value = action.AutoTxState;
             WaitTimer.Start();
         }
 

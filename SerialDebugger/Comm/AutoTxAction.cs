@@ -87,7 +87,7 @@ namespace SerialDebugger.Comm
         /// <param name="id"></param>
         /// <param name="wait"></param>
         /// <returns></returns>
-        public static AutoTxAction MakeWaitAction(int id, string alias, int wait, bool immediate)
+        public static AutoTxAction MakeWaitAction(AutoTxJob job, int id, string alias, int wait, bool immediate)
         {
             var action = new AutoTxAction(id, alias)
             {
@@ -99,7 +99,14 @@ namespace SerialDebugger.Comm
 
             if (Object.ReferenceEquals(action.Alias, string.Empty))
             {
-                action.Alias = $"Wait [{action.WaitTime} ms]";
+                if (job.IsEditable)
+                {
+                    action.Alias = "Wait";
+                }
+                else
+                {
+                    action.Alias = $"Wait [{action.WaitTime} ms]";
+                }
             }
 
             return action;

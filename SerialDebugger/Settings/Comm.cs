@@ -594,7 +594,7 @@ namespace SerialDebugger.Settings
                     int i = 0;
                     foreach (var action in job.Actions)
                     {
-                        j.Actions.Add(MakeAutoTxAction(i, action));
+                        j.Actions.Add(MakeAutoTxAction(j, i, action));
                         j.ActionIdList.Add(i);
                         i++;
                     }
@@ -610,7 +610,7 @@ namespace SerialDebugger.Settings
             }
         }
 
-        private AutoTxAction MakeAutoTxAction(int id, Json.CommAutoTxAction action)
+        private AutoTxAction MakeAutoTxAction(AutoTxJob job, int id, Json.CommAutoTxAction action)
         {
             switch (action.Type)
             {
@@ -618,7 +618,7 @@ namespace SerialDebugger.Settings
                     return MakeAutoTxActionSend(id, action);
 
                 case "Wait":
-                    return MakeAutoTxActionWait(id, action);
+                    return MakeAutoTxActionWait(job, id, action);
 
                 case "Recv":
                     return MakeAutoTxActionRecv(id, action);
@@ -660,14 +660,14 @@ namespace SerialDebugger.Settings
                 throw new Exception($"actions[{id}](Send): 指定されたtx.frame({action.TxFrameName})が存在しません。");
             }
         }
-        private AutoTxAction MakeAutoTxActionWait(int id, Json.CommAutoTxAction action)
+        private AutoTxAction MakeAutoTxActionWait(AutoTxJob job, int id, Json.CommAutoTxAction action)
         {
             if (action.WaitTime == -1)
             {
                 throw new Exception($"actions[{id}](Wait): 待機時間(WaitTime)を指定してください。");
             }
 
-            var act = AutoTxAction.MakeWaitAction(id, action.Alias, action.WaitTime, action.Immediate);
+            var act = AutoTxAction.MakeWaitAction(job, id, action.Alias, action.WaitTime, action.Immediate);
 
             return act;
         }

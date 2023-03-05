@@ -187,18 +187,17 @@ namespace SerialDebugger.Comm
                     {
                         return MakeActionDisp(action, path, is_first);
                     }
-                case AutoTxActionType.Recv:
+                case AutoTxActionType.Wait:
                     if (editable)
                     {
-                        return MakeActionDisp(action, path, is_first);
-                        //return MakeActionEditRecv(action, path, is_first);
+                        return MakeActionEditWait(job, action, path, is_first);
                     }
                     else
                     {
                         return MakeActionDisp(action, path, is_first);
                     }
                 case AutoTxActionType.Send:
-                case AutoTxActionType.Wait:
+                case AutoTxActionType.Recv:
                 case AutoTxActionType.Script:
                 case AutoTxActionType.ActivateAutoTx:
                 case AutoTxActionType.ActivateRx:
@@ -214,9 +213,10 @@ namespace SerialDebugger.Comm
         private static AutoTxGuiActiveActionBGColorConverter ActiveActionBGColorConverter = new AutoTxGuiActiveActionBGColorConverter();
         private static Thickness ActionBaseBorderThickness = new Thickness(1);
         private static Thickness ActionBasePadding = new Thickness(5);
+        private static Thickness ActionBaseEditPadding = new Thickness(5, 3, 5, 3);
         private static Thickness ActionBaseMarginFirst = new Thickness(5, 5, 0, 5);
         private static Thickness ActionBaseMarginNext = new Thickness(10, 5, 0, 5);
-        private static Border MakeActionBase(string path, bool is_first)
+        private static Border MakeActionBase(string path, bool is_first, bool is_edit = false)
         {
             var border = new Border();
             border.BorderThickness = ActionBaseBorderThickness;
@@ -232,7 +232,14 @@ namespace SerialDebugger.Comm
             {
                 border.Margin = ActionBaseMarginNext;
             }
-            border.Padding = ActionBasePadding;
+            if (is_edit)
+            {
+                border.Padding = ActionBaseEditPadding;
+            }
+            else
+            {
+                border.Padding = ActionBasePadding;
+            }
 
             var bind = new Binding(path + ".IsActive.Value");
             bind.Converter = ActiveActionBGColorConverter;
@@ -273,10 +280,12 @@ namespace SerialDebugger.Comm
         }
 
 
+        private static Thickness ActionEditNameMargin = new Thickness(0, 2, 0, 0);
+        private static Thickness ActionEditUnitMargin = new Thickness(5, 2, 0, 0);
         private static Thickness ActionEditJumpMarginSelectActionId = new Thickness(5, 0, 0, 0);
         private static UIElement MakeActionEditJump(AutoTxJob job, AutoTxAction action, string path, bool is_first)
         {
-            var border = MakeActionBase(path, is_first);
+            var border = MakeActionBase(path, is_first, true);
             var item = new StackPanel();
             item.Orientation = Orientation.Horizontal;
 
@@ -292,6 +301,7 @@ namespace SerialDebugger.Comm
                 name = action.Alias;
             }
             tb.Text = name;
+            tb.Margin = ActionEditNameMargin;
             item.Children.Add(tb);
 
             // Jump先
@@ -329,6 +339,47 @@ namespace SerialDebugger.Comm
                 select_action_id.SetBinding(ComboBox.SelectedIndexProperty, bind);
                 item.Children.Add(select_action_id);
             }
+
+            border.Child = item;
+            return border;
+        }
+
+        private static AutoTxGuiWaitEditConverter AutoTxActionWaitConverter = new AutoTxGuiWaitEditConverter();
+        private static Thickness ActionEditWaitMargin = new Thickness(5, 0, 0, 0);
+        private static UIElement MakeActionEditWait(AutoTxJob job, AutoTxAction action, string path, bool is_first)
+        {
+            var border = MakeActionBase(path, is_first, true);
+            var item = new StackPanel();
+            item.Orientation = Orientation.Horizontal;
+
+            // Waitラベル
+            var tb = new TextBlock();
+            string name;
+            if (Setting.Data.Comm.DisplayId)
+            {
+                name = $"[{action.Id}] {action.Alias}";
+            }
+            else
+            {
+                name = action.Alias;
+            }
+            tb.Text = name;
+            tb.Margin = ActionEditNameMargin;
+            item.Children.Add(tb);
+
+            // Waitテキストボックス
+            var wait_edit = new TextBox();
+            wait_edit.Width = 50;
+            wait_edit.Margin = ActionEditWaitMargin;
+            var bind = new Binding(path + ".WaitTime.Value");
+            bind.Converter = AutoTxActionWaitConverter;
+            wait_edit.SetBinding(TextBox.TextProperty, bind);
+            item.Children.Add(wait_edit);
+            // 単位表示
+            var unit = new TextBlock();
+            unit.Text = "ms";
+            unit.Margin = ActionEditUnitMargin;
+            item.Children.Add(unit);
 
             border.Child = item;
             return border;

@@ -60,4 +60,37 @@ namespace SerialDebugger.Comm
             throw new NotImplementedException();
         }
     }
+
+
+    /// <summary>
+    /// Select列:テキストボックスに表示する文字列を作成する
+    /// </summary>
+    internal class AutoTxGuiWaitEditConverter : IValueConverter
+    {
+        object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var temp = (int)value;
+            // 10進数表示
+            return $"{temp}";
+        }
+
+        object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            try
+            {
+                var temp = Convert.ToInt32((string)value, 10);
+                if (temp > 0)
+                {
+                    return temp;
+                }
+            }
+            catch
+            {
+                // Convert失敗
+            }
+            // 範囲外は読み捨て
+            return DependencyProperty.UnsetValue;
+        }
+    }
+
 }

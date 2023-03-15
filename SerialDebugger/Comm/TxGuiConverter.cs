@@ -76,7 +76,7 @@ namespace SerialDebugger.Comm
             // Endianチェック
             if (field.IsReverseEndian)
             {
-                val = field.GetBigEndian(val);
+                val = field.ReverseEndian(val);
             }
             if ((val & mask) != 0)
             {

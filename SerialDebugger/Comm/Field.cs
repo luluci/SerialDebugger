@@ -326,7 +326,7 @@ namespace SerialDebugger.Comm
             return index;
         }
 
-        public Int64 GetBigEndian(Int64 value)
+        public Int64 ReverseEndian(Int64 value)
         {
             Int64 result = 0;
             int bit_rest = BitSize;

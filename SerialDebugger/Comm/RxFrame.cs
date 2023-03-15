@@ -122,6 +122,7 @@ namespace SerialDebugger.Comm
                 int bit_pos = 0;
                 Int64 value = 0;
                 Int64 mask = 0;
+                Int64 temp = 0;
                 int field_idx = 0;
                 int match_idx = 0;
                 while (match_idx < pattern.Matches.Count)
@@ -147,7 +148,12 @@ namespace SerialDebugger.Comm
                             // Value設定値チェック
                             match.Value.Value = field.LimitValue(match.Value.Value);
                             //
-                            value |= ((match.Value.Value & field.Mask) << bit_pos);
+                            temp = match.Value.Value;
+                            if (field.IsReverseEndian)
+                            {
+                                temp = field.ReverseEndian(temp);
+                            }
+                            value |= ((temp & field.Mask) << bit_pos);
                             mask |= (field.Mask << bit_pos);
                             bit_pos += field.BitSize;
                             // Disp
@@ -331,6 +337,11 @@ namespace SerialDebugger.Comm
                 data >>= field.BitPos;
                 // MSB側の余分ビットを除去
                 data &= field.Mask;
+                // エンディアンチェック
+                if (field.IsReverseEndian)
+                {
+                    data = field.ReverseEndian(data);
+                }
 
                 // Char[]判定
                 if (field.InputType == Field.InputModeType.Char)

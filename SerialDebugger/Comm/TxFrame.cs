@@ -140,7 +140,7 @@ namespace SerialDebugger.Comm
                 inival = f.InitValue;
                 if (f.IsReverseEndian)
                 {
-                    inival = f.GetBigEndian(inival);
+                    inival = f.ReverseEndian(inival);
                 }
                 value |= (inival & f.Mask) << f.BitPos;
                 // Field位置更新
@@ -278,7 +278,7 @@ namespace SerialDebugger.Comm
             Int64 temp = value.Value.Value;
             if (value.FieldRef.IsReverseEndian)
             {
-                temp = value.FieldRef.GetBigEndian(temp);
+                temp = value.FieldRef.ReverseEndian(temp);
             }
             Int64 mask = value.FieldRef.Mask;
             Int64 inv_mask = value.FieldRef.InvMask;
@@ -429,7 +429,7 @@ namespace SerialDebugger.Comm
                     // Innerデータにはendian反転を適用する
                     if (field.IsReverseEndian)
                     {
-                        value = field.GetBigEndian(value);
+                        value = field.ReverseEndian(value);
                     }
                     for (int i = 0; i < field.InnerFields.Count; i++)
                     {

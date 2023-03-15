@@ -997,6 +997,8 @@ namespace SerialDebugger.Settings
             {
                 throw new Exception($"fields[{id}]({field.Name}): Checksumノードはname,bit_sizeを指定してください。");
             }
+            // Endian
+            var endian = MakeFieldPropertyEndian(field);
             // Checksum計算方法
             var method = new Field.ChecksumMethod();
             switch (field.Checksum.Method)
@@ -1016,7 +1018,7 @@ namespace SerialDebugger.Settings
                     break;
             }
             // Field生成
-            var result = new Field(id, new Field.ChecksumNode
+            var result = new Field(id, endian, new Field.ChecksumNode
             {
                 Name = field.Name,
                 BitSize = field.BitSize,
@@ -1134,6 +1136,8 @@ namespace SerialDebugger.Settings
         private async Task<Field> MakeFieldImplAsync(int id, Json.CommField field, Field.InputModeType type, Field.Selecter selecter)
         {
             Field result;
+            // Endian
+            var endian = MakeFieldPropertyEndian(field);
             // name, multi_name選択
             if (!(field.MultiNames is null))
             {
@@ -1154,7 +1158,7 @@ namespace SerialDebugger.Settings
                 }
                 // multi_name指定時はBitSizeは使わない
                 // Field生成
-                result = new Field(id, name, multi_name, field.Value, field.Base, type, selecter);
+                result = new Field(id, name, multi_name, field.Value, field.Base, endian, type, selecter);
             }
             else
             {
@@ -1171,10 +1175,38 @@ namespace SerialDebugger.Settings
                 var multi_name = new Field.InnerField[1];
                 multi_name[0] = new Field.InnerField(field.Name, field.BitSize);
                 // Field生成
-                result = new Field(id, field.Name, multi_name, field.Value, field.Base, type, selecter);
+                result = new Field(id, field.Name, multi_name, field.Value, field.Base, endian, type, selecter);
             }
 
             await result.InitAsync();
+            return result;
+        }
+
+        private bool MakeFieldPropertyEndian(Json.CommField field)
+        {
+            bool result = false;
+            if (Object.ReferenceEquals(field.Endian, string.Empty))
+            {
+                // 省略時はlittle-endian
+                // result = false;
+            }
+            else
+            {
+                switch (field.Endian)
+                {
+                    case "big":
+                    case "Big":
+                        // big指定時のみbig-endian
+                        result = true;
+                        break;
+
+                    default:
+                        // その他はlittle-endian
+                        // result = false;
+                        break;
+                }
+            }
+
             return result;
         }
 

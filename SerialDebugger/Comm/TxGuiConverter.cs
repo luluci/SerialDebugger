@@ -73,6 +73,11 @@ namespace SerialDebugger.Comm
         {
             var val = (Int64)value;
             var field = (Field)parameter;
+            // Endianチェック
+            if (field.IsReverseEndian)
+            {
+                val = field.GetBigEndian(val);
+            }
             if ((val & mask) != 0)
             {
                 return Brushes.Salmon;

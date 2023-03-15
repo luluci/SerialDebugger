@@ -239,6 +239,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("max")]
             public Int64 Max { get; set; } = Int64.MinValue;
 
+            [JsonPropertyName("endian")]
+            public string Endian { get; set; } = string.Empty;
+
 
 
             [JsonPropertyName("type")]

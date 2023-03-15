@@ -119,6 +119,7 @@ namespace SerialDebugger.Comm
             byte data = 0;
             int field_no = 0;
             Int64 value = 0;
+            Int64 inival = 0;
             int bit_pos = 0;
             int byte_pos = 0;
             int disp_len = 0;
@@ -136,7 +137,12 @@ namespace SerialDebugger.Comm
                 // Frame情報更新
                 BitLength += f.BitSize;
                 // 送信生データ作成
-                value |= (f.InitValue & f.Mask) << f.BitPos;
+                inival = f.InitValue;
+                if (f.IsReverseEndian)
+                {
+                    inival = f.GetBigEndian(inival);
+                }
+                value |= (inival & f.Mask) << f.BitPos;
                 // Field位置更新
                 bit_pos += f.BitSize;
                 while (bit_pos >= 8)
@@ -270,6 +276,10 @@ namespace SerialDebugger.Comm
         public void UpdateBuffer(TxFieldBuffer buffer, FieldValue value)
         {
             Int64 temp = value.Value.Value;
+            if (value.FieldRef.IsReverseEndian)
+            {
+                temp = value.FieldRef.GetBigEndian(temp);
+            }
             Int64 mask = value.FieldRef.Mask;
             Int64 inv_mask = value.FieldRef.InvMask;
             // 1回目はvalueのビット位置がbit_pos分右にあるが、
@@ -416,6 +426,11 @@ namespace SerialDebugger.Comm
             {
                 if (!(dd.FieldInnerName is null) || !(dd.FieldInnerValue is null))
                 {
+                    // Innerデータにはendian反転を適用する
+                    if (field.IsReverseEndian)
+                    {
+                        value = field.GetBigEndian(value);
+                    }
                     for (int i = 0; i < field.InnerFields.Count; i++)
                     {
                         // 該当データ計算

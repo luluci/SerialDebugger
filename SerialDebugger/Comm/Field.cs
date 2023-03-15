@@ -41,6 +41,13 @@ namespace SerialDebugger.Comm
 
         internal bool IsByteDisp { get; set; } = false;
 
+        // true: big-endian, false: little-endian
+        /// <summary>
+        /// エンディアン反転フラグ
+        /// little-endian環境でtrueのときはbig-endianに変換する
+        /// </summary>
+        public bool IsReverseEndian { get; }
+
         public Int64 Max { get; }
         public Int64 Min { get; }
         public Int64 Mask { get; }
@@ -213,19 +220,20 @@ namespace SerialDebugger.Comm
         /// <param name="value"></param>
         /// <param name="type"></param>
         /// <param name="selecter"></param>
-        public Field(int id, ChecksumNode node)
-            : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, 16, InputModeType.Checksum, null)
+        public Field(int id, bool endian, ChecksumNode node)
+            : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, 16, endian, InputModeType.Checksum, null)
         {
             Checksum = node;
             IsChecksum = true;
         }
         
-        public Field(int id, string name, InnerField[] innerFields, Int64 value, int input_base, InputModeType type = InputModeType.Fix, Selecter selecter = null)
+        public Field(int id, string name, InnerField[] innerFields, Int64 value, int input_base, bool endian, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
             this.selecter = selecter;
             Id = id;
             Name = name;
             InputBase = input_base;
+            IsReverseEndian = endian;
             BitSize = 0;
             foreach (var inner in innerFields)
             {
@@ -235,6 +243,15 @@ namespace SerialDebugger.Comm
             if (BitSize > 32)
             {
                 throw new Exception("32bit以上は指定できません");
+            }
+            // Endianチェック
+            // エンディアン反転時はバイト単位(8bitの倍数)でないと計算できない
+            if (IsReverseEndian)
+            {
+                if (BitSize % 8 != 0)
+                {
+                    throw new Exception("big-endian指定時はbit-sizeをバイト単位(8bitの倍数)にしてください");
+                }
             }
             //
             InnerFields = new List<InnerField>(innerFields);
@@ -307,6 +324,23 @@ namespace SerialDebugger.Comm
                     break;
             }
             return index;
+        }
+
+        public Int64 GetBigEndian(Int64 value)
+        {
+            Int64 result = 0;
+            int bit_rest = BitSize;
+            while (bit_rest > 0)
+            {
+                // LSBに1byte詰める領域を作成
+                result <<= 8;
+                // 1byte詰める
+                result |= (Int64)((byte)(value & 0xFF));
+                // 使用した1byteを捨てる
+                value >>= 8;
+                bit_rest -= 8;
+            }
+            return result;
         }
         
         /// <summary>

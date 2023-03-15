@@ -1,0 +1,261 @@
+{
+	"name": "Test_通信_エンディアン_1",
+	
+	"gui": {
+		"window":
+			{
+				"width": 900,
+				"height": 700
+			}
+	},
+
+	"output": {
+		"drag_drop": {
+			"frame_name": {
+				"begin": "Frame:"
+			},
+			"field_name": {
+				"begin": "Field:"
+			},
+			"field_value": {
+				"end": "\n"
+			},
+			"field_inner_name": {
+				"begin": "InnerField:"
+			},
+			"field_inner_value": {
+				"end": "\n"
+			},
+			"value_format": "Input"
+		}
+	},
+
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"comm": {
+		"rx": {
+			"enable_multi_match": true,
+			"frames": [
+				{
+					"name": "Rx_Frame_A",
+					"as_ascii": false,
+					"fields": [
+						{
+							"name": "field_1",
+							"bit_size": 5,
+							"value": 1
+						},
+						{
+							"name": "field_2",
+							"bit_size": 16,
+							"value": 4660,
+							"type": "Edit"
+						},
+						{
+							"name": "field_3",
+							"bit_size": 16,
+							"value": 4660,
+							"type": "Edit",
+							"endian": "big"
+						},
+						{
+							"name": "field_4",
+							"bit_size": 3,
+							"value": 2
+						},
+						{
+							"name": "field_5",
+							"bit_size": 8,
+							"value": 171,
+							"type": "Edit",
+							"endian": "big"
+						},
+						{
+							"name": "field_6",
+							"bit_size": 24,
+							"multi_name": [
+								{
+									"name": "field_6-1",
+									"bit_size": 8
+								},
+								{
+									"name": "field_6-2",
+									"bit_size": 8
+								},
+								{
+									"name": "field_6-3",
+									"bit_size": 8
+								}
+							],
+							"value": 5666970,
+							"type": "Edit",
+							"endian": "big"
+						},
+						{
+							"name": "field_7",
+							"bit_size": 24,
+							"multi_name": [
+								{
+									"name": "field_7-1",
+									"bit_size": 8
+								},
+								{
+									"name": "field_7-2",
+									"bit_size": 8
+								},
+								{
+									"name": "field_7-3",
+									"bit_size": 8
+								}
+							],
+							"value": 5666970,
+							"type": "Edit"
+						},
+						{
+							"name": "field_8",
+							"bit_size": 32,
+							"value": 2882400018,
+							"type": "Edit",
+							"endian": "big"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_A_0",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{
+									"value": 1
+								},
+								{
+									"value": 4660
+								},
+								{
+									"value": 4660
+								},
+								{
+									"value": 2
+								},
+								{
+									"value": 171
+								},
+								{
+									"value": 5666970
+								},
+								{
+									"value": 5666970
+								},
+								{
+									"value": 2882400018
+								},
+								{ "type": "Any" }
+							]
+						}
+					]
+				}
+			]
+		},
+	
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_Auto_1",
+					"alias": "Frame_Aを繰り返す",
+					"active": false,
+					"actions": [
+						{ "type": "Log", "log": "<Job_Auto_1 start.>" },
+						{ "type": "Send", "tx_frame": "Frame_A" },
+						{ "type": "Wait", "wait_time": 2000 },
+						{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }
+					]
+				}
+			]
+		},
+	
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_A",
+					"as_ascii": false,
+					"fields": [
+						{ "name": "field_1", "bit_size": 5, "value": 1 },
+						{ "name": "field_2", "bit_size": 16, "value": 4660, "type": "Edit" },
+						{ "name": "field_3", "bit_size": 16, "value": 4660, "type": "Edit", "endian": "big" },
+						{ "name": "field_4", "bit_size": 3, "value": 2 },
+						{ "name": "field_5", "bit_size": 8, "value": 171, "type": "Edit", "endian": "big" },
+						{
+							"name": "field_6", "bit_size": 24,
+							"multi_name": [
+								{
+									"name": "field_6-1",
+									"bit_size": 8
+								},
+								{
+									"name": "field_6-2",
+									"bit_size": 8
+								},
+								{
+									"name": "field_6-3",
+									"bit_size": 8
+								}
+							],
+							"value": 5666970, "type": "Edit", "endian": "big"
+						},
+						{
+							"name": "field_7",
+							"bit_size": 24,
+							"multi_name": [
+								{
+									"name": "field_7-1",
+									"bit_size": 8
+								},
+								{
+									"name": "field_7-2",
+									"bit_size": 8
+								},
+								{
+									"name": "field_7-3",
+									"bit_size": 8
+								}
+							],
+							"value": 5666970,
+							"type": "Edit"
+						},
+						{ "name": "field_8", "bit_size": 32, "value": 2882400018, "type": "Edit", "endian": "big" },
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					]
+				}
+			]
+		}
+	}
+}

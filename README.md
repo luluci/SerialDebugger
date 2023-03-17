@@ -204,10 +204,12 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 | bit_size | number | fieldビットサイズを指定。multi_name指定時はname,bit_sizeは不使用。(Max:32)
 | multi_name | array | field内に複数名称を設定する。GUI表示に影響し、field自体は1つのfieldとして扱う。fieldのビットサイズはmulti_nameで指定されたものの合計を使う。ビットサイズ合計は最大32bit。
 | value | number | field初期値
-| base | number | 10 or 16<br>GUI表示上の基数設定。ログ表示にも影響する。(省略時:16)
+| base | number | 10 or 16, (省略時:16)<br>GUI表示上の基数設定。ログ表示にも影響する。
 | min | number | (不使用)
 | max | number | (不使用)
 | type | string | field入力方式指定。type指定に対応した unit/dict/time/script/checksum/char/string のいずれかを指定する。詳細は後述。
+| endian | string | "little" or "big", 省略時は"little"<br>"big"指定時、bit_sizeはバイト単位(8の倍数)とすること。
+| drag_drop | object | Output.drag_dropと共通。指定したfield専用のドラッグ＆ドロップ定義が可能。
 
 ```json
 {
@@ -1110,8 +1112,8 @@ GUI上ログボックスにログを出力する。
 | frame_name | object | field名称を囲う設定。省略時はframe名称をDropデータから除外する。
 | field_name | object | field名称を囲う設定。省略時はfield名称とfield設定値のセットをDropデータから除外する。
 | field_value | object | field設定値を囲う設定。省略時はfield名称とfield設定値のセットをDropデータから除外する。
-| field_inner_name | object | inner_field名称を囲う設定。省略時はfield名称とfield設定値のセットをDropデータから除外する。
-| field_inner_value | object | inner_field設定値を囲う設定。省略時はfield名称とfield設定値のセットをDropデータから除外する。
+| inner_field_name | object | inner_field名称を囲う設定。fields.multi_nameで指定したfield_nameをすべてDropデータに載せる。省略時はfield名称とfield設定値のセットをDropデータから除外する。
+| inner_field_value | object | inner_field設定値を囲う設定。fields.multi_nameで指定したfield_nameに該当するfield_valueをすべてDropデータに載せる。省略時はfield名称とfield設定値のセットをDropデータから除外する。
 | value_format | string | "Input" or 省略<br>"Input"指定時はfieldで定義した入力指定を元にfield設定値をテキスト化する。省略時は16進数文字列となる。
 
 ```json
@@ -1137,12 +1139,12 @@ GUI上ログボックスにログを出力する。
 			"begin":    "string",
 			"end":      "string"
 		},
-		"field_inner_name": {
+		"inner_field_name": {
 			"begin":    "string",
 			"end":      "string"
 				
 		},
-		"field_inner_value": {
+		"inner_field_value": {
 			"begin":    "string",
 			"end":      "string"
 				

@@ -1017,8 +1017,14 @@ namespace SerialDebugger.Settings
                     method = Field.ChecksumMethod.None;
                     break;
             }
+            // DragDropInfo
+            Output.DragDropInfo dd = null;
+            if (!(field.DragDrop is null))
+            {
+                dd = Output.MakeDragDropInfo(field.DragDrop);
+            }
             // Field生成
-            var result = new Field(id, endian, new Field.ChecksumNode
+            var result = new Field(id, endian, dd, new Field.ChecksumNode
             {
                 Name = field.Name,
                 BitSize = field.BitSize,
@@ -1138,6 +1144,12 @@ namespace SerialDebugger.Settings
             Field result;
             // Endian
             var endian = MakeFieldPropertyEndian(field);
+            // DragDropInfo
+            Output.DragDropInfo dd = null;
+            if (!(field.DragDrop is null))
+            {
+                dd = Output.MakeDragDropInfo(field.DragDrop);
+            }
             // name, multi_name選択
             if (!(field.MultiNames is null))
             {
@@ -1158,7 +1170,7 @@ namespace SerialDebugger.Settings
                 }
                 // multi_name指定時はBitSizeは使わない
                 // Field生成
-                result = new Field(id, name, multi_name, field.Value, field.Base, endian, type, selecter);
+                result = new Field(id, name, multi_name, field.Value, field.Base, endian, dd, type, selecter);
             }
             else
             {
@@ -1175,7 +1187,7 @@ namespace SerialDebugger.Settings
                 var multi_name = new Field.InnerField[1];
                 multi_name[0] = new Field.InnerField(field.Name, field.BitSize);
                 // Field生成
-                result = new Field(id, field.Name, multi_name, field.Value, field.Base, endian, type, selecter);
+                result = new Field(id, field.Name, multi_name, field.Value, field.Base, endian, dd, type, selecter);
             }
 
             await result.InitAsync();

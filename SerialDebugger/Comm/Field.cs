@@ -203,7 +203,9 @@ namespace SerialDebugger.Comm
         public Dictionary<Int64, int> SelectsValueCheckTable;
         public int InitSelectIndex { get; private set; } = -1;
 
+        // DragDrop
         public ReactiveCommand OnMouseDown { get; set; }
+        public Settings.Output.DragDropInfo DragDropInfo { get; set; }
 
         public enum ChangeStates
         {
@@ -220,14 +222,14 @@ namespace SerialDebugger.Comm
         /// <param name="value"></param>
         /// <param name="type"></param>
         /// <param name="selecter"></param>
-        public Field(int id, bool endian, ChecksumNode node)
-            : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, 16, endian, InputModeType.Checksum, null)
+        public Field(int id, bool endian, Settings.Output.DragDropInfo dd, ChecksumNode node)
+            : this(id, node.Name, new InnerField[] { new InnerField(node.Name, node.BitSize) }, 0, 16, endian, dd, InputModeType.Checksum, null)
         {
             Checksum = node;
             IsChecksum = true;
         }
         
-        public Field(int id, string name, InnerField[] innerFields, Int64 value, int input_base, bool endian, InputModeType type = InputModeType.Fix, Selecter selecter = null)
+        public Field(int id, string name, InnerField[] innerFields, Int64 value, int input_base, bool endian, Settings.Output.DragDropInfo dd, InputModeType type = InputModeType.Fix, Selecter selecter = null)
         {
             this.selecter = selecter;
             Id = id;
@@ -253,6 +255,8 @@ namespace SerialDebugger.Comm
                     throw new Exception("big-endian指定時はbit-sizeをバイト単位(8bitの倍数)にしてください");
                 }
             }
+            // DragDrop
+            DragDropInfo = dd;
             //
             InnerFields = new List<InnerField>(innerFields);
             // (Min,Max)

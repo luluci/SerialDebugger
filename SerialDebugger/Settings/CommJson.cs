@@ -267,6 +267,10 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("string")]
             public string String { get; set; } = string.Empty;
+
+            // DragDrop個別設定
+            [JsonPropertyName("drag_drop")]
+            public OutputDragDrop DragDrop { get; set; }
         }
 
         public class CommFieldMultiName

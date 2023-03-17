@@ -364,7 +364,11 @@ namespace SerialDebugger.Comm
         public string MakeDragDropStr(Field field)
         {
             // DragDrop設定参照取得
-            var dd = Setting.Data.Output.DragDrop;
+            var dd = field.DragDropInfo;
+            if (dd is null)
+            {
+                dd = Setting.Data.Output.DragDrop;
+            }
             //var value = field.Value.Value;
             var fv = Buffers[0].FieldValues[field.Id];
             var value = fv.Value.Value;
@@ -378,31 +382,31 @@ namespace SerialDebugger.Comm
 
             // DragDrop設定があるとき
             // Body: 全体
-            if (!(dd.Body is null) && !(dd.Body.Begin is null)) str.Append(dd.Body.Begin);
+            if (dd.EnableBodyBegin) str.Append(dd.Body.Begin);
 
             // Name/Value
-            if (!(dd.FieldName is null) || !(dd.FieldValue is null))
+            if (dd.EnableField)
             {
-                if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
+                if (dd.EnableItemBegin) str.Append(dd.Item.Begin);
 
                 // FrameName
-                if (!(dd.FrameName is null))
+                if (dd.EnableFrame)
                 {
-                    if (!(dd.FrameName.Begin is null)) str.Append(dd.FrameName.Begin);
+                    if (dd.EnableFrameBegin) str.Append(dd.FrameName.Begin);
                     str.Append(Name);
-                    if (!(dd.FrameName.End is null)) str.Append(dd.FrameName.End);
+                    if (dd.EnableFrameEnd) str.Append(dd.FrameName.End);
                 }
                 // Name
-                if (!(dd.FieldName is null))
+                if (dd.EnableFieldName)
                 {
-                    if (!(dd.FieldName.Begin is null)) str.Append(dd.FieldName.Begin);
+                    if (dd.EnableFieldNameBegin) str.Append(dd.FieldName.Begin);
                     str.Append(field.Name);
-                    if (!(dd.FieldName.End is null)) str.Append(dd.FieldName.End);
+                    if (dd.EnableFieldNameEnd) str.Append(dd.FieldName.End);
                 }
                 // Value
-                if (!(dd.FieldValue is null))
+                if (dd.EnableFieldValue)
                 {
-                    if (!(dd.FieldValue.Begin is null)) str.Append(dd.FieldValue.Begin);
+                    if (dd.EnableFieldValueBegin) str.Append(dd.FieldValue.Begin);
 
                     switch (dd.ValueFormat)
                     {
@@ -415,60 +419,57 @@ namespace SerialDebugger.Comm
                             break;
                     }
 
-                    if (!(dd.FieldValue.End is null)) str.Append(dd.FieldValue.End);
+                    if (dd.EnableFieldValueEnd) str.Append(dd.FieldValue.End);
                 }
 
-                if (!(dd.Item is null) && !(dd.Item.End is null)) str.Append(dd.Item.End);
+                if (dd.EnableItemEnd) str.Append(dd.Item.End);
             }
 
             // InnerName/Value
-            if (field.InnerFields.Count > 1)
+            if (dd.EnableInnerField)
             {
-                if (!(dd.FieldInnerName is null) || !(dd.FieldInnerValue is null))
+                // Innerデータにはendian反転を適用する
+                if (field.IsReverseEndian)
                 {
-                    // Innerデータにはendian反転を適用する
-                    if (field.IsReverseEndian)
-                    {
-                        value = field.ReverseEndian(value);
-                    }
-                    for (int i = 0; i < field.InnerFields.Count; i++)
-                    {
-                        // 該当データ計算
-                        var inner = field.InnerFields[i];
-                        var mask = ((Int64)1 << inner.BitSize) - 1;
-                        // html生成
-                        if (!(dd.Item is null) && !(dd.Item.Begin is null)) str.Append(dd.Item.Begin);
+                    value = field.ReverseEndian(value);
+                }
+                for (int i = 0; i < field.InnerFields.Count; i++)
+                {
+                    // 該当データ計算
+                    var inner = field.InnerFields[i];
+                    var mask = ((Int64)1 << inner.BitSize) - 1;
+                    // html生成
+                    if (dd.EnableItemBegin) str.Append(dd.Item.Begin);
 
-                        // FrameName
-                        if (!(dd.FrameName is null))
-                        {
-                            if (!(dd.FrameName.Begin is null)) str.Append(dd.FrameName.Begin);
-                            str.Append(Name);
-                            if (!(dd.FrameName.End is null)) str.Append(dd.FrameName.End);
-                        }
-                        // Name
-                        if (!(dd.FieldInnerName is null))
-                        {
-                            if (!(dd.FieldInnerName.Begin is null)) str.Append(dd.FieldInnerName.Begin);
-                            str.Append(inner.Name);
-                            if (!(dd.FieldInnerName.End is null)) str.Append(dd.FieldInnerName.End);
-                        }
-                        // Value
-                        if (!(dd.FieldInnerValue is null))
-                        {
-                            if (!(dd.FieldInnerValue.Begin is null)) str.Append(dd.FieldInnerValue.Begin);
-                            str.Append($"0x{(value & mask):X}");
-                            if (!(dd.FieldInnerValue.End is null)) str.Append(dd.FieldInnerValue.End);
-                        }
-
-                        if (!(dd.Item is null) && !(dd.Item.End is null)) str.Append(dd.Item.End);
-                        // 後処理
-                        value >>= inner.BitSize;
+                    // FrameName
+                    if (dd.EnableFrame)
+                    {
+                        if (dd.EnableFrameBegin) str.Append(dd.FrameName.Begin);
+                        str.Append(Name);
+                        if (dd.EnableFrameEnd) str.Append(dd.FrameName.End);
                     }
+                    // Name
+                    if (dd.EnableInnerFieldName)
+                    {
+                        if (dd.EnableInnerFieldNameBegin) str.Append(dd.InnerFieldName.Begin);
+                        str.Append(inner.Name);
+                        if (dd.EnableInnerFieldNameEnd) str.Append(dd.InnerFieldName.End);
+                    }
+                    // Value
+                    if (dd.EnableInnerFieldValue)
+                    {
+                        if (dd.EnableInnerFieldValueBegin) str.Append(dd.InnerFieldValue.Begin);
+                        str.Append($"0x{(value & mask):X}");
+                        if (dd.EnableInnerFieldValueEnd) str.Append(dd.InnerFieldValue.End);
+                    }
+
+                    if (dd.EnableItemEnd) str.Append(dd.Item.End);
+                    // 後処理
+                    value >>= inner.BitSize;
                 }
             }
 
-            if (!(dd.Body is null) && !(dd.Body.End is null)) str.Append(dd.Body.End);
+            if (dd.EnableBodyEnd) str.Append(dd.Body.End);
 
             return str.ToString();
         }

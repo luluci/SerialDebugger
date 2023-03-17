@@ -107,6 +107,7 @@
     <Compile Include="Settings\Gui.cs" />
     <Compile Include="Settings\Log.cs" />
     <Compile Include="Settings\Output.cs" />
+    <Compile Include="Settings\OutputJson.cs" />
     <Compile Include="Settings\Serial.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="Utility\BindableBase.cs" />

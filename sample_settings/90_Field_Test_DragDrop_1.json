@@ -1,0 +1,166 @@
+{
+	"name": "Test_field定義_DragDrop_1",
+	
+	"output": {
+		"drag_drop": {
+			"body": {
+				"begin": "<table><tbody>",
+				"end": "</tbody></table>"
+			},
+			"item": {
+				"begin": "<tr>",
+				"end": "</tr>"
+			},
+			"frame_name": {
+				"begin": "<td>",
+				"end": "</td>"
+			},
+			"field_name": {
+				"begin": "<td>",
+				"end": "</td>"
+			},
+			"field_value": {
+				"begin": "<td>",
+				"end": "</td>"
+			},
+			"inner_field_name": {
+				"begin": "<td>",
+				"end": "</td>"
+			},
+			"inner_field_value": {
+				"begin": "<td>",
+				"end": "</td>"
+			},
+			"value_format": "Input"
+		}
+	},
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "frame_1_共通DD定義",
+					"fields": [
+						{
+							"name": "field_1",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "field_2",
+							"multi_name": [
+								{
+									"name": "field_2_1",
+									"bit_size": 6
+								},
+								{
+									"name": "field_2_2",
+									"bit_size": 10
+								}
+							],
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "field_3",
+							"multi_name": [
+								{
+									"name": "field_3_1",
+									"bit_size": 6
+								},
+								{
+									"name": "field_3_2",
+									"bit_size": 10
+								}
+							],
+							"value": 1,
+							"type": "Edit",
+							"endian": "big"
+						}
+					]
+				},
+				{
+					"name": "frame_2_個別DD定義",
+					"fields": [
+						{
+							"name": "field_1",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit",
+							"drag_drop": {
+								"body": {
+								},
+								"item": {
+								},
+								"frame_name": {
+								},
+								"field_name": {
+								},
+								"field_value": {
+								},
+								"inner_field_name": {
+								},
+								"inner_field_value": {
+								},
+								"value_format": "Input"
+							}
+						},
+						{
+							"name": "field_2",
+							"multi_name": [
+								{
+									"name": "field_2_1",
+									"bit_size": 6
+								},
+								{
+									"name": "field_2_2",
+									"bit_size": 10
+								}
+							],
+							"value": 1,
+							"type": "Edit",
+							"drag_drop": {
+								"body": {
+									"begin": "<table><tbody>",
+									"end": "</tbody></table>"
+								},
+								"inner_field_name": {
+									"begin": "<td>",
+									"end": "</td>"
+								},
+								"inner_field_value": {
+									"begin": "<td>",
+									"end": "</td>"
+								},
+								"value_format": "Input"
+							}
+						},
+						{
+							"name": "field_3",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit",
+							"endian": "big",
+							"drag_drop": {
+								"body": {
+									"begin": "<table><tbody>",
+									"end": "</tbody></table>"
+								},
+								"inner_field_name": {
+									"begin": "<td>",
+									"end": "</td>"
+								},
+								"inner_field_value": {
+									"begin": "<td>",
+									"end": "</td>"
+								},
+								"value_format": "Input"
+							}
+						}
+					]
+				}
+			]
+		}
+	}
+}

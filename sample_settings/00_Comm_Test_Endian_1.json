@@ -14,16 +14,10 @@
 			"frame_name": {
 				"begin": "Frame:"
 			},
-			"field_name": {
-				"begin": "Field:"
-			},
-			"field_value": {
-				"end": "\n"
-			},
-			"field_inner_name": {
+			"inner_field_name": {
 				"begin": "InnerField:"
 			},
-			"field_inner_value": {
+			"inner_field_value": {
 				"end": "\n"
 			},
 			"value_format": "Input"

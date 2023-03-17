@@ -27,11 +27,11 @@
 				"begin" : "<td>",
 				"end"   : "</td>"
 			},
-			"field_inner_name": {
+			"inner_field_name": {
 				"begin" : "<td>",
 				"end"   : "</td>"
 			},
-			"field_inner_value": {
+			"inner_field_value": {
 				"begin" : "<td>",
 				"end"   : "</td>"
 			},

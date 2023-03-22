@@ -467,12 +467,8 @@ namespace SerialDebugger.Comm
 
         private static UIElement MakeCheckboxEnable(RxPattern buffer, string path, int row, int col, int rowspan = -1, int colspan = -1)
         {
-            var cb = new CheckBox();
-            cb.Margin = new Thickness(5, 4, 5, 2);
-            Grid.SetRow(cb, row);
-            Grid.SetColumn(cb, col);
-
             // Frame名称作成
+            var tb = new TextBlock();
             string name;
             if (Setting.Data.Comm.DisplayId)
             {
@@ -482,7 +478,14 @@ namespace SerialDebugger.Comm
             {
                 name = buffer.Name;
             }
-            cb.Content = name;
+            tb.Text = name;
+            tb.TextWrapping = TextWrapping.Wrap;
+
+            var cb = new CheckBox();
+            cb.Content = tb;
+            cb.Margin = new Thickness(5, 4, 5, 2);
+            Grid.SetRow(cb, row);
+            Grid.SetColumn(cb, col);
 
             // Binding
             var bind = new Binding(path + ".IsActive.Value");

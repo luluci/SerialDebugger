@@ -185,6 +185,7 @@ namespace SerialDebugger.Comm
             tb.FontWeight = FontWeights.Bold;
             tb.Foreground = Brushes.White;
             tb.Padding = new Thickness(5, 2, 2, 2);
+            tb.TextWrapping = TextWrapping.Wrap;
             //
             var border = MakeBorder1();
             border.CornerRadius = new CornerRadius(9, 9, 0, 0);

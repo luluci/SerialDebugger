@@ -665,11 +665,7 @@ return true;
         bool IClosing.OnClosing()
         {
             if (IsSerialOpen.Value) return true;
-
-
-
-            Script.Interpreter.Engine.Close();
-
+            
             return false;
         }
         #endregion
@@ -689,6 +685,7 @@ return true;
                     this.Disposables.Dispose();
 
                     Script.Interpreter.Engine.Close();
+                    Logger.Close();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。

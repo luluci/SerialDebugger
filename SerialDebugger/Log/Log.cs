@@ -95,6 +95,11 @@ namespace SerialDebugger.Log
             Impl.Log.Clear();
         }
 
+        static public void Close()
+        {
+            Impl.Close();
+        }
+
         static public void UpdateSetting(Settings.Log setting)
         {
             // 設定更新
@@ -162,7 +167,9 @@ namespace SerialDebugger.Log
             //
             if (!(Writer is null))
             {
+                Writer.Flush();
                 Writer.Close();
+                Writer = null;
             }
         }
 
@@ -188,11 +195,7 @@ namespace SerialDebugger.Log
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
-                //if (!(Writer is null))
-                //{
-                //    Writer.Dispose();
-                //    Writer = null;
-                //}
+                //Close();
                 // TODO: 大きなフィールドを null に設定します。
 
                 disposedValue = true;

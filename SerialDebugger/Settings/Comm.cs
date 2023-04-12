@@ -774,7 +774,7 @@ namespace SerialDebugger.Settings
             try
             {
                 // TxFrame作成
-                var f = new TxFrame(id, frame.Name, buffer_size, frame.AsAscii);
+                var f = new TxFrame(id, frame.Name, buffer_size, frame.AsAscii, frame.LogVisualize);
                 // f.Build()でバッファもまとめて作成するため、必要なバッファインスタンスを先に作成する
                 MakeTxBuffers(frame, f);
                 // Field作成

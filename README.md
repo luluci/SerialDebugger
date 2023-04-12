@@ -172,6 +172,7 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 | frames | array | 送信フレーム定義を配列で入力する。先頭から順に0始まりでIDを割り振る。
 | frames.name | string | 送信フレーム名称定義。重複不可。
 | frames.as_ascii | bool | データ送信時にバイトをHEX文字列に変換するかどうかを設定。little-endianでバッファに格納する。(例: 0xAB -> "AB" -> 0x42,0x41)(省略時:false)
+| frames.log_visualize | bool | false:受信値をHEXテキストで表示<br>true:field設定で定義した表示設定を元にログを作成<br>(省略時:false)
 | frames.fields | array | 送信フレームを構成するフィールドを配列で指定。フィールド設定詳細は後述。
 | frames.backup_buffer_size | number | GUI操作を直接反映する送信バッファとは別に、設定値をバックアップしておくバッファを作成可能。0でバックアップバッファ無し。1以上でバックアップバッファを作成する。backup_buffersの定義数と多いほうをバックアップバッファ数とする。(省略時:0)
 | frames.backup_buffers | array | バックアップバッファ初期値付き設定。詳細は後述。
@@ -183,6 +184,7 @@ jsonフォーマットで送信設定、受信解析設定、自動送信設定�
 		{
 			"name": "frame_name",
 			"as_ascii": false,
+			"log_visualize": false,
 			"fields": [ ... ],
 			"backup_buffer_size": 1,
 			"backup_buffers": [ ... ]

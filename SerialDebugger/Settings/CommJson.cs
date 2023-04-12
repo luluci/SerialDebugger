@@ -206,6 +206,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("as_ascii")]
             public bool AsAscii { get; set; } = false;
 
+            [JsonPropertyName("log_visualize")]
+            public bool LogVisualize { get; set; } = false;
+
             [JsonPropertyName("fields")]
             public IList<CommField> Fields { get; set; }
 

@@ -38,6 +38,8 @@ namespace SerialDebugger.Comm
         public ReactiveCollection<TxFieldBuffer> Buffers { get; set; }
         // ASCIIで送信するかどうか
         public bool AsAscii { get; set; } = false;
+        // LogをVisualizeするか
+        public bool IsLogVisualize { get; }
 
         /// <summary>
         /// TxFrame全体の変更状況
@@ -48,13 +50,14 @@ namespace SerialDebugger.Comm
         public bool HasChecksum { get; set; } = false;
         public int ChecksumIndex { get; set; }
 
-        public TxFrame(int id, string name, int buffer_size, bool ascii)
+        public TxFrame(int id, string name, int buffer_size, bool ascii, bool log_visualize)
         {
             //
             Id = id;
             Name = name;
             BufferSize = buffer_size;
             AsAscii = ascii;
+            IsLogVisualize = log_visualize;
             //
             Fields = new ReactiveCollection<Field>();
             Fields
@@ -472,6 +475,97 @@ namespace SerialDebugger.Comm
             if (dd.EnableBodyEnd) str.Append(dd.Body.End);
 
             return str.ToString();
+        }
+
+
+        public string MakeLogVisualize(int buff_idx)
+        {
+            var log = new StringBuilder();
+            var buffer = Buffers[buff_idx];
+            
+            bool is_first = true;
+            string str;
+            string char_type_name = string.Empty;
+            bool prev_is_char = false;
+            var chars = new char[Fields.Count];
+            var prev_char_id = -1;
+            var chars_size = 0;
+
+            for (int field_id = 0; field_id < Fields.Count; field_id++)
+            {
+                var field = Fields[field_id];
+                var value = buffer.FieldValues[field_id];
+                // Char[]判定
+                if (field.InputType == Field.InputModeType.Char)
+                {
+                    // 文字列ログ作成開始処理
+                    if (prev_char_id == -1)
+                    {
+                        prev_char_id = field.selecter.CharId;
+                        char_type_name = field.Name;
+                    }
+                    // charは連続しているが異なる文字列定義の境目判定
+                    // 一旦これまでの文字列ログをコミットして新しく文字列ログを作成開始する
+                    if (prev_char_id != field.selecter.CharId)
+                    {
+                        // separator
+                        if (!is_first)
+                        {
+                            log.Append(", ");
+                        }
+                        log.Append(char_type_name).Append("=").Append(chars, 0, chars_size);
+                        is_first = false;
+                        chars_size = 0;
+                        prev_char_id = field.selecter.CharId;
+                        char_type_name = field.Name;
+                    }
+                    chars[chars_size] = (char)(value.Value.Value & 0xFF);
+                    chars_size++;
+
+                    prev_is_char = true;
+                }
+                else
+                {
+                    // 直前までcharログだったとき、これまでの文字列ログをコミット
+                    if (prev_is_char)
+                    {
+                        // separator
+                        if (!is_first)
+                        {
+                            log.Append(", ");
+                        }
+                        log.Append(char_type_name).Append("=").Append(chars, 0, chars_size);
+                        is_first = false;
+                        chars_size = 0;
+                        prev_char_id = -1;
+                    }
+                    // separator
+                    if (!is_first)
+                    {
+                        log.Append(", ");
+                    }
+                    // match定義が無いときはfield定義から作成
+                    str = field.MakeDispByValue(value.Value.Value);
+                    log.Append(field.Name).Append("=").Append(str);
+
+                    is_first = false;
+                    prev_is_char = false;
+                }
+            }
+            // Char[]判定
+            if (prev_is_char)
+            {
+                // separator
+                if (!is_first)
+                {
+                    log.Append(", ");
+                }
+                log.Append(char_type_name).Append("=").Append(chars, 0, chars_size);
+                is_first = false;
+                chars_size = 0;
+            }
+
+            return log.ToString();
         }
 
         #region IDisposable Support

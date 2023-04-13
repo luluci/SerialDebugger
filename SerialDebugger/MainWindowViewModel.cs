@@ -531,12 +531,12 @@ namespace SerialDebugger
 
                 default:
                     // シリアル送信
-                    SerialWrite(frame.Data, frame.Name, frame);
+                    SerialWrite(frame);
                     break;
             }
         }
 
-        private void SerialWrite(byte[] data, string name, Comm.TxFieldBuffer frame)
+        private void SerialWrite(Comm.TxFieldBuffer frame)
         {
             // 通信中のみ送信
             if (IsSerialOpen.Value)
@@ -544,15 +544,15 @@ namespace SerialDebugger
                 try
                 {
                     // 送信はGUIスレッドからのみ送信
-                    serialPort.Write(data, 0, data.Length);
+                    serialPort.Write(frame.Data, 0, frame.Data.Length);
                     //
                     if (frame.FrameRef.IsLogVisualize)
                     {
-                        Logger.Add($"[Tx][{name}] {frame.FrameRef.MakeLogVisualize(frame.Id)}");
+                        Logger.Add($"[Tx][{frame.Name}] {frame.FrameRef.MakeLogVisualize(frame.Id)}");
                     }
                     else
                     {
-                        Logger.Add($"[Tx][{name}] {Logger.Byte2Str(data)}");
+                        Logger.Add($"[Tx][{frame.Name}] {Logger.Byte2Str(frame.Data)}");
                     }
                     /*
                     await Task.Run(() => {

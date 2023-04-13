@@ -300,6 +300,7 @@ namespace SerialDebugger.Comm
         {
             var log = new StringBuilder();
 
+            bool is_str_disp = false;
             bool has_match = true;
             RxMatch match = null;
             int idx = 0;
@@ -343,8 +344,25 @@ namespace SerialDebugger.Comm
                     data = field.ReverseEndian(data);
                 }
 
-                // Char[]判定
-                if (field.InputType == Field.InputModeType.Char)
+                // Char[](ログ文字列化)表示判定
+                is_str_disp = true;
+                if (field.InputType != Field.InputModeType.Char) is_str_disp = false;
+                switch (match.Type)
+                {
+                    case RxMatchType.Value:
+                    case RxMatchType.Any:
+                        //is_str_disp = true;
+                        break;
+
+                    case RxMatchType.Script:
+                    case RxMatchType.Timeout:
+                    default:
+                        // 文字列表示しない
+                        is_str_disp = false;
+                        break;
+                }
+                //
+                if (is_str_disp)
                 {
                     // 文字列ログ作成開始処理
                     if (prev_char_id == -1)
@@ -369,6 +387,35 @@ namespace SerialDebugger.Comm
                     }
                     chars[chars_size] = (char)(data & 0xFF);
                     chars_size++;
+                    //
+                    if (has_match)
+                    {
+                        // match定義からログ文字列作成
+                        switch (match.Type)
+                        {
+                            case RxMatchType.Value:
+                                // Valueは固定値なので変化しない
+                                // match.Disp.Value
+                                break;
+
+                            case RxMatchType.Any:
+                                // field定義を使用
+                                str = field.MakeDispByValue(data);
+                                // 受信値に応じて表示を作成
+                                match.Disp.Value = str;
+                                break;
+
+                            case RxMatchType.Script:
+                                // Scriptはcharの処理に入らない
+                                break;
+
+                            case RxMatchType.Timeout:
+                            default:
+                                //str = field.MakeDispByValue(data);
+                                // 表示なし
+                                break;
+                        }
+                    }
 
                     prev_is_char = true;
                 }
@@ -438,7 +485,7 @@ namespace SerialDebugger.Comm
 
                             case RxMatchType.Timeout:
                             default:
-                                str = field.MakeDispByValue(data);
+                                //str = field.MakeDispByValue(data);
                                 // 表示なし
                                 break;
                         }
@@ -463,6 +510,85 @@ namespace SerialDebugger.Comm
             }
 
             return log.ToString();
+        }
+
+        /// <summary>
+        /// 受信データをRxPatternの表示に反映する
+        /// </summary>
+        /// <param name="buff"></param>
+        /// <param name="length"></param>
+        /// <param name="pattern"></param>
+        /// <returns></returns>
+        public void UpdateRxPatternDisp(byte[] buff, int length, RxPattern pattern)
+        {
+            bool has_match = true;
+            RxMatch match = null;
+            int idx = 0;
+            int bit_size = 0;
+            Int64 data;
+            string str;
+            string char_type_name = string.Empty;
+            var chars = new char[Fields.Count];
+            for (int field_id = 0; field_id < Fields.Count; field_id++)
+            {
+                // field参照取得
+                var field = Fields[field_id];
+                // fieldと対応するmatchを取得
+                while (idx < pattern.Matches.Count && !Object.ReferenceEquals(pattern.Matches[idx].FieldRef, field))
+                {
+                    idx++;
+                }
+                if (idx >= pattern.Matches.Count)
+                {
+                    has_match = false;
+                }
+                else
+                {
+                    match = pattern.Matches[idx];
+                }
+
+                // buffからfieldに該当する分のデータを抽出
+                bit_size = field.BitPos + field.BitSize;
+                data = GetInt64(buff, length, field.BytePos, bit_size);
+                // LSB側の余分ビットを除去
+                data >>= field.BitPos;
+                // MSB側の余分ビットを除去
+                data &= field.Mask;
+                // エンディアンチェック
+                if (field.IsReverseEndian)
+                {
+                    data = field.ReverseEndian(data);
+                }
+
+                // matchに応じてログ作成
+                if (has_match)
+                {
+                    // match定義からログ文字列作成
+                    switch (match.Type)
+                    {
+                        case RxMatchType.Value:
+                            // field定義を使用
+                            //str = field.MakeDispByValue(data);
+                            // Valueは固定値なので変化しない
+                            // match.Disp.Value
+                            break;
+
+                        case RxMatchType.Any:
+                            // field定義を使用
+                            str = field.MakeDispByValue(data);
+                            // 受信値に応じて表示を作成
+                            match.Disp.Value = str;
+                            break;
+
+                        case RxMatchType.Script:
+                        case RxMatchType.Timeout:
+                        default:
+                            //str = field.MakeDispByValue(data);
+                            // 表示なし
+                            break;
+                    }
+                }
+            }
         }
 
         private Int64 GetInt64(byte[] buff, int length, int offset, int bit_size)

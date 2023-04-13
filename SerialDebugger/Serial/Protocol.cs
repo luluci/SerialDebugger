@@ -458,13 +458,17 @@ namespace SerialDebugger.Serial
 
                     result_idx++;
                 }
+                // 受信ログ作成
                 string log;
                 if (result.PatternRef.IsLogVisualize)
                 {
+                    // Visualize
                     log = RxFrames[frame_id].MakeLogVisualize(Result.RxBuff, Result.RxBuffOffset, result.PatternRef);
                 }
                 else
                 {
+                    // RxPatternに受信値を反映
+                    RxFrames[frame_id].UpdateRxPatternDisp(Result.RxBuff, Result.RxBuffOffset, result.PatternRef);
                     log = Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset);
                 }
                 Logger.Add($"[Rx][{sb.ToString()}] {log}");

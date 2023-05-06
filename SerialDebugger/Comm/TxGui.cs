@@ -33,7 +33,7 @@ namespace SerialDebugger.Comm
             double margin_l = 0;
             foreach (var frame in frames)
             {
-                var (grid1, grid2, grid3) = MakeBase((IAddChild)grid, margin_l);
+                var (grid1, grid2, grid3) = MakeBase(grid, margin_l);
                 var w = MakeHeader(Gui.setting, grid2, frame, frame_no);
                 w = MakeBody(Gui.setting, grid3, frame, frame_no);
 
@@ -50,7 +50,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="parent"></param>
         /// <returns></returns>
-        private static (Grid, Grid, Grid) MakeBase(IAddChild parent, double margin_l)
+        private static (Grid, Grid, Grid) MakeBase(Grid parent, double margin_l)
         {
             // ベースGrid作成
             Grid grid = new Grid();
@@ -89,7 +89,7 @@ namespace SerialDebugger.Comm
             }
 
             // ベースGrid登録
-            parent.AddChild(grid);
+            parent.Children.Add(grid);
 
             return (grid, grid_header, grid_body);
         }

@@ -11,6 +11,7 @@ using System.IO.Ports;
 
 namespace SerialDebugger.Comm
 {
+    using System.Windows;
     using Utility;
     using Logger = Log.Log;
     
@@ -33,6 +34,9 @@ namespace SerialDebugger.Comm
         public int ActiveActionIndex { get; set; }
 
         public ReactiveCommand OnClickReset { get; set; }
+
+        // GUI: スクロールバーに対する相対位置
+        public Point Point;
 
         public AutoTxJob(int id, string name, string alias, bool active, bool editable)
         {

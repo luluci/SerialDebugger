@@ -46,6 +46,9 @@ namespace SerialDebugger.Comm
         /// </summary>
         public ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
 
+        // GUI: スクロールバーに対する相対位置
+        public Point Point;
+
         // checksum
         public bool HasChecksum { get; set; } = false;
         public int ChecksumIndex { get; set; }

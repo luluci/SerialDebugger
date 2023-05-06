@@ -38,6 +38,7 @@
                             <TextBlock Margin="0,3,0,0" Text="送信:"/>
                             <ComboBox ItemsSource="{Binding TxShortcut}" DisplayMemberPath="Name" SelectedIndex="{Binding TxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
                             <Button Content="{Binding TxShortcutButtonDisp.Value}" Command="{Binding OnClickTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
+                            <Button Content="表示" Command="{Binding OnClickTxScroll}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -47,6 +48,7 @@
                             <TextBlock Margin="0,3,0,0" Text="自動送信:"/>
                             <ComboBox x:Name="AutoTxShortcut" ItemsSource="{Binding AutoTxJobs}" DisplayMemberPath="Alias" SelectedIndex="{Binding AutoTxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
                             <Button Content="{Binding AutoTxShortcutButtonDisp.Value}" Command="{Binding OnClickAutoTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
+                            <!--<Button Content="表示" Command="{Binding OnClickAutoTxScroll}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>-->
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -55,10 +57,10 @@
             </WrapPanel>
         </Grid>
         <Grid Grid.Row="1" Margin="0,0,0,0" Background="#FFDBF5FF">
-            <TabControl>
+            <TabControl SelectedIndex="{Binding TabSelectedIndex.Value}">
                 <TabItem Header="送信フレーム">
                     <Grid>
-                        <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
+                        <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" x:Name="TxScrollViewer">
                             <Grid x:Name="BaseSerialTx" Margin="10,0,10,0">
                                 <Grid>
                                     <TextBlock Text="{Binding BaseSerialTxMsg.Value}" Margin="0,10,0,0"/>
@@ -80,7 +82,7 @@
                 </TabItem>
                 <TabItem Header="自動送信">
                     <Grid>
-                        <ScrollViewer VerticalScrollBarVisibility="Visible">
+                        <ScrollViewer VerticalScrollBarVisibility="Visible" x:Name="AutoTxScrollViewer">
                             <Grid x:Name="BaseSerialAutoTx" Margin="10,0,10,0">
                                 <Grid>
                                     <TextBlock Text="{Binding BaseSerialAutoTxMsg.Value}" Margin="0,10,0,0"/>

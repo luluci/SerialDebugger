@@ -27,6 +27,8 @@ namespace SerialDebugger
         // Title
         static string ToolTitle = "SerialDebugger";
         public ReactivePropertySlim<string> WindowTitle { get; set; }
+        // Tab
+        public ReactivePropertySlim<int> TabSelectedIndex { get; set; }
         // Settings
         public ReactiveCollection<Settings.SettingInfo> Settings { get; set; }
         public ReactivePropertySlim<int> SettingsSelectIndex { get; set; }
@@ -47,11 +49,13 @@ namespace SerialDebugger
         public class TxShortcutNode
         {
             public string Name { get; }
+            public Comm.TxFrame Frame { get; }
             public Comm.TxFieldBuffer Buffer { get; }
 
-            public TxShortcutNode(string name, Comm.TxFieldBuffer buffer)
+            public TxShortcutNode(string name, Comm.TxFrame frame, Comm.TxFieldBuffer buffer)
             {
                 Name = name;
+                Frame = frame;
                 Buffer = buffer;
             }
         }
@@ -59,6 +63,7 @@ namespace SerialDebugger
         public ReactivePropertySlim<int> TxShortcutSelectedIndex { get; set; }
         public ReactivePropertySlim<string> TxShortcutButtonDisp { get; set; }
         public ReactiveCommand OnClickTxShortcut { get; set; }
+        public ReactiveCommand OnClickTxScroll { get; set; }
         // Comm: Rx
         public ReactiveCollection<Comm.RxFrame> RxFrames { get; set; }
         // Comm: AutoTx
@@ -67,6 +72,7 @@ namespace SerialDebugger
         public ReactivePropertySlim<int> AutoTxShortcutSelectedIndex { get; set; }
         public ReactivePropertySlim<string> AutoTxShortcutButtonDisp { get; set; }
         public ReactiveCommand OnClickAutoTxShortcut { get; set; }
+        public ReactiveCommand OnClickAutoTxScroll { get; set; }
         // Script
         public ReactiveCommand OnClickOpenScript { get; set; }
         // Log
@@ -101,6 +107,9 @@ namespace SerialDebugger
 
             //
             WindowTitle = new ReactivePropertySlim<string>("SerialDebugger");
+            // Tab
+            TabSelectedIndex = new ReactivePropertySlim<int>(0);
+            TabSelectedIndex.AddTo(Disposables);
             // Serial
             serialSetting = new Serial.Settings();
             //serialHandler = new Serial.CommHandler();
@@ -194,14 +203,25 @@ namespace SerialDebugger
                 .AddTo(Disposables);
             OnClickTxShortcut = new ReactiveCommand();
             OnClickTxShortcut.Subscribe(x =>
-            {
-                if (0 <= TxShortcutSelectedIndex.Value && TxShortcutSelectedIndex.Value < TxShortcut.Count)
                 {
-                    var node = TxShortcut[TxShortcutSelectedIndex.Value];
-                    SerialTxBufferSendFix(node.Buffer);
-                }
-            })
-            .AddTo(Disposables);
+                    if (0 <= TxShortcutSelectedIndex.Value && TxShortcutSelectedIndex.Value < TxShortcut.Count)
+                    {
+                        var node = TxShortcut[TxShortcutSelectedIndex.Value];
+                        SerialTxBufferSendFix(node.Buffer);
+                    }
+                })
+                .AddTo(Disposables);
+            OnClickTxScroll = new ReactiveCommand();
+            OnClickTxScroll.Subscribe(x =>
+                {
+                    if (0 <= TxShortcutSelectedIndex.Value && TxShortcutSelectedIndex.Value < TxShortcut.Count)
+                    {
+                        var node = TxShortcut[TxShortcutSelectedIndex.Value];
+                        TabSelectedIndex.Value = 0;
+                        window.TxScrollViewer.ScrollToHorizontalOffset(node.Frame.Point.X);
+                    }
+                })
+                .AddTo(Disposables);
             // 自動送信操作ショートカット
             AutoTxShortcutButtonDisp = new ReactivePropertySlim<string>();
             AutoTxShortcutButtonDisp.AddTo(Disposables);
@@ -236,14 +256,26 @@ namespace SerialDebugger
                     }
                 })
                 .AddTo(Disposables);
+            OnClickAutoTxScroll = new ReactiveCommand();
+            OnClickAutoTxScroll.Subscribe(x =>
+                {
+                    if (AutoTxShortcutSelectedIndex.Value < AutoTxJobs.Count)
+                    {
+                        // AutoTxは高さが可変なので都度計算が必要
+                        var job = AutoTxJobs[AutoTxShortcutSelectedIndex.Value];
+                        TabSelectedIndex.Value = 2;
+                        window.TxScrollViewer.ScrollToVerticalOffset(job.Point.Y);
+                    }
+                })
+                .AddTo(Disposables);
 
             // Script
             OnClickOpenScript = new ReactiveCommand();
             OnClickOpenScript.Subscribe((x)=>
-            {
-                Script.Interpreter.Engine.ShowView(window);
-            })
-            .AddTo(Disposables);
+                {
+                    Script.Interpreter.Engine.ShowView(window);
+                })
+                .AddTo(Disposables);
 
             // Debug
             DebugInit();
@@ -361,16 +393,32 @@ namespace SerialDebugger
                 // GUI反映
                 window.BaseSerialTx.Children.Clear();
                 window.BaseSerialTx.Children.Add(tx);
-                // ショートカット作成
+                // GUI座標取得のために画面更新
+                window.BaseSerialTx.UpdateLayout();
+                // GUI反映後処理
                 foreach (var frame in TxFrames)
                 {
-                    foreach (var fb in frame.Buffers)
+                    // スクロールバーに対する通信フレーム表示相対位置を取得
+                    // スクロール後に通信フレーム全体が表示されるように、通信フレーム幅を加算した位置をターゲットにする。
+                    if (frame.Id < tx.Children.Count)
                     {
-                        TxShortcut.Add(new TxShortcutNode(fb.Name, fb));
-                        fb.ChangeState.Subscribe(x =>
+                        Grid node = (Grid)tx.Children[frame.Id];
+                        var temp_point = new Point(0, 0);
+                        frame.Point = node.TranslatePoint(temp_point, window.TxScrollViewer);
+                        //var point = node.Children[0].TransformToAncestor(window.TxScrollViewer).Transform(frame.Point);
+                        if (frame.Id > 0)
                         {
-                            TxShortcutSelectedIndex.ForceNotify();
-                        });
+                            frame.Point.X += node.ActualWidth;
+                        }
+                        // ショートカット作成
+                        foreach (var fb in frame.Buffers)
+                        {
+                            TxShortcut.Add(new TxShortcutNode(fb.Name, frame, fb));
+                            fb.ChangeState.Subscribe(x =>
+                            {
+                                TxShortcutSelectedIndex.ForceNotify();
+                            });
+                        }
                     }
                 }
                 if (TxShortcut.Count > 0)
@@ -615,6 +663,10 @@ namespace SerialDebugger
             {
                 try
                 {
+
+                    //var node = TxFrames[TxFrames.Count - 1];
+                    //window.TxScrollViewer.ScrollToHorizontalOffset(node.Point.X);
+
                     //var z = await Script.Interpreter.Engine.wv.ExecuteScriptAsync("debug()");
 
                     var script = @"

@@ -295,7 +295,10 @@ namespace SerialDebugger
                         // AutoTxは高さが可変なので都度計算が必要
                         var job = AutoTxJobs[AutoTxShortcutSelectedIndex.Value];
                         TabSelectedIndex.Value = 2;
-                        window.TxScrollViewer.ScrollToVerticalOffset(job.Point.Y);
+                        //
+                        var temp_point = new Point(0, 0);
+                        var point = job.UiElemRef.TranslatePoint(temp_point, window.AutoTxScrollViewer);
+                        window.AutoTxScrollViewer.ScrollToVerticalOffset(point.Y);
                     }
                 })
                 .AddTo(Disposables);
@@ -510,6 +513,17 @@ namespace SerialDebugger
                 // GUI反映
                 window.BaseSerialAutoTx.Children.Clear();
                 window.BaseSerialAutoTx.Children.Add(autotx);
+                // Shortcut作成
+                foreach (var job in AutoTxJobs)
+                {
+                    // 該当するGUI部品への参照を記憶しておく
+                    var idx = job.Id * 2;
+                    if (idx < autotx.Children.Count)
+                    {
+                        var node = autotx.Children[idx];
+                        job.UiElemRef = node;
+                    }
+                }
             }
             else
             {

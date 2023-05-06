@@ -35,8 +35,8 @@ namespace SerialDebugger.Comm
 
         public ReactiveCommand OnClickReset { get; set; }
 
-        // GUI: スクロールバーに対する相対位置
-        public Point Point;
+        // GUI: 
+        public UIElement UiElemRef;
 
         public AutoTxJob(int id, string name, string alias, bool active, bool editable)
         {

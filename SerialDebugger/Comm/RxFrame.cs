@@ -10,6 +10,7 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Comm
 {
+    using System.Windows;
     using Utility;
 
 
@@ -34,6 +35,9 @@ namespace SerialDebugger.Comm
         public ReactiveCollection<RxPattern> Patterns { get; set; }
 
         public bool HasScriptMatch { get; set; } = false;
+
+        // GUI: スクロールバーに対する相対位置
+        public Point Point;
 
         public RxFrame(int id, string name)
         {

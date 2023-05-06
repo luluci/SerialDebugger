@@ -45,6 +45,15 @@
                 <Grid Margin="10,5,0,0" Height="28">
                     <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}">
                         <StackPanel Orientation="Horizontal" Margin="4,2,2,2">
+                            <TextBlock Margin="0,3,0,0" Text="受信解析:"/>
+                            <ComboBox ItemsSource="{Binding RxShortcut}" DisplayMemberPath="Name" SelectedIndex="{Binding RxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
+                            <Button Content="表示" Command="{Binding OnClickRxScroll}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <Grid Margin="10,5,0,0" Height="28">
+                    <Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" Background="{DynamicResource {x:Static SystemColors.GradientInactiveCaptionBrushKey}}">
+                        <StackPanel Orientation="Horizontal" Margin="4,2,2,2">
                             <TextBlock Margin="0,3,0,0" Text="自動送信:"/>
                             <ComboBox x:Name="AutoTxShortcut" ItemsSource="{Binding AutoTxJobs}" DisplayMemberPath="Alias" SelectedIndex="{Binding AutoTxShortcutSelectedIndex.Value}" Margin="5,0,0,0" Width="150"/>
                             <Button Content="{Binding AutoTxShortcutButtonDisp.Value}" Command="{Binding OnClickAutoTxShortcut}" Margin="2,1,0,1" Width="50" FontFamily="Meiryo UI"/>
@@ -71,7 +80,7 @@
                 </TabItem>
                 <TabItem Header="受信解析">
                     <Grid>
-                        <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
+                        <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" x:Name="RxScrollViewer">
                             <Grid x:Name="BaseSerialRx" Margin="10,0,10,0">
                                 <Grid>
                                     <TextBlock Text="{Binding BaseSerialRxMsg.Value}" Margin="0,10,0,0"/>

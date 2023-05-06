@@ -66,6 +66,21 @@ namespace SerialDebugger
         public ReactiveCommand OnClickTxScroll { get; set; }
         // Comm: Rx
         public ReactiveCollection<Comm.RxFrame> RxFrames { get; set; }
+        // Rx Shortcut定義
+        public class RxShortcutNode
+        {
+            public string Name { get; }
+            public Comm.RxFrame Frame { get; }
+
+            public RxShortcutNode(string name, Comm.RxFrame frame)
+            {
+                Name = name;
+                Frame = frame;
+            }
+        }
+        public ReactiveCollection<RxShortcutNode> RxShortcut { get; set; }
+        public ReactivePropertySlim<int> RxShortcutSelectedIndex { get; set; }
+        public ReactiveCommand OnClickRxScroll { get; set; }
         // Comm: AutoTx
         public ReactiveCollection<Comm.AutoTxJob> AutoTxJobs { get; set; }
         public ReactiveCollection<Comm.AutoTxJob> EmptyAutoTxJobs { get; set; }
@@ -222,6 +237,22 @@ namespace SerialDebugger
                     }
                 })
                 .AddTo(Disposables);
+            // Rx Shortcut
+            RxShortcut = new ReactiveCollection<RxShortcutNode>();
+            RxShortcut.AddTo(Disposables);
+            RxShortcutSelectedIndex = new ReactivePropertySlim<int>();
+            RxShortcutSelectedIndex.AddTo(Disposables);
+            OnClickRxScroll = new ReactiveCommand();
+            OnClickRxScroll.Subscribe(x =>
+                {
+                    if (0 <= RxShortcutSelectedIndex.Value && RxShortcutSelectedIndex.Value < RxShortcut.Count)
+                    {
+                        var node = RxShortcut[RxShortcutSelectedIndex.Value];
+                        TabSelectedIndex.Value = 1;
+                        window.RxScrollViewer.ScrollToHorizontalOffset(node.Frame.Point.X);
+                    }
+                })
+                .AddTo(Disposables);
             // 自動送信操作ショートカット
             AutoTxShortcutButtonDisp = new ReactivePropertySlim<string>();
             AutoTxShortcutButtonDisp.AddTo(Disposables);
@@ -350,6 +381,7 @@ namespace SerialDebugger
             window.BaseSerialRx.Children.Add(BaseSerialRxOrig);
             window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
             TxShortcut.Clear();
+            RxShortcut.Clear();
         }
 
         public void SetMsgNoSettings()
@@ -393,7 +425,8 @@ namespace SerialDebugger
                 // GUI反映
                 window.BaseSerialTx.Children.Clear();
                 window.BaseSerialTx.Children.Add(tx);
-                // GUI座標取得のために画面更新
+                // GUI座標取得のために画面更新, Tabを表示しないと座標が取得できない
+                TabSelectedIndex.Value = 0;
                 window.BaseSerialTx.UpdateLayout();
                 // GUI反映後処理
                 foreach (var frame in TxFrames)
@@ -410,15 +443,15 @@ namespace SerialDebugger
                         {
                             frame.Point.X += node.ActualWidth;
                         }
-                        // ショートカット作成
-                        foreach (var fb in frame.Buffers)
+                    }
+                    // ショートカット作成
+                    foreach (var fb in frame.Buffers)
+                    {
+                        TxShortcut.Add(new TxShortcutNode(fb.Name, frame, fb));
+                        fb.ChangeState.Subscribe(x =>
                         {
-                            TxShortcut.Add(new TxShortcutNode(fb.Name, frame, fb));
-                            fb.ChangeState.Subscribe(x =>
-                            {
-                                TxShortcutSelectedIndex.ForceNotify();
-                            });
-                        }
+                            TxShortcutSelectedIndex.ForceNotify();
+                        });
                     }
                 }
                 if (TxShortcut.Count > 0)
@@ -439,6 +472,30 @@ namespace SerialDebugger
                 // GUI反映
                 window.BaseSerialRx.Children.Clear();
                 window.BaseSerialRx.Children.Add(rx);
+                // GUI座標取得のために画面更新
+                TabSelectedIndex.Value = 1;
+                window.BaseSerialRx.UpdateLayout();
+                //
+                foreach (var frame in RxFrames)
+                {
+                    if (frame.Id < rx.Children.Count)
+                    {
+                        Grid node = (Grid)rx.Children[frame.Id];
+                        var temp_point = new Point(0, 0);
+                        frame.Point = node.TranslatePoint(temp_point, window.RxScrollViewer);
+                        //var point = node.Children[0].TransformToAncestor(window.TxScrollViewer).Transform(frame.Point);
+                        if (frame.Id > 0)
+                        {
+                            frame.Point.X += node.ActualWidth;
+                        }
+                    }
+                    // Shortcut作成
+                    RxShortcut.Add(new RxShortcutNode(frame.Name, frame));
+                }
+                if (RxShortcut.Count > 0)
+                {
+                    RxShortcutSelectedIndex.Value = 0;
+                }
             }
             else
             {
@@ -461,6 +518,8 @@ namespace SerialDebugger
             }
             BindAutoTxShortcut();
 
+            // デフォルトでTxを表示する
+            TabSelectedIndex.Value = 0;
             return true;
         }
 

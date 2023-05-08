@@ -435,17 +435,12 @@ namespace SerialDebugger
                 foreach (var frame in TxFrames)
                 {
                     // スクロールバーに対する通信フレーム表示相対位置を取得
-                    // スクロール後に通信フレーム全体が表示されるように、通信フレーム幅を加算した位置をターゲットにする。
                     if (frame.Id < tx.Children.Count)
                     {
                         Grid node = (Grid)tx.Children[frame.Id];
                         var temp_point = new Point(0, 0);
                         frame.Point = node.TranslatePoint(temp_point, window.TxScrollViewer);
                         //var point = node.Children[0].TransformToAncestor(window.TxScrollViewer).Transform(frame.Point);
-                        if (frame.Id > 0)
-                        {
-                            frame.Point.X += node.ActualWidth;
-                        }
                     }
                     // ショートカット作成
                     foreach (var fb in frame.Buffers)
@@ -487,10 +482,6 @@ namespace SerialDebugger
                         var temp_point = new Point(0, 0);
                         frame.Point = node.TranslatePoint(temp_point, window.RxScrollViewer);
                         //var point = node.Children[0].TransformToAncestor(window.TxScrollViewer).Transform(frame.Point);
-                        if (frame.Id > 0)
-                        {
-                            frame.Point.X += node.ActualWidth;
-                        }
                     }
                     // Shortcut作成
                     RxShortcut.Add(new RxShortcutNode(frame.Name, frame));

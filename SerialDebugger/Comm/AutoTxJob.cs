@@ -211,7 +211,7 @@ namespace SerialDebugger.Comm
                 switch (Actions[ActiveActionIndex].Type)
                 {
                     case AutoTxActionType.Send:
-                        ActSend(protocol.Serial, protocol.TxFrames);
+                        ActSend(protocol);
                         // 次のActionに移行
                         check = NextAction();
                         break;
@@ -342,19 +342,14 @@ namespace SerialDebugger.Comm
             return false;
         }
 
-        private void ActSend(SerialPort serial, IList<Comm.TxFrame> TxFrames)
+        private void ActSend(Serial.Protocol protocol)
         {
             var action = Actions[ActiveActionIndex];
-            var frame = TxFrames[action.TxFrameIndex];
-            var fb = frame.Buffers[action.TxFrameBuffIndex];
-            var buff_idx = action.TxFrameBuffIndex;
-            string name;
-            // バッファ選択
-            //Buffer.BlockCopy(TxFrames[action.TxFrameIndex].TxData, action.TxFrameOffset, buff, 0, action.TxFrameLength);
-            name = fb.Name;
+            var fb = protocol.GetTxBuffer(action.TxFrameIndex, action.TxFrameBuffIndex);
+            string name = fb.Name;
             byte[] buff = fb.Data;
             // バッファ送信
-            serial.Write(buff, action.TxFrameOffset, action.TxFrameLength);
+            protocol.SendData(buff, action.TxFrameOffset, action.TxFrameLength);
             // 処理終了からの時間を計測
             WaitTimer.Start();
             // Log出力

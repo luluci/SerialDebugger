@@ -10,6 +10,8 @@ using System.Runtime.InteropServices;
 
 namespace SerialDebugger.Script
 {
+    using Logger = Log.Log;
+
     [ClassInterface(ClassInterfaceType.AutoDual)]
     [ComVisible(true)]
     public class CommIf
@@ -37,6 +39,8 @@ namespace SerialDebugger.Script
             AutoTx = new CommAutoTxJobsIf();
             RxMatch = new SerialMatchResultsIf();
             Rx = new CommRxFramesIf();
+
+            ProtocolRef = null;
         }
 
         public void Init(ReactiveCollection<SerialDebugger.Comm.TxFrame> tx, ReactiveCollection<SerialDebugger.Comm.RxFrame> rx, ReactiveCollection<SerialDebugger.Comm.AutoTxJob> autotx)
@@ -53,6 +57,7 @@ namespace SerialDebugger.Script
         public void Init(Serial.Protocol protocol)
         {
             ProtocolRef = protocol;
+            Tx.ProtocolRef = protocol;
             RxMatch.ProtocolRef = protocol;
         }
 
@@ -72,7 +77,7 @@ namespace SerialDebugger.Script
         {
 
         }
-
+        
         public void Debug()
         {
             // WebView2/JavaScript側からのコールがGUIスレッドで呼ばれるっぽい

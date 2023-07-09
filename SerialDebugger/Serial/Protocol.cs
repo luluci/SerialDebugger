@@ -78,6 +78,7 @@ namespace SerialDebugger.Serial
         public RxData Result { get; set; }
         public List<RxMatchResult> MatchResult { get; set; }
         public int MatchResultPos { get; set; }
+        public int MatchResultCount { get; set; }
 
         // 受信ハンドラを別タスクで動かすとき
         //// 定期処理関連
@@ -427,6 +428,12 @@ namespace SerialDebugger.Serial
 
                 case RxDataType.Match:
                     // 受信解析で定義したルールにマッチ
+                    // 受信内容を必要な変数に展開
+                    // 受信結果(MatchResult)を別バッファにコピーすることはとりあえずしない
+                    // 基本的に受信解析マッチしたタイミングでツール内に一括通報して終了する
+                    // Scriptから遅れてマッチ結果を参照するためにMatchResultCountを作成する
+                    // MatchResultPos!=0のときはMatchResultが更新されているので注意
+                    MatchResultCount = MatchResultPos;
                     // 受信内容をログに出力
                     MakeRxLog();
                     // 受信内容を自動操作に通知
@@ -491,7 +498,25 @@ namespace SerialDebugger.Serial
             }
         }
 
+        // 以下、シリアル通信制御用I/F
+        // 現状でVMから直接SerialPortを使って送信しているが、
+        // 送受信はprotocolに集約するようなリファクタリング構想
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="frame_idx"></param>
+        /// <param name="buffer_idx"></param>
+        /// <returns></returns>
+        public Comm.TxFieldBuffer GetTxBuffer(int frame_idx, int buffer_idx)
+        {
+            return TxFrames[frame_idx].Buffers[buffer_idx];
+        }
+
+        public void SendData(byte[] buff, int offset, int length)
+        {
+            Serial.Write(buff, offset, length);
+        }
 
 
         //public async Task RunTask()
@@ -536,7 +561,7 @@ namespace SerialDebugger.Serial
 
         //}
 
-        
+
 
     }
 }

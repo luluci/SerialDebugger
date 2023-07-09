@@ -1,0 +1,207 @@
+{
+	"name": "Test_通信_Script_3_Scriptで全自動操作",
+	
+	"gui": {
+		"window":
+			{
+				"width": 900,
+				"height": 700
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"script": [
+		"00_Comm_Test_Script_3.js"
+	],
+	
+	"comm": {
+		"rx": {
+			"enable_multi_match": true,
+			"frames": [
+				{
+					"name": "Rx_Frame_1",
+					"fields": [
+						{
+							"name": "field_1",
+							"bit_size": 8,
+							"value": 240
+						},
+						{
+							"name": "field_2",
+							"bit_size": 777,
+							"multi_name": [
+								{
+									"name": "field_2-1",
+									"bit_size": 5
+								},
+								{
+									"name": "field_2-2",
+									"bit_size": 3
+								}
+							],
+							"value": 85,
+							"type": "Unit",
+							"unit": {
+								"unit": "-Frame",
+								"lsb": 1,
+								"disp_max": 10,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							},
+							"base": 10
+						},
+						{
+							"name": "field_3-1",
+							"bit_size": 4,
+							"value": 2,
+							"type": "Dict",
+							"dict": [
+ 								{ "value": 0, "disp": "option A" },
+ 								{ "value": 1, "disp": "option B" },
+ 								{ "value": 2, "disp": "option C" }
+							]
+						},
+						{
+							"name": "field_3-2",
+							"bit_size": 4,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_3_Script",
+							"active": true,
+							"log_visualize": false,
+							"matches": [
+								{
+									"type": "Script",
+									"rx_recieved": "Rx_ptn3_match_header"
+								},
+								{
+									"rx_begin": "Rx_ptn3_init",
+									"rx_recieved": "Rx_ptn3_match_body"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+	
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_AutoScript",
+					"alias": "Scriptで全自動操作",
+					"active": false,
+					"actions": [
+						{ "type": "Log", "log": "<Job_AutoScript start.>" },
+						{ "type": "Script", "auto_tx_handler": "Job_AutoScript()" }
+					]
+				}
+			]
+		},
+	
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_A",
+					"as_ascii": false,
+					"fields": [
+						{
+							"name": "field_1",
+							"bit_size": 8,
+							"value": 240
+						},
+						{
+							"name": "field_2",
+							"bit_size": 777,
+							"multi_name": [
+								{
+									"name": "field_2-1",
+									"bit_size": 5
+								},
+								{
+									"name": "field_2-2",
+									"bit_size": 3
+								}
+							],
+							"value": 1,
+							"type": "Unit",
+							"unit": {
+								"unit": "-Frame",
+								"lsb": 1,
+								"disp_max": 10,
+								"disp_min": 0,
+								"value_min": 0,
+								"format": ""
+							},
+							"base": 10
+						},
+						{
+							"name": "field_3-1",
+							"bit_size": 4,
+							"value": 2,
+							"type": "Dict",
+							"dict": [
+ 								{ "value": 0, "disp": "option A" },
+ 								{ "value": 1, "disp": "option B" },
+ 								{ "value": 2, "disp": "option C" }
+							]
+						},
+						{
+							"name": "field_3-2",
+							"bit_size": 4,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"backup_buffer_size": 2,
+					"backup_buffers": [
+						{
+							"name": "設定X",
+							"value": [ 240, -1, 2, 4, 15, 1 ]
+						},
+						{
+							"name": "設定Y",
+							"value": [ 240, 77, -2, 4 ]
+						}
+					]
+				}
+			]
+		}
+	}
+}

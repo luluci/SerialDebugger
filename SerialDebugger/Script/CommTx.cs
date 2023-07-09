@@ -10,11 +10,13 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Script
 {
+    using Logger = Log.Log;
 
     [ClassInterface(ClassInterfaceType.AutoDual)]
     [ComVisible(true)]
     public class CommTxFramesIf
     {
+        public Serial.Protocol ProtocolRef { get; set; } = null;
         // Commデータへの参照
         // Comm: Tx
         public ReactiveCollection<SerialDebugger.Comm.TxFrame> TxFramesRef { get; set; }
@@ -41,6 +43,27 @@ namespace SerialDebugger.Script
             TxFramesRef[frame_id].Buffers[buffer_id].BufferFix();
         }
 
+        public void Send(int frame_id, int buffer_id)
+        {
+            var fb = ProtocolRef.GetTxBuffer(frame_id, buffer_id);
+            string name = fb.Name;
+            byte[] buff = fb.Data;
+            // バッファ送信
+            ProtocolRef.SendData(buff, 0, buff.Length);
+            // Log出力
+            Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, 0, buff.Length)}");
+        }
+
+        public void SendPart(int frame_id, int buffer_id, int offset, int length)
+        {
+            var fb = ProtocolRef.GetTxBuffer(frame_id, buffer_id);
+            string name = fb.Name;
+            byte[] buff = fb.Data;
+            // バッファ送信
+            ProtocolRef.SendData(buff, offset, length);
+            // Log出力
+            Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, offset, length)}");
+        }
     }
 
     [ClassInterface(ClassInterfaceType.AutoDual)]

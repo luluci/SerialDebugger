@@ -461,7 +461,7 @@ Charのシンタックスシュガー。stringで指定した分だけCharとし
 ```json
 {
 	"name": "str",
-	"type": "string", "char": "ABC"
+	"type": "String", "string": "ABC"
 }
 ```
 ↓

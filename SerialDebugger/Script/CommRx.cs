@@ -115,7 +115,7 @@ namespace SerialDebugger.Script
     [ComVisible(true)]
     public class SerialMatchResultsIf
     {
-        public Serial.Protocol ProtocolRef { get; set; }
+        public Serial.Protocol ProtocolRef { get; set; } = null;
         public RxMatchResultIf RxMatchResultIf { get; set; } = new RxMatchResultIf();
         // I/F: WebView2 -> C#
         // AutoTxのRxMatchResultが条件と一致したかの判定結果応答に使う
@@ -125,8 +125,23 @@ namespace SerialDebugger.Script
         {
             get
             {
-                return ProtocolRef.MatchResultPos;
+                // RunResultCheckの注意書きを参照
+                // 無理矢理マッチ結果を除いているので、
+                // Script内で次の受信が無いと分かっている状況で使用する。
+                return ProtocolRef.MatchResultCount;
             }
+        }
+        public bool IsEnable
+        {
+            get
+            {
+                return ProtocolRef.MatchResultPos == 0;
+            }
+        }
+        public void Clear()
+        {
+            // マッチ結果を無効化する
+            ProtocolRef.MatchResultCount = 0;
         }
 
         [System.Runtime.CompilerServices.IndexerName("Items")]

@@ -603,6 +603,8 @@ namespace SerialDebugger
                 // COM終了でプロトコル破棄
                 //protocol.Dispose();
                 protocol = null;
+                // Scriptクリア
+                Script.Interpreter.Engine.Comm.Init(protocol);
                 // COMポート終了
                 serialPort.Close();
                 serialPort = null;

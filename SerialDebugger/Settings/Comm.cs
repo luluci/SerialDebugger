@@ -623,6 +623,9 @@ namespace SerialDebugger.Settings
                 case "Recv":
                     return MakeAutoTxActionRecv(id, action);
 
+                case "AnyRecv":
+                    return MakeAutoTxActionAnyRecv(id, action);
+
                 case "Jump":
                     return MakeAutoTxActionJump(id, action);
 
@@ -739,6 +742,12 @@ namespace SerialDebugger.Settings
             }
 
             var act = AutoTxAction.MakeRecvAction(id, action.Alias, Recvs, action.Immediate);
+
+            return act;
+        }
+        private AutoTxAction MakeAutoTxActionAnyRecv(int id, Json.CommAutoTxAction action)
+        {
+            var act = AutoTxAction.MakeAnyRecvAction(id, action.Alias, action.Immediate);
 
             return act;
         }

@@ -17,6 +17,7 @@ namespace SerialDebugger.Comm
         Send,               // シリアル送信
         Wait,               // 時間待機
         Recv,               // 受信待機
+        AnyRecv,            // Any受信待機(タイムアウト含む)
         Jump,               // ジャンプ
         Script,             // スクリプト実行
         ActivateAutoTx,     // AutoTx有効化
@@ -176,6 +177,22 @@ namespace SerialDebugger.Comm
                 {
                     action.Alias = $"Recv <any>";
                 }
+            }
+
+            return action;
+        }
+
+        public static AutoTxAction MakeAnyRecvAction(int id, string alias, bool immediate)
+        {
+            var action = new AutoTxAction(id, alias)
+            {
+                Type = AutoTxActionType.AnyRecv,
+                Immediate = immediate,
+            };
+
+            if (Object.ReferenceEquals(action.Alias, string.Empty))
+            {
+                action.Alias = $"Any Rx";
             }
 
             return action;

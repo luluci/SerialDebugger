@@ -431,6 +431,8 @@ namespace SerialDebugger.Serial
                     // タイムアウトは1バイト以上の受信があるときのみ発生する。
                     // 受信バッファをログに出力して次の受信シーケンスに移行する。
                     Logger.Add($"[Rx][Timeout] {Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset)}");
+                    // 受信タイムアウトを自動操作に通知
+                    await AutoTxExecRxEvent();
                     break;
 
                 case RxDataType.Match:

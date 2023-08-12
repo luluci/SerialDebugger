@@ -198,6 +198,7 @@ namespace SerialDebugger.Comm
                     }
                 case AutoTxActionType.Send:
                 case AutoTxActionType.Recv:
+                case AutoTxActionType.AnyRecv:
                 case AutoTxActionType.Script:
                 case AutoTxActionType.ActivateAutoTx:
                 case AutoTxActionType.ActivateRx:

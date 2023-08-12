@@ -167,6 +167,9 @@ namespace SerialDebugger.Comm
                 case AutoTxActionType.Recv:
                     break;
 
+                case AutoTxActionType.AnyRecv:
+                    break;
+
                 case AutoTxActionType.Jump:
                     if (action.JumpTo.Value >= Actions.Count)
                     {
@@ -261,6 +264,10 @@ namespace SerialDebugger.Comm
                         // Recvは周期判定では変化しない
                         break;
 
+                    case AutoTxActionType.AnyRecv:
+                        // Recvは周期判定では変化しない
+                        break;
+
                     case AutoTxActionType.Log:
                         ActLog();
                         // 次のActionに移行
@@ -289,6 +296,19 @@ namespace SerialDebugger.Comm
                             // 通常Execを実施
                             await ExecCycle(protocol);
                         }
+                    }
+                    break;
+
+                case AutoTxActionType.AnyRecv:
+                    // 受信解析成功または受信タイムアウト(1バイト以上受信している)によりこのパスに到達
+                    // AnyRecvはあらゆる受信を受理するのでパス到達で条件成立
+                    // 処理終了からの時間を計測
+                    WaitTimer.StartBy(protocol.Result.TimeStamp);
+                    // 受信判定一致していたら次のActionに移行
+                    if (NextAction())
+                    {
+                        // 通常Execを実施
+                        await ExecCycle(protocol);
                     }
                     break;
 

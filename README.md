@@ -748,22 +748,7 @@ const Rx_ptn3_match_body = (frame_id, pattern_id) => {
 ```
 
 判定結果用の定義は *Comm.js* にて定義している。
-
-```js
-var MatchProgress;
-var MatchFailed;
-var MatchSuccess;
-
-const Comm_Loaded = () => {
-	Comm = chrome.webview.hostObjects.sync.Comm;
-    CommAsync = chrome.webview.hostObjects.Comm;
-
-    MatchProgress = Comm.Rx.MatchProgress;
-    MatchFailed = Comm.Rx.MatchFailed;
-    MatchSuccess = Comm.Rx.MatchSuccess;
-}
-```
-
+Script用インターフェース詳細は[WebView2 / JavaScript 連携詳細](#webview2--javascript-連携詳細)を参照。
 
 ---
 
@@ -923,17 +908,35 @@ immediateを指定した場合、スレッドをロックして時間経過を�
 
 ### auto_tx.jobs.actions.Recv
 
+指定した受信パターンマッチングの成立を待機する。
 パターンマッチング条件成立したときの受信データを受信した時刻でWaitタイマをスタートする。
 
 | Setting | Format | Description |
 ----|----|---- 
 | type | string | "Recv"
-| rx_patterns | array | 受信待機対象とする受信パターン名称(rx.frames.patterns.name)を指定する。複数指定可能。0個指定でAnyマッチ。
+| rx_patterns | array | 受信待機対象とする受信パターン名称(rx.frames.patterns.name)を指定する。複数指定可能。空リスト指定でいずれかのパターンマッチング成立となる。
 
 ```json
 "actions": [
 	{ "type": "Recv", "rx_patterns": [ "Rx_Pattern_1" ] },
 	{ "type": "Recv", "rx_patterns": [] }
+]
+```
+
+---
+
+### auto_tx.jobs.actions.AnyRecv
+
+パターンマッチング成立、または、タイムアウトを含む、何かしらのデータ受信を待機する。
+パターンマッチング条件成立したときの受信データを受信した時刻でWaitタイマをスタートする。
+
+| Setting | Format | Description |
+----|----|---- 
+| type | string | "AnyRecv"
+
+```json
+"actions": [
+	{ "type": "AnyRecv" }
 ]
 ```
 
@@ -976,6 +979,8 @@ rx_handler選択時、パターンマッチング条件成立したときの受�
 	{ "type": "Script", "auto_tx_handler": "Job1_0_Format5()" }
 ]
 ```
+
+Script用インターフェース詳細は[WebView2 / JavaScript 連携詳細](#webview2--javascript-連携詳細)を参照。
 
 ---
 
@@ -1165,6 +1170,45 @@ index.html上でJavaScriptを実行する。
 SerialDebugger標準として *Script/Utility.js* , *Script/Settings.js* , *Script/Comm.js* を提供している。
 これらはindex.htmlからロードしている。また、これらファイルの初期化関数をindex.html内の *csLoaded()* からコールしている。
 *csLoaded()* はC#でWebView2の初期化が完了したらときにC#側からコールされる。
+
+### Script/Comm.js
+
+初期化処理で下記インターフェースを設定している。
+
+```js
+var Comm;
+var CommAsync;
+var MatchProgress;
+var MatchFailed;
+var MatchSuccess;
+
+const Comm_Loaded = () => {
+	Comm = chrome.webview.hostObjects.sync.Comm;
+    CommAsync = chrome.webview.hostObjects.Comm;
+
+    MatchProgress = Comm.Rx.MatchProgress;
+    MatchFailed = Comm.Rx.MatchFailed;
+    MatchSuccess = Comm.Rx.MatchSuccess;
+}
+```
+
+#### Script/Comm.js Interface
+
+| Interface | Format | Description |
+----|----|---- 
+| Comm.Tx | object | 
+| Comm.AutoTx | object | 
+| Comm.Rx | object | 
+| Comm.RxMatch | object | 
+
+##### Comm.RxMatch
+
+| Interface | Format | Description |
+----|----|---- 
+| Comm.RxMatch.IsTimeout | bool | 受信解析タイムアウトの発生有無フラグ
+| Comm.RxMatch.HasAnyRecv | bool | パターンマッチング成功、タイムアウトいずれかの何かしらのデータ受信有無フラグ
+
+
 
 ### Script/Utility.js
 

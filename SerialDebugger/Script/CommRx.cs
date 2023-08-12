@@ -121,6 +121,13 @@ namespace SerialDebugger.Script
         // AutoTxのRxMatchResultが条件と一致したかの判定結果応答に使う
         public bool Result { get; set; } = true;
 
+        public bool IsTimeout
+        {
+            get
+            {
+                return ProtocolRef.MatchResultIsTimeout;
+            }
+        }
         public int Count
         {
             get
@@ -131,16 +138,29 @@ namespace SerialDebugger.Script
                 return ProtocolRef.MatchResultCount;
             }
         }
+        public bool HasAnyRecv
+        {
+            get
+            {
+                // 何かしらの受信有無を判定
+                //   (1)タイムアウトによる受信確定
+                //   (2)受信解析あり
+                return ProtocolRef.MatchResultIsTimeout || (ProtocolRef.MatchResultCount > 0);
+            }
+        }
+
         public bool IsEnable
         {
             get
             {
+                // ？多分使ってないので名前変える
                 return ProtocolRef.MatchResultPos == 0;
             }
         }
         public void Clear()
         {
             // マッチ結果を無効化する
+            ProtocolRef.MatchResultIsTimeout = false;
             ProtocolRef.MatchResultCount = 0;
         }
 

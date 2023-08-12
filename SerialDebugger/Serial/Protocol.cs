@@ -79,6 +79,7 @@ namespace SerialDebugger.Serial
         public List<RxMatchResult> MatchResult { get; set; }
         public int MatchResultPos { get; set; }
         public int MatchResultCount { get; set; }
+        public bool MatchResultIsTimeout { get; set; }
 
         // 受信ハンドラを別タスクで動かすとき
         //// 定期処理関連
@@ -412,6 +413,10 @@ namespace SerialDebugger.Serial
 
         public async Task RunResultCheck()
         {
+            // MatchResult初期化
+            MatchResultIsTimeout = false;
+            MatchResultCount = 0;
+
             switch (Result.Type)
             {
                 case RxDataType.Cancel:
@@ -421,6 +426,8 @@ namespace SerialDebugger.Serial
 
                 case RxDataType.Timeout:
                     // 受信タイムアウトによる受信シーケンス終了
+                    // タイムアウトありフラグセット
+                    MatchResultIsTimeout = true;
                     // タイムアウトは1バイト以上の受信があるときのみ発生する。
                     // 受信バッファをログに出力して次の受信シーケンスに移行する。
                     Logger.Add($"[Rx][Timeout] {Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset)}");

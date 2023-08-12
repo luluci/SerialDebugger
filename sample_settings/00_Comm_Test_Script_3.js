@@ -8,6 +8,9 @@ const Job_AutoScript = () => {
 
 	switch (autoproc_state) {
 		case 0:
+			// 受信解析失敗する設定にする
+			Comm.Tx[0][0][1] = 111;
+			Comm.Tx.Fix(0, 0);
 			// Tx送信
 			Comm.Tx.Send(0,0);
 			// next
@@ -15,6 +18,46 @@ const Job_AutoScript = () => {
 			break;
 
 		case 1:
+			// Timeout判定チェック
+			if (Comm.RxMatch.IsTimeout) {
+				Utility.Log("[Script] case 1: OK");
+				Comm.RxMatch.Clear();
+				// next
+				autoproc_state++;
+			}
+			break;
+
+		case 2:
+			// 受信解析失敗する設定で再送
+			Comm.Tx[0][0][1] = 111;
+			Comm.Tx.Fix(0, 0);
+			// Tx送信
+			Comm.Tx.Send(0, 0);
+			// next
+			autoproc_state++;
+			break;
+
+		case 3:
+			// Any受信判定チェック
+			if (Comm.RxMatch.HasAnyRecv) {
+				Utility.Log("[Script] case 3: OK");
+				Comm.RxMatch.Clear();
+				// next
+				autoproc_state++;
+			}
+			break;
+
+		case 4:
+			// 受信解析成功する設定で再送
+			Comm.Tx[0][0][1] = 1;
+			Comm.Tx.Fix(0, 0);
+			// Tx送信
+			Comm.Tx.Send(0, 0);
+			// next
+			autoproc_state++;
+			break;
+
+		case 5:
 			// Rxチェック
 			for (let i = 0; i < Comm.RxMatch.Count; i++) {
 				if (Comm.RxMatch[i].FrameId == 0 && Comm.RxMatch[i].PatternId == 0) {
@@ -22,7 +65,7 @@ const Job_AutoScript = () => {
 				}
 			}
 			if (rx_check) {
-				//Utility.Log("[Script] Rx OK");
+				Utility.Log("[Script] case 5: OK");
 				Comm.RxMatch.Clear();
 				// next
 				autoproc_state++;
@@ -30,18 +73,40 @@ const Job_AutoScript = () => {
 			//Utility.Log("[Script] Rx Wait..");
 			break;
 
-		case 2:
+		case 6:
+			// 受信解析成功する設定で再送
+			Comm.Tx[0][0][1] = 1;
+			Comm.Tx[0][0][3]++;
+			Comm.Tx.Fix(0, 0);
+			// Tx送信
+			Comm.Tx.Send(0, 0);
+			// next
+			autoproc_state++;
+			break;
+
+		case 7:
+			// Any受信判定チェック
+			if (Comm.RxMatch.HasAnyRecv) {
+				Utility.Log("[Script] case 7: OK");
+				Comm.RxMatch.Clear();
+				// next
+				autoproc_state++;
+			}
+			break;
+
+		case 8:
 			if (Comm.Tx[0][0][3] < 14) {
 				Comm.Tx[0][0][3]++;
+				Utility.Log("[Script] case 8: change value.");
 			}
 			else {
+				// テストOK
 				Comm.Tx[0][0][3] = 0;
 				stop = true;
+				autoproc_state = 0;
+				Utility.Log("[Script] case 8: OK");
 			}
 			Comm.Tx.Fix(0, 0);
-			// next
-			autoproc_state = 0;
-			Utility.Log("[Script] Change Value.");
 			break;
 	}
 

@@ -27,8 +27,12 @@ namespace SerialDebugger.Script
 
         static public async Task Init()
         {
+            // WebView2インスタンスの初期化前に実施する
+            // dllをexeファイル内に取り込むのと相性が悪い。
+            // WebView2Loader.dllの場所を明示する。
             string rootPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             CoreWebView2Environment.SetLoaderDllFolderPath(rootPath);
+            // WebView2表示ウインドウ初期化
             Engine = new EngineWebView2();
             await Engine.Init();
         }
@@ -63,8 +67,9 @@ namespace SerialDebugger.Script
             View.Show();
             View.Hide();
 
-            // 
-            WebView2.CoreWebView2InitializationCompleted += webView2CoreWebView2InitializationCompleted;
+            // 初期化完了ハンドラ登録
+            WebView2.CoreWebView2InitializationCompleted += webView_CoreWebView2InitializationCompleted;
+            WebView2.NavigationCompleted += webView_NavigationCompleted;
 
             json_opt = new JsonSerializerOptions
             {
@@ -82,15 +87,14 @@ namespace SerialDebugger.Script
             LoadedScript = new Dictionary<string, bool>();
         }
 
-        private void webView2CoreWebView2InitializationCompleted(object sender, EventArgs e)
-        {
-        }
-
         public async Task Init()
         {
             // WebView2初期化
             await WebView2.EnsureCoreWebView2Async();
 
+            // 機能無効化設定
+            // F5無効化が主目的
+            WebView2.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
             // ツール側インターフェース登録
             // Commオブジェクト登録
             WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
@@ -232,6 +236,21 @@ MakeFieldExecScript(exec_func, {selecter.Count});
         }
 
 
+        private void webView_CoreWebView2InitializationCompleted(object sender, EventArgs e)
+        {
+            // WebView2起動時の初期化完了後に1回だけコールされる
+        }
+
+        private void webView_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
+        {
+            //webView.CoreWebView2.PostWebMessageAsString("C#からのデータ送信");
+
+            // 表示完了時にコールされる。F5による更新時にもコールされる。
+            // このときObjectの登録等も初期化されるため、毎回登録する。
+            // API登録
+            // 登録するインスタンスのclassはアクセスレベルをpublicにしないとエラー
+            //WebView2.CoreWebView2.AddHostObjectToScript("wri", EntryPoint);
+        }
         private void webView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {
             var s = e.TryGetWebMessageAsString();

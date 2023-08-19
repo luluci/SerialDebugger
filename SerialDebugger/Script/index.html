@@ -8,7 +8,12 @@
 	<script type="text/javascript" src="./Settings.js"></script>
 	<!-- AutoTx/Rx Scriptノードからの通信データ操作用スクリプト定義ファイル -->
 	<script type="text/javascript" src="./Comm.js"></script>
-
+	<style type="text/css">
+		#canvas {
+			border: 1px solid #000;
+			display: block;
+		}
+	</style>
     <script language="javascript" type="text/javascript">
 		// C# -> WebView2 Event Handler
 		// C#側からWebView2の初期化が完了したらJavaScriptの初期化としてコールされる
@@ -17,12 +22,18 @@
 				Utility_Loaded();
 				Settings_Loaded();
 				Comm_Loaded();
+				WebView2_Loaded();
 			} catch (msg) {
 				chrome.webview.hostObjects.sync.Utility.Log(msg);
 				return false;
 			}
 			Utility.Log("<WebView2/JavaScript Loaded.>");
 			return true;
+		}
+		// index.htmlのonLoad初期化処理
+		var canvas;
+		const WebView2_Loaded = () => {
+			canvas = document.getElementById('canvas');
 		}
 		// ↑ロジックを理解した上で変更すること↑
 		const zeroPadding = (value, len) => {
@@ -55,5 +66,8 @@
     <script></script>
 
 	<button onclick="debug()">Debug</button>
+	<canvas id="canvas" width="500" height="300">
+		描画用キャンバス
+	</canvas>
 </body>
 </html>

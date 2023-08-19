@@ -67,10 +67,7 @@ namespace SerialDebugger.Script
             View.Show();
             View.Hide();
 
-            // 初期化完了ハンドラ登録
-            WebView2.CoreWebView2InitializationCompleted += webView_CoreWebView2InitializationCompleted;
-            WebView2.NavigationCompleted += webView_NavigationCompleted;
-
+            // jsonパーサオプション初期化
             json_opt = new JsonSerializerOptions
             {
                 Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
@@ -89,22 +86,18 @@ namespace SerialDebugger.Script
 
         public async Task Init()
         {
+            // 初期化完了ハンドラ登録
+            WebView2.CoreWebView2InitializationCompleted += webView_CoreWebView2InitializationCompleted;
+            WebView2.NavigationCompleted += webView_NavigationCompleted;
+            // JavaScript側からの呼び出し
+            WebView2.WebMessageReceived += webView_WebMessageReceived;
+
             // WebView2初期化
             await WebView2.EnsureCoreWebView2Async();
 
             // 機能無効化設定
             // F5無効化が主目的
-            WebView2.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
-            // ツール側インターフェース登録
-            // Commオブジェクト登録
-            WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
-            WebView2.CoreWebView2.AddHostObjectToScript("Settings", Settings);
-            WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
-            // デフォルトスクリプトをLoad
-            await RunScriptLoaded("csLoaded()");
-
-            // JavaScript側からの呼び出し
-            WebView2.WebMessageReceived += webView_WebMessageReceived;
+            //WebView2.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
         }
 
         public void Close()
@@ -241,7 +234,7 @@ MakeFieldExecScript(exec_func, {selecter.Count});
             // WebView2起動時の初期化完了後に1回だけコールされる
         }
 
-        private void webView_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
+        private async void webView_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
         {
             //webView.CoreWebView2.PostWebMessageAsString("C#からのデータ送信");
 
@@ -250,6 +243,22 @@ MakeFieldExecScript(exec_func, {selecter.Count});
             // API登録
             // 登録するインスタンスのclassはアクセスレベルをpublicにしないとエラー
             //WebView2.CoreWebView2.AddHostObjectToScript("wri", EntryPoint);
+            try
+            {
+                // ロード済みスクリプトファイルリストクリア
+                LoadedScript.Clear();
+                // ツール側インターフェース登録
+                // Commオブジェクト登録
+                WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
+                WebView2.CoreWebView2.AddHostObjectToScript("Settings", Settings);
+                WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
+                // デフォルトスクリプトをLoad
+                await RunScriptLoaded("csLoaded()");
+            }
+            catch (Exception ex)
+            {
+                Logger.AddException(ex, "WebView2初期化処理エラー:");
+            }
         }
         private void webView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {

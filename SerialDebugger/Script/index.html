@@ -9,9 +9,92 @@
 	<!-- AutoTx/Rx Scriptノードからの通信データ操作用スクリプト定義ファイル -->
 	<script type="text/javascript" src="./Comm.js"></script>
 	<style type="text/css">
-		#canvas {
+
+		/* グラフエリア */
+		.graph_block {
+			width: 100%;
+			border: 1px dotted #ccc;
+			display: grid;
+			grid-template-columns: 100px 500px 100px;
+			grid-auto-rows: auto;
+		}
+
+		.graph_block .header {
+			grid-column-start: 1;
+			grid-column-end: 4;
+			grid-row-start: 1;
+			grid-row-end: 2;
 			border: 1px solid #000;
-			display: block;
+		}
+		.graph_block .caption_left {
+			grid-column-start: 1;
+			grid-column-end: 2;
+			grid-row-start: 2;
+			grid-row-end: 3;
+			border: 1px solid #000;
+		}
+		.graph_block .caption {
+			grid-column-start: 2;
+			grid-column-end: 3;
+			grid-row-start: 2;
+			grid-row-end: 3;
+			border: 1px solid #000;
+		}
+		.graph_block .caption_right {
+			grid-column-start: 3;
+			grid-column-end: 4;
+			grid-row-start: 2;
+			grid-row-end: 3;
+			border: 1px solid #000;
+		}
+		.graph_block .v_axis_left {
+			grid-column-start: 1;
+			grid-column-end: 2;
+			grid-row-start: 3;
+			grid-row-end: 4;
+			border: 1px solid #000;
+		}
+		.graph_block .graph {
+			grid-column-start: 2;
+			grid-column-end: 3;
+			grid-row-start: 3;
+			grid-row-end: 4;
+			border: 1px solid #000;
+		}
+		.graph_block .v_axis_right {
+			grid-column-start: 3;
+			grid-column-end: 4;
+			grid-row-start: 3;
+			grid-row-end: 4;
+			border: 1px solid #000;
+		}
+		.graph_block .h_axis_left {
+			grid-column-start: 1;
+			grid-column-end: 2;
+			grid-row-start: 4;
+			grid-row-end: 5;
+			border: 1px solid #000;
+		}
+		.graph_block .h_axis {
+			grid-column-start: 2;
+			grid-column-end: 3;
+			grid-row-start: 4;
+			grid-row-end: 5;
+			border: 1px solid #000;
+		}
+		.graph_block .h_axis_right {
+			grid-column-start: 3;
+			grid-column-end: 4;
+			grid-row-start: 4;
+			grid-row-end: 5;
+			border: 1px solid #000;
+		}
+		.graph_block .footer {
+			grid-column-start: 1;
+			grid-column-end: 4;
+			grid-row-start: 5;
+			grid-row-end: 6;
+			border: 1px solid #000;
 		}
 	</style>
     <script language="javascript" type="text/javascript">
@@ -66,8 +149,22 @@
     <script></script>
 
 	<button onclick="debug()">Debug</button>
-	<canvas id="canvas" width="500" height="300">
-		描画用キャンバス
-	</canvas>
+	<div class="graph_block">
+		<div class="header">header</div>
+		<div class="caption_left">caption_left</div>
+		<div class="caption">caption</div>
+		<div class="caption_right">caption_right</div>
+		<div class="v_axis_left">v_axis_left</div>
+		<div class="graph">
+			<canvas id="canvas" width="500" height="300">
+				描画用キャンバス
+			</canvas>
+		</div>
+		<div class="v_axis_right">v_axis_right</div>
+		<div class="h_axis_left">h_axis_left</div>
+		<div class="h_axis">h_axis</div>
+		<div class="h_axis_right">h_axis_right</div>
+		<div class="footer">footer</div>
+	</div>
 </body>
 </html>

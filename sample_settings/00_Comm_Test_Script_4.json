@@ -1,0 +1,50 @@
+{
+	"name": "Test_通信_Script_4_WebView2_canvas操作テスト",
+	
+	"gui": {
+		"window":
+			{
+				"width": 900,
+				"height": 700
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"script": [
+		"00_Comm_Test_Script_4.js"
+	],
+	
+	"comm": {
+		"rx": {
+		},
+	
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_AutoScript",
+					"alias": "canvasテスト",
+					"active": false,
+					"actions": [
+						{ "type": "Log", "log": "<Job_AutoScript start.>" },
+						{ "type": "Script", "auto_tx_handler": "Job_GraphDraw_init()" },
+						{ "type": "Script", "auto_tx_handler": "Job_GraphDraw_proc()" }
+					]
+				}
+			]
+		},
+	
+		"tx": {
+		}
+	}
+}

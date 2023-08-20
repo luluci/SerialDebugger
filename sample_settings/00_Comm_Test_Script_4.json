@@ -34,7 +34,7 @@
 				{
 					"name": "Job_AutoScript",
 					"alias": "canvasテスト",
-					"active": false,
+					"active": true,
 					"actions": [
 						{ "type": "Log", "log": "<Job_AutoScript start.>" },
 						{ "type": "Script", "auto_tx_handler": "Job_GraphDraw_init()" },

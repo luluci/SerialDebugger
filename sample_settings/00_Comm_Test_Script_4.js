@@ -1,13 +1,21 @@
 
 class graph_drawer_t {
-	constructor(canvas_elem) {
+	constructor(graph_elem, canvas_elem) {
+		// グラフエリア要素
+		this.graph_area = graph_elem;
 		// canvas要素
 		this.elem = canvas_elem;
+		// 系列情報
+		this.series = [];
+
+		// canvas要素のサイズをGrid(html/css)定義に合わせて自動調整
+		// canvasのparentを取得
+		const canvas_div = this.graph_area.getElementsByClassName("graph")[0];
+		this.elem.setAttribute("width", canvas_div.clientWidth);
+		this.elem.setAttribute("height", canvas_div.clientHeight);
 		// canvas情報
 		this.width = this.elem.width;
 		this.height = this.elem.height;
-		// 系列情報
-		this.series = [];
 
 		// canvas設定
 		// https://developer.mozilla.org/ja/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
@@ -65,13 +73,12 @@ class graph_drawer_t {
 }
 
 // AutoTx Script
-var graph_drawer;
+const graph_drawer = new graph_drawer_t(graph_area, canvas);
 // init
 const Job_GraphDraw_init = () => {
-	graph_drawer = new graph_drawer_t(canvas);
-
+	// 系列登録
 	graph_drawer.add_series("data1");
-	//
+	// 初期化終了
 	Comm.AutoTx.Result = true;
 }
 // Scriptから全自動操作サンプル

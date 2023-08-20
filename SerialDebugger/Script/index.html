@@ -11,7 +11,7 @@
 	<style type="text/css">
 
 		/* グラフエリア */
-		.graph_block {
+		#graph_block {
 			width: 100%;
 			border: 1px dotted #ccc;
 			display: grid;
@@ -19,77 +19,79 @@
 			grid-auto-rows: auto;
 		}
 
-		.graph_block .header {
+		#graph_block .header {
 			grid-column-start: 1;
 			grid-column-end: 4;
 			grid-row-start: 1;
 			grid-row-end: 2;
 			border: 1px solid #000;
 		}
-		.graph_block .caption_left {
+		#graph_block .caption_left {
 			grid-column-start: 1;
 			grid-column-end: 2;
 			grid-row-start: 2;
 			grid-row-end: 3;
 			border: 1px solid #000;
 		}
-		.graph_block .caption {
+		#graph_block .caption {
 			grid-column-start: 2;
 			grid-column-end: 3;
 			grid-row-start: 2;
 			grid-row-end: 3;
 			border: 1px solid #000;
 		}
-		.graph_block .caption_right {
+		#graph_block .caption_right {
 			grid-column-start: 3;
 			grid-column-end: 4;
 			grid-row-start: 2;
 			grid-row-end: 3;
 			border: 1px solid #000;
 		}
-		.graph_block .v_axis_left {
+		#graph_block .v_axis_left {
 			grid-column-start: 1;
 			grid-column-end: 2;
 			grid-row-start: 3;
 			grid-row-end: 4;
 			border: 1px solid #000;
 		}
-		.graph_block .graph {
+		#graph_block .graph {
 			grid-column-start: 2;
 			grid-column-end: 3;
 			grid-row-start: 3;
 			grid-row-end: 4;
 			border: 1px solid #000;
+			width: auto;
+			height: 300px;
 		}
-		.graph_block .v_axis_right {
+		#graph_block .v_axis_right {
 			grid-column-start: 3;
 			grid-column-end: 4;
 			grid-row-start: 3;
 			grid-row-end: 4;
 			border: 1px solid #000;
 		}
-		.graph_block .h_axis_left {
+		#graph_block .h_axis_left {
 			grid-column-start: 1;
 			grid-column-end: 2;
 			grid-row-start: 4;
 			grid-row-end: 5;
 			border: 1px solid #000;
 		}
-		.graph_block .h_axis {
+		#graph_block .h_axis {
 			grid-column-start: 2;
 			grid-column-end: 3;
 			grid-row-start: 4;
 			grid-row-end: 5;
 			border: 1px solid #000;
 		}
-		.graph_block .h_axis_right {
+		#graph_block .h_axis_right {
 			grid-column-start: 3;
 			grid-column-end: 4;
 			grid-row-start: 4;
 			grid-row-end: 5;
 			border: 1px solid #000;
 		}
-		.graph_block .footer {
+		#graph_block .footer {
 			grid-column-start: 1;
 			grid-column-end: 4;
 			grid-row-start: 5;
@@ -114,8 +116,10 @@
 			return true;
 		}
 		// index.htmlのonLoad初期化処理
+		var graph_area;
 		var canvas;
 		const WebView2_Loaded = () => {
+			graph_area = document.getElementById('graph_block');
 			canvas = document.getElementById('canvas');
 		}
 		// ↑ロジックを理解した上で変更すること↑
@@ -149,14 +153,14 @@
     <script></script>
 
 	<button onclick="debug()">Debug</button>
-	<div class="graph_block">
+	<div id="graph_block">
 		<div class="header">header</div>
 		<div class="caption_left">caption_left</div>
 		<div class="caption">caption</div>
 		<div class="caption_right">caption_right</div>
 		<div class="v_axis_left">v_axis_left</div>
 		<div class="graph">
-			<canvas id="canvas" width="500" height="300">
+			<canvas id="canvas" >
 				描画用キャンバス
 			</canvas>
 		</div>

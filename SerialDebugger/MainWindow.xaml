@@ -61,7 +61,7 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-                <Button Content="Script" ToolTip="WebView2ウインドウを開く" Command="{Binding OnClickOpenScript}" Margin="10,5,0,0" Width="45" Height="20" />
+                <Button Content="WebView2" ToolTip="WebView2ウインドウを開く" Command="{Binding OnClickOpenScript}" Margin="10,5,0,0" Width="70" Height="20" />
                 <Button Content="Test送信ボタン" Command="{Binding OnClickTestSend}" Visibility="{Binding DebugVisible}" Margin="10,5,0,0" Width="80"/>
             </WrapPanel>
         </Grid>

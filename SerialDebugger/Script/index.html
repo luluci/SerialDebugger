@@ -62,6 +62,15 @@
 			border: 1px solid #000;
 			width: auto;
 			height: 300px;
+			position: relative;
+		}
+		#graph_block .graph .graph_canvas_1 {
+			z-index: 1;
+			position: absolute;
+		}
+		#graph_block .graph .graph_canvas_2 {
+			z-index: 2;
+			position: absolute;
 		}
 		#graph_block .v_axis_right {
 			grid-column-start: 3;
@@ -117,10 +126,8 @@
 		}
 		// index.htmlのonLoad初期化処理
 		var graph_area;
-		var canvas;
 		const WebView2_Loaded = () => {
 			graph_area = document.getElementById('graph_block');
-			canvas = document.getElementById('canvas');
 		}
 		// ↑ロジックを理解した上で変更すること↑
 		const zeroPadding = (value, len) => {
@@ -160,8 +167,11 @@
 		<div class="caption_right">caption_right</div>
 		<div class="v_axis_left">v_axis_left</div>
 		<div class="graph">
-			<canvas id="canvas" >
-				描画用キャンバス
+			<canvas class="graph_canvas_1" >
+				背景用キャンバス
+			</canvas>
+			<canvas class="graph_canvas_2" >
+				グラフ描画用キャンバス
 			</canvas>
 		</div>
 		<div class="v_axis_right">v_axis_right</div>

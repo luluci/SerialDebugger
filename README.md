@@ -1201,13 +1201,57 @@ const Comm_Loaded = () => {
 | Comm.Rx | object | 
 | Comm.RxMatch | object | 
 
+##### Comm.Rx
+
+| Interface | Format | Description |
+----|----|---- 
+| Comm.Rx.Init() | void | 
+| Comm.Rx.AddLog(int frame_id, int pattern_id, string log) | void | 
+| Comm.Rx[] | RxFrame | 受信解析(Rx)で定義したFrameへアクセスするI/F
+
+##### Comm.Rx.RxFrame
+
+| Interface | Format | Description |
+----|----|---- 
+| RxFrame.Fields[] | Field | FieldへアクセスするI/F
+
+##### Comm.Rx.RxFrame.Field
+
+| Interface | Format | Description |
+----|----|---- 
+| Field.GetDict() | Dict | Fieldで定義される選択リストを取得する
+
+##### Comm.Rx.RxFrame.Field.Dict
+
+| Interface | Format | Description |
+----|----|---- 
+| Dict.Count | number | 選択リスト要素数
+| Dict[] | Node | 選択リスト要素
+
+##### Comm.Rx.RxFrame.Field.Dict.Node
+
+| Interface | Format | Description |
+----|----|---- 
+| Node.Value | number | 値
+| Node.GetValue() | string | 表示文字列
+
+
 ##### Comm.RxMatch
 
 | Interface | Format | Description |
 ----|----|---- 
 | Comm.RxMatch.IsTimeout | bool | 受信解析タイムアウトの発生有無フラグ
 | Comm.RxMatch.HasAnyRecv | bool | パターンマッチング成功、タイムアウトいずれかの何かしらのデータ受信有無フラグ
+| Comm.RxMatch.Clear() | void | マッチ結果をクリアする
+| Comm.RxMatch[] | MatchResult | RxMatchはMatchResultの配列になっている。indexerでアクセスしてMatchResultを取得するI/F
 
+##### Comm.RxMatch.MatchResult
+
+| Interface | Format | Description |
+----|----|---- 
+| MatchResult.FrameId | number | 
+| MatchResult.PatternId | number | 
+| MatchResult[] | RxMatch | 
 
 
 ### Script/Utility.js

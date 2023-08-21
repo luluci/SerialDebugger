@@ -478,7 +478,8 @@ namespace SerialDebugger.Serial
                 string log;
                 if (result.PatternRef.IsLogVisualize)
                 {
-                    // Visualize
+                    // Visualizeログ作成
+                    // RxPatternへの受信値反映も同時に実施
                     log = RxFrames[frame_id].MakeLogVisualize(Result.RxBuff, Result.RxBuffOffset, result.PatternRef);
                 }
                 else

@@ -42,6 +42,8 @@ namespace SerialDebugger.Script
         public int Debug { get; set; } = 0;
         public bool Sync { get; set; } = false;
         public List<List<List<string>>> Log { get; set; } = new List<List<List<string>>>();
+        //
+        public CommRxFrameIf CommRxFrameIf { get; set; } = new CommRxFrameIf();
 
         public void Init()
         {
@@ -106,6 +108,128 @@ namespace SerialDebugger.Script
             }
 
             return this;
+        }
+        
+        public CommRxFrameIf this[int idx]
+        {
+            get
+            {
+                return CommRxFrameIf.RxFrame(RxFramesRef[idx]);
+            }
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxFrameIf
+    {
+        // Commデータへの参照
+        // Comm: Rx
+        public SerialDebugger.Comm.RxFrame RxFrameRef { get; set; }
+        //
+        public CommRxFieldsIf CommRxFieldsIf { get; set; } = new CommRxFieldsIf();
+        
+        public CommRxFieldsIf Fields
+        {
+            get
+            {
+                return CommRxFieldsIf.RxFields(RxFrameRef.Fields);
+            }
+        }
+
+        public CommRxFrameIf RxFrame(SerialDebugger.Comm.RxFrame node)
+        {
+            RxFrameRef = node;
+            return this;
+        }
+    }
+
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxFieldsIf
+    {
+        // Commデータへの参照
+        // Comm: Rx
+        public ReactiveCollection<SerialDebugger.Comm.Field> RxFieldsRef { get; set; }
+        //
+        public CommRxFieldIf CommRxFieldIf { get; set; } = new CommRxFieldIf();
+
+        public CommRxFieldsIf RxFields(ReactiveCollection<SerialDebugger.Comm.Field> node)
+        {
+            RxFieldsRef = node;
+            return this;
+        }
+
+        [System.Runtime.CompilerServices.IndexerName("Items")]
+        public CommRxFieldIf this[int idx]
+        {
+            get
+            {
+                return CommRxFieldIf.RxField(RxFieldsRef[idx]);
+            }
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxFieldIf
+    {
+        // Commデータへの参照
+        // Comm: Tx
+        public SerialDebugger.Comm.Field RxFieldRef { get; set; }
+        
+        public CommRxFieldIf RxField(SerialDebugger.Comm.Field node)
+        {
+            RxFieldRef = node;
+            return this;
+        }
+
+        public CommRxFieldDictIf GetDict()
+        {
+            var result = new CommRxFieldDictIf();
+            
+            foreach (var select in RxFieldRef.Selects)
+            {
+                result.Dict.Add(new CommRxFieldDictNodeIf { Key=select.Value, Value=select.Disp });
+                result.Count++;
+            }
+            
+            return result;
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxFieldDictIf
+    {
+        public List<CommRxFieldDictNodeIf> Dict = new List<CommRxFieldDictNodeIf>();
+        public int Count = 0;
+
+        [System.Runtime.CompilerServices.IndexerName("Items")]
+        public CommRxFieldDictNodeIf this[int idx]
+        {
+            get
+            {
+                return Dict[idx];
+            }
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxFieldDictNodeIf
+    {
+        public Int64 Key { get; set; } = 0;
+
+        // stringをプロパティでJS側から取得しようとするとうまくいかない
+        // よくわからないオブジェクトになる
+        public string Value { get; set; } = string.Empty;
+
+        public string GetValue()
+        {
+            // stringを関数で取得するようにするとJS側からもstringになる
+            return Value;
         }
     }
 
@@ -180,6 +304,7 @@ namespace SerialDebugger.Script
     public class RxMatchResultIf
     {
         public Serial.RxMatchResult RxMatchResultRef { get; set; }
+        public RxMatchResultPatternMatchIf RxMatchResultPatternMatchIf { get; set; } = new RxMatchResultPatternMatchIf();
 
         public int FrameId
         {
@@ -199,6 +324,44 @@ namespace SerialDebugger.Script
         public RxMatchResultIf RxMatchResultNode(Serial.RxMatchResult node)
         {
             RxMatchResultRef = node;
+            return this;
+        }
+
+        [System.Runtime.CompilerServices.IndexerName("Items")]
+        public RxMatchResultPatternMatchIf this[int idx]
+        {
+            get
+            {
+                return RxMatchResultPatternMatchIf.RxMatchNode(RxMatchResultRef.PatternRef.Matches[idx]);
+            }
+        }
+    }
+    
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class RxMatchResultPatternMatchIf
+    {
+        public Comm.RxMatch RxMatchResultPatternMatchRef { get; set; }
+
+        public Int64 Value
+        {
+            get
+            {
+                return RxMatchResultPatternMatchRef.Value.Value;
+            }
+        }
+
+        public string Disp
+        {
+            get
+            {
+                return RxMatchResultPatternMatchRef.Disp.Value;
+            }
+        }
+
+        public RxMatchResultPatternMatchIf RxMatchNode(Comm.RxMatch node)
+        {
+            RxMatchResultPatternMatchRef = node;
             return this;
         }
     }

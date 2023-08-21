@@ -582,6 +582,8 @@ namespace SerialDebugger.Comm
                             str = field.MakeDispByValue(data);
                             // 受信値に応じて表示を作成
                             match.Disp.Value = str;
+                            // 値も更新
+                            match.Value.Value = data;
                             break;
 
                         case RxMatchType.Script:

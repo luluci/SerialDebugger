@@ -38,6 +38,7 @@ class graph_drawer_t {
 			min: 0,
 			max: 0,
 			div: 0,	// 1メモリの高さ
+			caption: [],
 		};
 		this.v_axis = [];
 		this.v_axis.push(structuredClone(v_axis_node));	//[0]: left
@@ -65,6 +66,14 @@ class graph_drawer_t {
 		this.v_axis[0].width = width;
 		this.v_axis[0].min = min;
 		this.v_axis[0].max = max;
+
+		let field = Comm.Rx[0].Fields[2].GetDict();
+		for (let i=0; i<field.Count; i++) {
+			this.v_axis[0].caption.push({
+				Key: field[i].Key,
+				Value: field[i].GetValue(),
+			});
+		}
 	}
 
 	add_v_axis_right(idx, width, min, max) {

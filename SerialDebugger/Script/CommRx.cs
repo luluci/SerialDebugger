@@ -178,59 +178,36 @@ namespace SerialDebugger.Script
         // Commデータへの参照
         // Comm: Tx
         public SerialDebugger.Comm.Field RxFieldRef { get; set; }
-        
+        // 最後に取得したFieldが定義するSelecter
+        public CommRxFieldSelecterNode[] Selecter = {};
+
         public CommRxFieldIf RxField(SerialDebugger.Comm.Field node)
         {
             RxFieldRef = node;
             return this;
         }
-
-        public CommRxFieldDictIf GetDict()
+        
+        public CommRxFieldSelecterNode[] GetSelecter()
         {
-            var result = new CommRxFieldDictIf();
-            
+            var list = new List<CommRxFieldSelecterNode>();
+
             foreach (var select in RxFieldRef.Selects)
             {
-                result.Dict.Add(new CommRxFieldDictNodeIf { Key=select.Value, Value=select.Disp });
-                result.Count++;
+                list.Add(new CommRxFieldSelecterNode { Key = select.Value, Disp = select.Disp });
             }
-            
-            return result;
+
+            Selecter = list.ToArray();
+            return Selecter;
         }
     }
 
     [ClassInterface(ClassInterfaceType.AutoDual)]
     [ComVisible(true)]
-    public class CommRxFieldDictIf
+    public class CommRxFieldSelecterNode
     {
-        public List<CommRxFieldDictNodeIf> Dict = new List<CommRxFieldDictNodeIf>();
-        public int Count = 0;
-
-        [System.Runtime.CompilerServices.IndexerName("Items")]
-        public CommRxFieldDictNodeIf this[int idx]
-        {
-            get
-            {
-                return Dict[idx];
-            }
-        }
-    }
-
-    [ClassInterface(ClassInterfaceType.AutoDual)]
-    [ComVisible(true)]
-    public class CommRxFieldDictNodeIf
-    {
-        public Int64 Key { get; set; } = 0;
-
-        // stringをプロパティでJS側から取得しようとするとうまくいかない
-        // よくわからないオブジェクトになる
-        public string Value { get; set; } = string.Empty;
-
-        public string GetValue()
-        {
-            // stringを関数で取得するようにするとJS側からもstringになる
-            return Value;
-        }
+        public Int64 Key { get; set; }
+        // "Value"はJavaScript側で何かと名前が衝突してNG
+        public string Disp { get; set; }
     }
 
 

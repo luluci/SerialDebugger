@@ -106,8 +106,23 @@ namespace SerialDebugger.Log
             Directory = setting.Directory;
             LogMax = setting.MaxSize;
             OutputFile = setting.OutputFile;
-            // ログファイルを閉じる
+            // すでに開いているログファイルがあれば閉じる
             Impl.Close();
+            // ログファイル設定
+            var filepath = GetLogFilePath();
+            if (!Object.ReferenceEquals(filepath, string.Empty))
+            {
+                Impl.Open(filepath);
+            }
+        }
+
+        /// <summary>
+        /// 設定に基づいてログファイルパス文字列を生成する。
+        /// 設定ファイルにログファイルが設定されていない場合はemptyを返す。
+        /// </summary>
+        /// <returns></returns>
+        static public string GetLogFilePath()
+        {
             // ログファイル設定
             if (OutputFile)
             {
@@ -119,8 +134,33 @@ namespace SerialDebugger.Log
                 // ログファイル作成
                 var dt = DateTime.Now;
                 var filepath = $"{Directory}/log_{dt.ToString("yyyyMMddHHmm")}.txt";
-                Impl.Open(filepath);
+                return filepath;
             }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        static public string MakeAutoNamePath(string dir, string filepre)
+        {
+            // ディレクトリが指定されていたら
+            // ディレクトリが無ければ作成
+            if (dir.Length > 0)
+            {
+                if (!System.IO.Directory.Exists(dir))
+                {
+                    System.IO.Directory.CreateDirectory(dir);
+                }
+            }
+            else
+            {
+                dir = ".";
+            }
+            // パス作成
+            var dt = DateTime.Now;
+            var filepath = $"{dir}/{filepre}_{dt.ToString("yyyyMMddHHmm")}.txt";
+            return filepath;
         }
 
         static public string Last()

@@ -26,13 +26,24 @@ namespace SerialDebugger.Script
             Dispose();
         }
 
-        public FileIf GetFile()
+        public FileIf GetFile(string path)
         {
             var id = FileStack.Count;
-            var file = new FileIf(id);
+            if (path.Length == 0)
+            {
+                path = Logger.GetLogFilePath();
+            }
+            var file = new FileIf(id, path);
             FileStack.Add(file);
             return file;
         }
+
+        public FileIf GetFileAutoName(string dir, string file)
+        {
+            var path = Logger.MakeAutoNamePath(dir, file);
+            return GetFile(path);
+        }
+
 
         public void Dispose()
         {
@@ -50,11 +61,54 @@ namespace SerialDebugger.Script
     {
         public int Id;
         public bool IsOpen;
+        public System.IO.StreamWriter Writer;
 
-        public FileIf(int id)
+        public FileIf(int id, string path)
         {
             Id = id;
-            IsOpen = true;
+            if (!Object.ReferenceEquals(path, string.Empty))
+            {
+                IsOpen = true;
+                Writer = MakeWriteStream(path);
+                if (Writer is null)
+                {
+                    IsOpen = false;
+                }
+            }
+            else
+            {
+                IsOpen = false;
+                Writer = null;
+            }
+        }
+
+        public void Write(string str)
+        {
+            //Logger.Add(str);
+            if (IsOpen)
+            {
+                Writer.WriteLine(str);
+            }
+        }
+
+        static public System.IO.StreamWriter MakeWriteStream(string path)
+        {
+            try
+            {
+                // ファイルパスからディレクトリを分離
+                // ディレクトリが存在しなかったら作成する。
+                var dir = System.IO.Path.GetDirectoryName(path);
+                if (!System.IO.Directory.Exists(dir))
+                {
+                    System.IO.Directory.CreateDirectory(dir);
+                }
+                return new System.IO.StreamWriter(path);
+            }
+            catch (Exception ex)
+            {
+                Logger.Add(ex.Message);
+                return null;
+            }
         }
 
         public void Dispose()
@@ -62,12 +116,10 @@ namespace SerialDebugger.Script
             if (IsOpen)
             {
                 IsOpen = false;
+                Writer.Close();
+                Writer = null;
             }
         }
 
-        public void Write(string str)
-        {
-            Logger.Add(str);
-        }
     }
 }

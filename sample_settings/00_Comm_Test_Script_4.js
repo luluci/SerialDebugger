@@ -166,7 +166,7 @@ const Job_GraphDraw_init = () => {
 	//
 	graph_drawer.init_canvas();
 	//
-	ofs = IO.GetFile();
+	ofs = IO.GetFileAutoName("./log_js/", "log");
 	// 初期化終了
 	Comm.AutoTx.Result = true;
 }

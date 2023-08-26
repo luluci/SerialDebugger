@@ -4,6 +4,8 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
 	<!-- Utilityスクリプト定義ファイル -->
 	<script type="text/javascript" src="./Utility.js"></script>
+	<!-- IO スクリプト定義ファイル -->
+	<script type="text/javascript" src="./IO.js"></script>
 	<!-- Settings/Field/Script要素用スクリプト定義ファイル -->
 	<script type="text/javascript" src="./Settings.js"></script>
 	<!-- AutoTx/Rx Scriptノードからの通信データ操作用スクリプト定義ファイル -->
@@ -116,6 +118,7 @@
 				Utility_Loaded();
 				Settings_Loaded();
 				Comm_Loaded();
+				IO_Loaded();
 				WebView2_Loaded();
 			} catch (msg) {
 				chrome.webview.hostObjects.sync.Utility.Log(msg);

@@ -165,7 +165,7 @@ namespace SerialDebugger
                 .Subscribe(async (int idx) =>
                 {
                     IsEnableSerialOpen.Value = false;
-                    await UpdateTxAsync();
+                    await UpdateSettingAsync();
                     IsEnableSerialOpen.Value = true;
                 })
                 .AddTo(Disposables);
@@ -332,7 +332,7 @@ namespace SerialDebugger
             {
                 // 最初に取得したファイルを読み込む
                 SettingsSelectIndex.Value = 0;
-                var result = await LoadTxAsync();
+                var result = await LoadSettingAsync();
                 if (!result)
                 {
                     SetMsgNoSettings();
@@ -347,7 +347,7 @@ namespace SerialDebugger
             }
         }
 
-        public async Task UpdateTxAsync()
+        public async Task UpdateSettingAsync()
         {
             try
             {
@@ -359,7 +359,7 @@ namespace SerialDebugger
                 // GUI再構築するため明示的にGC起動しておく
                 await Task.Run(() => { GC.Collect(); });
                 //Logger.Add($"GC: {GC.GetTotalMemory(false)}");
-                var result = await LoadTxAsync();
+                var result = await LoadSettingAsync();
                 if (!result)
                 {
                     SetMsgNoSettings();
@@ -399,7 +399,7 @@ namespace SerialDebugger
             BaseSerialAutoTxMsg.Value = "有効な設定が存在しません。";
         }
 
-        public async Task<bool> LoadTxAsync()
+        public async Task<bool> LoadSettingAsync()
         {
             var data = Settings[SettingsSelectIndex.Value];
             // ログ設定更新
@@ -413,10 +413,10 @@ namespace SerialDebugger
                     return false;
                 }
             }
-            // Script
-            Script.Interpreter.Engine.Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
-            Comm.Gui.Init(data);
+            // Script更新
+            Script.Interpreter.ChangeSettingFile(data);
             // GUI作成
+            Comm.Gui.Init(data);
             WindowTitle.Value = $"{ToolTitle} [{data.Name}]";
             window.Width = data.Gui.Window.Width;
             window.Height = data.Gui.Window.Height;

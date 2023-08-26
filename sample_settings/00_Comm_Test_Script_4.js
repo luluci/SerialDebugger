@@ -154,6 +154,7 @@ class graph_drawer_t {
 
 // AutoTx Script
 const graph_drawer = new graph_drawer_t(graph_area);
+var ofs;
 // init
 const Job_GraphDraw_init = () => {
 	// 系列登録
@@ -164,6 +165,8 @@ const Job_GraphDraw_init = () => {
 	graph_drawer.add_h_axis(0, 50, 0, 10);
 	//
 	graph_drawer.init_canvas();
+	//
+	ofs = IO.GetFile();
 	// 初期化終了
 	Comm.AutoTx.Result = true;
 }
@@ -175,11 +178,13 @@ const Job_GraphDraw_proc = () => {
 	if (proc_state == 0) {
 		graph_drawer.plot_init(0, 5, 5);
 		proc_state++;
+		ofs.Write("<IO>: graph start");
 	} else {
 		graph_drawer.plot(0, 15 + (proc_state * 5), 20 + (proc_state * 5));
 		proc_state++;
 
 		if (proc_state > 5) {
+			ofs.Write("<IO>: graph end");
 			stop = true;
 		}
 	}

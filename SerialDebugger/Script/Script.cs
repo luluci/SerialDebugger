@@ -21,7 +21,7 @@ namespace SerialDebugger.Script
     using Logger = Log.Log;
     using Utility;
 
-    public static class Interpreter
+    static class Interpreter
     {
         public static EngineWebView2 Engine;
 
@@ -37,6 +37,10 @@ namespace SerialDebugger.Script
             await Engine.Init();
         }
 
+        static public void ChangeSettingFile(Settings.SettingInfo data)
+        {
+            Script.Interpreter.Engine.ChangeSettingFile(data);
+        }
 
         static public IDisposable GetDisposable()
         {
@@ -44,7 +48,7 @@ namespace SerialDebugger.Script
         }
     }
 
-    public class EngineWebView2 : BindableBase, IDisposable
+    class EngineWebView2 : BindableBase, IDisposable
     {
         //
         public View View { get; set; }
@@ -56,7 +60,9 @@ namespace SerialDebugger.Script
         public CommIf Comm { get; set; }
         public SettingsIf Settings { get; set; }
         public UtilityIf Utility { get; set; }
-        
+        public IoIf IO { get; set; }
+
+
         // Load済みScriptDict
         Dictionary<string, bool> LoadedScript;
 
@@ -84,6 +90,7 @@ namespace SerialDebugger.Script
             Comm = new CommIf();
             Settings = new SettingsIf();
             Utility = new UtilityIf();
+            IO = new IoIf();
 
             //
             LoadedScript = new Dictionary<string, bool>();
@@ -103,6 +110,12 @@ namespace SerialDebugger.Script
             // 機能無効化設定
             // F5無効化が主目的
             //WebView2.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
+        }
+
+        public void ChangeSettingFile(Settings.SettingInfo data)
+        {
+            Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
+            IO.Reset();
         }
 
         public void ShowView(MainWindow window)
@@ -252,6 +265,7 @@ MakeFieldExecScript(exec_func, {selecter.Count});
                 WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
                 WebView2.CoreWebView2.AddHostObjectToScript("Settings", Settings);
                 WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
+                WebView2.CoreWebView2.AddHostObjectToScript("IO", IO);
                 // デフォルトスクリプトをLoad
                 await RunScriptLoaded("csLoaded()");
             }
@@ -285,6 +299,7 @@ MakeFieldExecScript(exec_func, {selecter.Count});
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
                     this.Disposables.Dispose();
                     (View.DataContext as IDisposable)?.Dispose();
+                    IO.Reset();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。

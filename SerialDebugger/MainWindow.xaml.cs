@@ -28,7 +28,9 @@ namespace SerialDebugger
         {
             InitializeComponent();
 
-            // Logger設定
+            // Logger初期化
+            // 例外処理で使用するため最初に初期化しておく
+            // グローバルインスタンスの管理はViewModelで行う
             Logger.Init(this);
 
             // vmを参照するので明示的に持っておく.
@@ -63,6 +65,8 @@ namespace SerialDebugger
 
         private void Window_Closed(object sender, EventArgs e)
         {
+            // Window破棄の前に明示的にDisposeする
+            // GCに任せるとデストラクタが走らない
             (vm as IDisposable)?.Dispose();
         }
     }

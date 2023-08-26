@@ -147,6 +147,10 @@ namespace SerialDebugger.Log
             return BitConverter.ToString(data, offset, length);
         }
 
+        static public IDisposable GetDisposable()
+        {
+            return Impl;
+        }
     }
 
     class LogImpl : BindableBase, IDisposable
@@ -192,10 +196,11 @@ namespace SerialDebugger.Log
                 {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
                     this.Disposables.Dispose();
+                    //
+                    Close();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
-                //Close();
                 // TODO: 大きなフィールドを null に設定します。
 
                 disposedValue = true;

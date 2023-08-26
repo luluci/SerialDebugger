@@ -120,6 +120,9 @@ namespace SerialDebugger
             BaseSerialAutoTxMsg = new ReactivePropertySlim<string>();
             BaseSerialAutoTxMsg.AddTo(Disposables);
 
+            // グローバルインスタンスはMainWindowのViewModelで管理する
+            Logger.GetDisposable().AddTo(Disposables);
+
             //
             WindowTitle = new ReactivePropertySlim<string>("SerialDebugger");
             // Tab
@@ -810,7 +813,6 @@ return true;
                     this.Disposables.Dispose();
 
                     Script.Interpreter.Engine.Close();
-                    Logger.Close();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。

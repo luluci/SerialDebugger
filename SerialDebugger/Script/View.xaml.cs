@@ -34,9 +34,13 @@ namespace SerialDebugger.Script
         {
             var window = sender as View;
 
-            //ViewModelがインターフェイスを実装していたらメソッドを実行する
-            if (window.DataContext is IClosing)
-                e.Cancel = (window.DataContext as IClosing).OnClosing();
+            // ViewModelがインターフェイスを実装していたらメソッドを実行する
+            // WebView2用ウインドウはClose()するとWebView2も破棄されてしまうため、
+            // アプリ動作中は閉じるボタンでClose()せずにHide()する。
+            // ViewViewModelのDisposeはMainWindowViewModelで管理し、
+            // Dispose()の後にウインドウをClose()する
+            if (vm is IClosing)
+                e.Cancel = (vm as IClosing).OnClosing();
         }
         
     }

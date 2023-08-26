@@ -120,9 +120,6 @@ namespace SerialDebugger
             BaseSerialAutoTxMsg = new ReactivePropertySlim<string>();
             BaseSerialAutoTxMsg.AddTo(Disposables);
 
-            // グローバルインスタンスはMainWindowのViewModelで管理する
-            Logger.GetDisposable().AddTo(Disposables);
-
             //
             WindowTitle = new ReactivePropertySlim<string>("SerialDebugger");
             // Tab
@@ -320,6 +317,11 @@ namespace SerialDebugger
 
         public async Task InitAsync()
         {
+            // グローバルインスタンスはMainWindowのViewModelで管理する
+            // Scriptの初期化が終わってから登録するのでここでDisposable登録
+            Script.Interpreter.GetDisposable().AddTo(Disposables);
+            Logger.GetDisposable().AddTo(Disposables);
+
             // 
             InitGui();
             // 設定ファイル読み込み
@@ -811,8 +813,6 @@ return true;
                 {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
                     this.Disposables.Dispose();
-
-                    Script.Interpreter.Engine.Close();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。

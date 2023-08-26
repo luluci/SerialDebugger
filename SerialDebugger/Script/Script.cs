@@ -36,7 +36,12 @@ namespace SerialDebugger.Script
             Engine = new EngineWebView2();
             await Engine.Init();
         }
-        
+
+
+        static public IDisposable GetDisposable()
+        {
+            return Engine;
+        }
     }
 
     public class EngineWebView2 : BindableBase, IDisposable
@@ -98,11 +103,6 @@ namespace SerialDebugger.Script
             // 機能無効化設定
             // F5無効化が主目的
             //WebView2.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
-        }
-
-        public void Close()
-        {
-            (this as IDisposable)?.Dispose();
         }
 
         public void ShowView(MainWindow window)
@@ -264,6 +264,11 @@ MakeFieldExecScript(exec_func, {selecter.Count});
         {
             var s = e.TryGetWebMessageAsString();
             //MessageBox.Show(s);
+        }
+
+        public void Close()
+        {
+            (this as IDisposable)?.Dispose();
         }
 
         #region IDisposable Support

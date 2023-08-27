@@ -71,20 +71,15 @@ class graph_drawer_t {
 		});
 	}
 
-	add_v_axis_left(idx, width, min, max, div_value) {
-		this.add_v_axis_calc(0, idx, width, min, max, div_value);
+	add_v_axis_range(lr, width, min, max, div_value) {
+		this.v_axis[lr].is_enable = true;
+		this.v_axis[lr].is_dict = false;
+		this.v_axis[lr].width = width;
+		this.v_axis[lr].div_value = div_value;
 
-		let field = Comm.Rx[0].Fields[2].GetSelecter();
-		field.forEach(element => {
-			this.v_axis[0].caption.push({
-				Key: element.Key,
-				Value: element.Disp,
-			});
-		});
-	}
-
-	add_v_axis_right(idx, width, min, max, div_value) {
-		this.add_v_axis_calc(1, idx, width, min, max, div_value);
+		this.v_axis[lr].min = min;
+		this.v_axis[lr].max = max;
+		this.v_axis[lr].div_count = max - min + 1;
 	}
 
 	add_v_axis_dict(lr, width, div_value, frame_idx, field_idx) {
@@ -140,6 +135,7 @@ class graph_drawer_t {
 		// canvas初期化
 		this.init_canvas_elem();
 		// 軸描画
+		this.draw_v_axis_left();
 		this.draw_v_axis_right();
 	}
 	//
@@ -176,15 +172,28 @@ class graph_drawer_t {
 		// canvas設定
 		// https://developer.mozilla.org/ja/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
 		// 透過をやめる
-		this.ctx = this.canvas_graph.getContext('2d', { alpha: false });
+		this.ctx = this.canvas_graph.getContext('2d');
 		//this.ctx = this.elem.getContext('2d');
 		this.ctx_bk = this.canvas_bk.getContext('2d', { alpha: false });
 
 		// canvas背景色初期化
-		this.ctx.fillStyle = "rgb(220,220,220)";
-		this.ctx.fillRect(0, 0, this.graph_width, this.graph_height);
-		this.ctx_bk.fillStyle = "rgb(255,255,255)";
+		//this.ctx.fillStyle = "rgb(220,220,220)";
+		//this.ctx.fillRect(0, 0, this.graph_width, this.graph_height);
+		this.ctx_bk.fillStyle = "rgb(240,240,240)";
 		this.ctx_bk.fillRect(0, 0, this.base_width, this.base_height);
+	}
+
+	draw_v_axis_left() {
+		// 縦軸(左)描画
+		// 座標系は左上が(0,0)
+		let x = this.v_axis[0].x + this.v_axis[0].width - 1;
+		let y = this.v_axis[0].y;
+		let y2 = y + this.v_axis[1].height;
+		// 縦線描画
+		this.ctx_bk.strokeStyle = 'rgb(180, 180, 180)';
+		this.ctx_bk.moveTo(x, y);
+		this.ctx_bk.lineTo(x, y2);
+		this.ctx_bk.stroke();
 	}
 
 	draw_v_axis_right() {
@@ -194,7 +203,7 @@ class graph_drawer_t {
 		let y = this.v_axis[1].y;
 		let y2 = y + this.v_axis[1].height;
 		// 縦線描画
-		this.ctx_bk.strokeStyle = 'rgb(0, 200, 0)';
+		this.ctx_bk.strokeStyle = 'rgb(180, 180, 180)';
 		this.ctx_bk.moveTo(x, y);
 		this.ctx_bk.lineTo(x, y2);
 		this.ctx_bk.stroke();
@@ -245,6 +254,7 @@ const Job_GraphDraw_init = () => {
 	// 系列登録
 	graph_drawer.add_series("data1");
 	// 軸登録
+	graph_drawer.add_v_axis_range(0, 100, 0, 100, 10);
 	//graph_drawer.add_v_axis_left(0, 50, 0, 10, 1);
 	//graph_drawer.add_v_axis_right(1, 100, 0, 10, 1);
 	graph_drawer.add_v_axis_dict(1, 100, 1, 0, 2);

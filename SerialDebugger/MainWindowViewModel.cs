@@ -667,7 +667,7 @@ namespace SerialDebugger
                     //
                     if (frame.FrameRef.IsLogVisualize)
                     {
-                        Logger.Add($"[Tx][{frame.Name}] {frame.FrameRef.MakeLogVisualize(frame.Id)}");
+                        Logger.Add($"[Tx][{frame.Name}] {frame.FrameRef.MakeLogVisualize(frame.Id)}, ({Logger.Byte2Str(frame.Data)})");
                     }
                     else
                     {

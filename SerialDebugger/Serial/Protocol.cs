@@ -480,7 +480,7 @@ namespace SerialDebugger.Serial
                 {
                     // Visualizeログ作成
                     // RxPatternへの受信値反映も同時に実施
-                    log = RxFrames[frame_id].MakeLogVisualize(Result.RxBuff, Result.RxBuffOffset, result.PatternRef);
+                    log = $"{RxFrames[frame_id].MakeLogVisualize(Result.RxBuff, Result.RxBuffOffset, result.PatternRef)}, ({Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset)})";
                 }
                 else
                 {

@@ -24,7 +24,8 @@
 	"script": {
 		"import": [
 			"00_Comm_Test_Script_4.js"
-		]
+		],
+		"onload": "OnLoad_GraphDrawScript()"
 	},
 	
 	"comm": {

@@ -530,6 +530,13 @@ namespace SerialDebugger
 
             // デフォルトでTxを表示する
             TabSelectedIndex.Value = 0;
+
+            // 設定ファイル読み込み完了後にOnLoadイベントハンドラを実行
+            if (data.Script.HasOnLoad)
+            {
+                await Script.Interpreter.Engine.ExecuteScriptAsync(data.Script.OnLoad);
+            }
+
             return true;
         }
 

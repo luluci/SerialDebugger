@@ -1,4 +1,8 @@
 
+const OnLoad_GraphDrawScript = () => {
+	Utility.Log("run: OnLoad_GraphDrawScript()");
+}
+
 class graph_drawer_t {
 
 

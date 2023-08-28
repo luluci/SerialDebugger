@@ -22,7 +22,7 @@ namespace SerialDebugger.Settings
         {
             if (!(json is null))
             {
-                // List取り込み
+                // importファイルリスト取り込み
                 foreach (var file in json.Import)
                 {
                     Import.Add(file);
@@ -30,7 +30,8 @@ namespace SerialDebugger.Settings
                 // Commロード前にjsファイルをロード
                 await SerialDebugger.Script.Interpreter.Engine.LoadScriptFile(Import);
 
-
+                // onloadイベントハンドラ
+                // 設定ファイル読み込み完了後に実行する
                 if (!Object.ReferenceEquals(json.OnLoad, string.Empty))
                 {
                     OnLoad = json.OnLoad;

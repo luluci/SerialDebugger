@@ -33,7 +33,7 @@ namespace SerialDebugger.Settings
         public Gui Gui { get; set; } = new Gui();
         public Serial Serial { get; set; } = new Serial();
         public Comm Comm { get; set; } = new Comm();
-        public List<string> Script { get; set; } = new List<string>();
+        public Script Script { get; set; } = new Script();
     }
 
     static class Settings
@@ -178,17 +178,8 @@ namespace SerialDebugger.Settings
         private async Task MakeSettingAsync(Json.Settings json, SettingInfo info)
         {
             // Script
-            if (json.Script != null)
-            {
-                // List取り込み
-                foreach (var file in json.Script)
-                {
-                    info.Script.Add(file);
-                }
-                // Commロード前にjsファイルをロード
-                await Script.Interpreter.Engine.LoadScriptFile(info.Script);
-            }
-
+            // 最初にjsをロードしておく
+            await info.Script.AnalyzeJsonAsync(json.Script);
             // Output
             info.Output.AnalyzeJson(json.Output);
             // GUI
@@ -268,7 +259,7 @@ namespace SerialDebugger.Settings
 
             // jsファイル
             [JsonPropertyName("script")]
-            public IList<string> Script { get; set; }
+            public Script Script { get; set; }
         }
 
     }

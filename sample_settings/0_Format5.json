@@ -81,9 +81,11 @@
 		"polling_cycle": 100
 	},
 	
-	"script": [
-		"0_Format5.js"
-	],
+	"script": {
+		"import": [
+			"0_Format5.js"
+		]
+	},
 	
 	"comm": {
 		"rx": {

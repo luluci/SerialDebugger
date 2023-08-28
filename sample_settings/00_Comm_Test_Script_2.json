@@ -21,9 +21,11 @@
 		"polling_cycle": 100
 	},
 	
-	"script": [
-		"00_Comm_Test_Script_1.js"
-	],
+	"script": {
+		"import": [
+			"00_Comm_Test_Script_1.js"
+		]
+	},
 	
 	"comm": {
 		"rx": {

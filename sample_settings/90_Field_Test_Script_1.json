@@ -38,9 +38,11 @@
 		"polling_cycle": 200
 	},
 	
-	"script": [
-		"90_Field_Test_Script_1.js"
-	],
+	"script": {
+		"import": [
+			"90_Field_Test_Script_1.js"
+		]
+	},
 	
 	"comm": {
 		"tx": {

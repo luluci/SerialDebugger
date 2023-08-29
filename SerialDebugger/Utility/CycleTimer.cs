@@ -36,7 +36,7 @@ namespace SerialDebugger.Utility
             var wait = WaitForMsec(msec);
             if (wait > 0)
             {
-                System.Threading.Thread.Sleep(WaitForMsec(msec));
+                System.Threading.Thread.Sleep(wait);
             }
         }
 
@@ -45,7 +45,7 @@ namespace SerialDebugger.Utility
             var wait = WaitForMsec(msec);
             if (wait > 0)
             {
-                await Task.Delay(WaitForMsec(msec));
+                await Task.Delay(wait);
             }
         }
 

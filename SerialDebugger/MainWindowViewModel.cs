@@ -618,8 +618,11 @@ namespace SerialDebugger
                 // Scriptクリア
                 Script.Interpreter.Engine.Comm.Init(protocol);
                 // COMポート終了
-                serialPort.Close();
-                serialPort = null;
+                if (!(serialPort is null))
+                {
+                    serialPort.Close();
+                    serialPort = null;
+                }
                 // GUI処理
                 IsSerialOpen.Value = false;
                 IsEnableSerialOpen.Value = true;

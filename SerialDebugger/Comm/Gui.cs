@@ -19,6 +19,7 @@ namespace SerialDebugger.Comm
         public static int[] Button3Width = { 15, 35, 15 };
         // Input列に表示する単位(h)表示幅
         public static int InputColUnitWidth = 15;
+        public static int InputColStrBtnWidth = 50;
 
         // GUI Resource
         public static SolidColorBrush ColorFrameNameBg = new SolidColorBrush(Color.FromArgb(0xFF, 11, 40, 75));
@@ -552,20 +553,38 @@ namespace SerialDebugger.Comm
         /// <returns></returns>
         public static UIElement MakeInputGuiEditChar(Field field, Object param, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
+            // ベース作成
+            var sp = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+
             // binding作成
             var bind = new Binding(value_path + ".Value.Value");
             bind.Converter = CharEditConverter;
             bind.ConverterParameter = param;
-            //
+            // 文字表示テキストボックス作成
             var tb = new TextBox();
             tb.SetBinding(TextBox.TextProperty, bind);
             tb.Background = SystemColors.ControlLightLightBrush;
             tb.TextAlignment = TextAlignment.Center;
-            tb.Width = Gui.setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput];
-            
+            tb.Width = Gui.setting.Gui.ColWidth[(int)SettingGui.Col.FieldInput] - InputColStrBtnWidth;
+            sp.Children.Add(tb);
+
+            // charグループの最初のGUIにだけstring入力ボタンを表示
+            if (field.selecter.CharPos == 0)
+            {
+                // string入力用ボタン
+                var btn = new Button();
+                btn.Content = "Input";
+                btn.Width = InputColStrBtnWidth;
+                sp.Children.Add(btn);
+            }
+
             //
             var border = MakeBorder1();
-            border.Child = tb;
+            border.Child = sp;
             Grid.SetRow(border, row);
             Grid.SetColumn(border, col);
             if (rowspan != -1)

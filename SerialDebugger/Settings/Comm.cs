@@ -178,9 +178,12 @@ namespace SerialDebugger.Settings
                 var f = new RxFrame(id, frame.Name);
                 if (!(frame.Fields is null))
                 {
-                    int i = 0;
+                    int field_id = 0;
                     int char_id = 0;
+                    int char_pos = 0;
+                    int str_len = 0;
                     bool prev_is_char = false;
+                    Field fieldRef = null;
                     foreach (var json_field in frame.Fields)
                     {
                         // Stringチェック
@@ -188,27 +191,37 @@ namespace SerialDebugger.Settings
                         {
                             if (json_field.String.Length > 0)
                             {
-                                int char_pos = 0;
+                                char_pos = 0;
+                                str_len = json_field.String.Length;
                                 foreach (var ch in json_field.String)
                                 {
-                                    var field = await MakeFieldStringNodeAsync(i, json_field, ch, char_id);
+                                    var field = await MakeFieldStringNodeAsync(field_id, json_field, ch, char_id, char_pos, str_len);
                                     field.InnerFields[0].Name = $"{json_field.Name}[{char_pos}]";
                                     f.Fields.Add(field);
-                                    i++;
+                                    field_id++;
                                     char_pos++;
                                 }
                                 char_id++;
                             }
+                            char_pos = 0;
                         }
                         else
                         {
-
                             // Field作成
-                            var field = await MakeFieldAsync(i, json_field, char_id);
+                            var field = await MakeFieldAsync(field_id, json_field, char_id, char_pos);
                             // Charチェック
                             if (field.InputType == Field.InputModeType.Char)
                             {
+                                // その他->Char で先頭Char field
+                                if (!prev_is_char)
+                                {
+                                    fieldRef = field;
+                                    str_len = 0;
+                                }
+
                                 prev_is_char = true;
+                                char_pos++;
+                                str_len++;
                             }
                             else
                             {
@@ -216,24 +229,26 @@ namespace SerialDebugger.Settings
                                 if (prev_is_char)
                                 {
                                     char_id++;
+                                    fieldRef.selecter.SetStrLen(str_len);
                                 }
+                                char_pos = 0;
                                 prev_is_char = false;
                             }
                             //
                             f.Fields.Add(field);
-                            i++;
+                            field_id++;
                         }
                     }
                     f.Build();
 
                     // PatternMatch作成
                     // patternsありのとき
-                    i = 0;
+                    field_id = 0;
                     foreach (var pattern in frame.Patterns)
                     {
-                        var p = MakeRxPattern(i, pattern);
+                        var p = MakeRxPattern(field_id, pattern);
                         f.Patterns.Add(p);
-                        i++;
+                        field_id++;
                     }
                     f.BuildPattern();
                     if (f.HasScriptMatch)
@@ -789,38 +804,53 @@ namespace SerialDebugger.Settings
                 // Field作成
                 if (!(frame.Fields is null))
                 {
-                    int i = 0;
+                    int field_id = 0;
                     int char_id = 0;
+                    int char_pos = 0;
+                    int str_len = 0;
                     bool prev_is_char = false;
-                    foreach (var json_field in frame.Fields)
+                    int field_count_max = frame.Fields.Count;
+                    Field fieldRef = null;
+                    for (int i = 0; i< field_count_max; i++)
                     {
+                        var json_field = frame.Fields[i];
 
                         // Stringチェック
                         if (json_field.Type == "String")
                         {
                             if (json_field.String.Length > 0)
                             {
-                                int char_pos = 0;
+                                char_pos = 0;
+                                str_len = json_field.String.Length;
                                 foreach (var ch in json_field.String)
                                 {
-                                    var field = await MakeFieldStringNodeAsync(i, json_field, ch, char_id);
+                                    var field = await MakeFieldStringNodeAsync(field_id, json_field, ch, char_id, char_pos, str_len);
                                     field.InnerFields[0].Name = $"{json_field.Name}[{char_pos}]";
                                     f.Fields.Add(field);
-                                    i++;
+                                    field_id++;
                                     char_pos++;
                                 }
                                 char_id++;
                             }
+                            char_pos = 0;
                         }
                         else
                         {
-
                             // Field作成
-                            var field = await MakeFieldAsync(i, json_field, char_id);
+                            var field = await MakeFieldAsync(field_id, json_field, char_id, char_pos);
                             // Charチェック
                             if (field.InputType == Field.InputModeType.Char)
                             {
+                                // その他->Char で先頭Char field
+                                if (!prev_is_char)
+                                {
+                                    fieldRef = field;
+                                    str_len = 0;
+                                }
+
                                 prev_is_char = true;
+                                char_pos++;
+                                str_len++;
                             }
                             else
                             {
@@ -828,12 +858,14 @@ namespace SerialDebugger.Settings
                                 if (prev_is_char)
                                 {
                                     char_id++;
+                                    fieldRef.selecter.SetStrLen(str_len);
                                 }
+                                char_pos = 0;
                                 prev_is_char = false;
                             }
                             //
                             f.Fields.Add(field);
-                            i++;
+                            field_id++;
                         }
                     }
                     f.Build();
@@ -969,7 +1001,7 @@ namespace SerialDebugger.Settings
             }
         }
 
-        private async Task<Field> MakeFieldAsync(int id, Json.CommField field, int char_id)
+        private async Task<Field> MakeFieldAsync(int id, Json.CommField field, int char_id, int char_pos)
         {
             switch (field.Type)
             {
@@ -984,7 +1016,7 @@ namespace SerialDebugger.Settings
                 case "Script":
                     return await MakeFieldScriptAsync(id, field);
                 case "Char":
-                    return await MakeFieldCharAsync(id, field, char_id);
+                    return await MakeFieldCharAsync(id, field, char_id, char_pos);
                 case "Edit":
                     return await MakeFieldImplAsync(id, field, Field.InputModeType.Edit, null);
                 case "Fix":
@@ -1111,7 +1143,7 @@ namespace SerialDebugger.Settings
             return await MakeFieldImplAsync(id, field, Field.InputModeType.Script, selecter);
         }
 
-        private async Task<Field> MakeFieldCharAsync(int id, Json.CommField field, int char_id)
+        private async Task<Field> MakeFieldCharAsync(int id, Json.CommField field, int char_id, int char_pos)
         {
             // Valueチェック
             if (!Object.ReferenceEquals(field.Char, string.Empty) && field.Char.Length > 0)
@@ -1126,12 +1158,12 @@ namespace SerialDebugger.Settings
             // BitSizeは固定
             field.BitSize = 8;
             // Selecter
-            var selecter = Field.MakeSelecterChar(char_id);
+            var selecter = Field.MakeSelecterChar(char_id, char_pos, -1);
             // Field生成
             return await MakeFieldImplAsync(id, field, Field.InputModeType.Char, selecter);
         }
 
-        private async Task<Field> MakeFieldStringNodeAsync(int id, Json.CommField field, char ch, int char_id)
+        private async Task<Field> MakeFieldStringNodeAsync(int id, Json.CommField field, char ch, int char_id, int char_pos, int str_len)
         {
             //
             if (!(field.MultiNames is null))
@@ -1143,7 +1175,7 @@ namespace SerialDebugger.Settings
             // BitSizeは固定
             field.BitSize = 8;
             // Selecter
-            var selecter = Field.MakeSelecterChar(char_id);
+            var selecter = Field.MakeSelecterChar(char_id, char_pos, str_len);
             // Field生成
             return await MakeFieldImplAsync(id, field, Field.InputModeType.Char, selecter);
         }

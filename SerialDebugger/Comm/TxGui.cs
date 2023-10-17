@@ -33,6 +33,7 @@ namespace SerialDebugger.Comm
             double margin_l = 0;
             foreach (var frame in frames)
             {
+                // frameごとにGUI作成
                 var (grid1, grid2, grid3) = MakeBase(grid, margin_l);
                 var w = MakeHeader(Gui.setting, grid2, frame, frame_no);
                 w = MakeBody(Gui.setting, grid3, frame, frame_no);

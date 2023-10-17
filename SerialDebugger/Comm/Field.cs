@@ -122,6 +122,8 @@ namespace SerialDebugger.Comm
             public string Script { get; }
             // Char表現要素
             public int CharId { get; }
+            public int CharPos { get; }
+            public int StrLen { get; internal set; }
 
             public Selecter((Int64, string)[] dict)
             {
@@ -157,10 +159,17 @@ namespace SerialDebugger.Comm
                 Script = script;
             }
 
-            public Selecter(int char_id)
+            public Selecter(int char_id, int char_pos, int str_len)
             {
                 Type = InputModeType.Char;
                 CharId = char_id;
+                CharPos = char_pos;
+                StrLen = str_len;
+            }
+
+            public void SetStrLen(int len)
+            {
+                StrLen = len;
             }
         }
         public static Selecter MakeSelecterDict((Int64, string)[] dict)
@@ -179,9 +188,9 @@ namespace SerialDebugger.Comm
         {
             return new Selecter(mode, count, script);
         }
-        public static Selecter MakeSelecterChar(int char_id)
+        public static Selecter MakeSelecterChar(int char_id, int char_pos, int str_len)
         {
-            return new Selecter(char_id);
+            return new Selecter(char_id, char_pos, str_len);
         }
 
         public Selecter selecter;

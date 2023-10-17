@@ -557,7 +557,7 @@ namespace SerialDebugger.Comm
             var sp = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                VerticalAlignment = VerticalAlignment.Top
+                VerticalAlignment = VerticalAlignment.Stretch
             };
 
             // binding作成

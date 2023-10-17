@@ -239,6 +239,12 @@ namespace SerialDebugger.Settings
                             field_id++;
                         }
                     }
+                    // Char -> その他 でID更新
+                    if (prev_is_char)
+                    {
+                        char_id++;
+                        fieldRef.selecter.SetStrLen(str_len);
+                    }
                     f.Build();
 
                     // PatternMatch作成
@@ -867,6 +873,12 @@ namespace SerialDebugger.Settings
                             f.Fields.Add(field);
                             field_id++;
                         }
+                    }
+                    // Char -> その他 でID更新
+                    if (prev_is_char)
+                    {
+                        char_id++;
+                        fieldRef.selecter.SetStrLen(str_len);
                     }
                     f.Build();
                 }

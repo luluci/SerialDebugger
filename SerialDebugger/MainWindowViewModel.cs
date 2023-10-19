@@ -40,8 +40,7 @@ namespace SerialDebugger
         public ReactivePropertySlim<bool> IsEnableSerialOpen { get; set; }
         public ReactiveCommand OnClickSerialSetting { get; set; }
         public ReadOnlyReactivePropertySlim<bool> IsEnableSerialSetting { get; set; }
-        Popup popup;
-        //public Serial.CommHandler serialHandler;
+        Popup popupSerialSetting;
         // Comm: Tx
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
@@ -88,6 +87,10 @@ namespace SerialDebugger
         public ReactivePropertySlim<string> AutoTxShortcutButtonDisp { get; set; }
         public ReactiveCommand OnClickAutoTxShortcut { get; set; }
         public ReactiveCommand OnClickAutoTxScroll { get; set; }
+        // Comm: common
+        Comm.InputString inputString;
+        public ReactiveCommand OnClickInputString { get; set; }
+        Popup popupInputString;
         // Script
         public ReactiveCommand OnClickOpenScript { get; set; }
         // Log
@@ -150,13 +153,13 @@ namespace SerialDebugger
             OnClickSerialSetting
                 .Subscribe(x =>
                 {
-                    popup.PlacementTarget = window.BtnSettings;
-                    popup.IsOpen = !popup.IsOpen;
+                    popupSerialSetting.PlacementTarget = window.BtnSettings;
+                    popupSerialSetting.IsOpen = !popupSerialSetting.IsOpen;
                 })
                 .AddTo(Disposables);
-            popup = new Popup();
-            popup.StaysOpen = false;
-            popup.Child = serialSetting;
+            popupSerialSetting = new Popup();
+            popupSerialSetting.StaysOpen = false;
+            popupSerialSetting.Child = serialSetting;
             // Settingファイル選択GUI
             Settings = new ReactiveCollection<Settings.SettingInfo>();
             Settings.AddTo(Disposables);
@@ -180,6 +183,30 @@ namespace SerialDebugger
             // Log
             Log = Logger.GetLogData();
 
+            //
+            inputString = new Comm.InputString();
+            popupInputString = new Popup();
+            popupInputString.StaysOpen = false;
+            popupInputString.Child = inputString;
+            popupInputString.Closed += (object sender, EventArgs e) => {
+                int i = 0;
+                i++;
+            };
+            OnClickInputString = new ReactiveCommand();
+            OnClickInputString
+                .Subscribe(x =>
+                {
+                    //var tuple = (Tuple<Object, Object>)x;
+                    var tuple = ((Object, Object, Object))x;
+                    var frame = (Comm.TxFrame)tuple.Item1;
+                    var field = (Comm.Field)tuple.Item2;
+                    var buffer = (Comm.TxFieldBuffer)tuple.Item3;
+                    inputString.vm.Caption.Value = $"{field.selecter.StrLen}バイトまで受付可";
+                    inputString.vm.InputString.Value = frame.MakeCharField2String(field.Id, buffer.Id);
+                    popupInputString.PlacementTarget = buffer.FieldValues[field.Id].UI;
+                    popupInputString.IsOpen = !popupInputString.IsOpen;
+                })
+                .AddTo(Disposables);
             //
             TxFrames = new ReactiveCollection<Comm.TxFrame>();
             TxFrames.AddTo(Disposables);

@@ -318,13 +318,15 @@ namespace SerialDebugger.Comm
                             }
                             //grid.Children.Add(MakeTextBlockStyle3(field.Name, bit, 3, field.BitSize));
                             // Input列作成
-                            grid.Children.Add(Gui.MakeInputGui(field, $"TxFrames[{frame_no}].Fields[{field_pos}]", $"TxFrames[{frame_no}].Buffers[0].FieldValues[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldInput], field.BitSize));
+                            var fb = frame.Buffers[0];
+                            var fv = fb.FieldValues[field_pos];
+                            grid.Children.Add(Gui.MakeInputGui(field, fv, $"TxFrames[{frame_no}]", $"TxFrames[{frame_no}].Fields[{field_pos}]", $"TxFrames[{frame_no}].Buffers[0]", $"TxFrames[{frame_no}].Buffers[0].FieldValues[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.FieldInput], field.BitSize));
                             // BackupBuffer列作成
                             for (int i = 1; i < frame.BufferSize; i++)
                             {
-                                var fb = frame.Buffers[i];
-                                var fv = fb.FieldValues[field_pos];
-                                grid.Children.Add(MakeBackupBufferGui(field, fv, $"TxFrames[{frame_no}].Fields[{field_pos}]", $"TxFrames[{frame_no}].Buffers[{i}].FieldValues[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1, field.BitSize));
+                                fb = frame.Buffers[i];
+                                fv = fb.FieldValues[field_pos];
+                                grid.Children.Add(MakeBackupBufferGui(field, fv, $"TxFrames[{frame_no}]", $"TxFrames[{frame_no}].Fields[{field_pos}]", $"TxFrames[{frame_no}].Buffers[{i}]", $"TxFrames[{frame_no}].Buffers[{i}].FieldValues[{field_pos}]", bit, setting.Gui.ColOrder[(int)SettingGui.Col.TxBuffer] + i-1, field.BitSize));
                             }
 
                             // 次周回設定処理
@@ -518,7 +520,7 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        private static UIElement MakeBackupBufferGui(Field field, FieldValue value, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
+        private static UIElement MakeBackupBufferGui(Field field, FieldValue value, string frame_path, string field_path, string field_value_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             switch (value.FieldRef.InputType)
             {
@@ -528,7 +530,7 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Script:
                     return Gui.MakeInputGuiSelecter(value.FieldRef, field, field_path, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Char:
-                    return Gui.MakeInputGuiEditChar(field, field, value_path, row, col, rowspan, colspan);
+                    return Gui.MakeInputGuiEditChar(field, value, field, frame_path, field_path, field_value_path, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
                     return Gui.MakeInputGuiEdit(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:

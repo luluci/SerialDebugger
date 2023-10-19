@@ -51,7 +51,8 @@
 						{ "name": "str2[0]", "type": "Char", "char": "D" },
 						{ "name": "str2[1]", "type": "Char", "char": "E" },
 						{ "name": "str2[2]", "type": "Char", "char": "F" }
-					]
+					],
+					"backup_buffer_size": 2
 				},
 				{
 					"name": "str_1",
@@ -59,7 +60,8 @@
 						{ "name": "str3", "type": "String", "string": "GHIJK" },
 						{ "name": "separator", "bit_size": 8, "value": 0 },
 						{ "name": "str4", "type": "String", "string": "LMN" }
-					]
+					],
+					"backup_buffer_size": 2
 				}
 			]
 		}

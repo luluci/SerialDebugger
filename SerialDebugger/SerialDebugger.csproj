@@ -77,6 +77,10 @@
     <Compile Include="Comm\AutoTxGuiConverter.cs" />
     <Compile Include="Comm\AutoTxJob.cs" />
     <Compile Include="Comm\Gui.cs" />
+    <Compile Include="Comm\InputString.xaml.cs">
+      <DependentUpon>InputString.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Comm\InputStringViewModel.cs" />
     <Compile Include="Comm\RxAnalyzer.cs" />
     <Compile Include="Comm\RxAnalyzeRule.cs" />
     <Compile Include="Comm\RxFrame.cs" />
@@ -115,6 +119,10 @@
     <Compile Include="Utility\BindableBase.cs" />
     <Compile Include="Utility\CycleTimer.cs" />
     <Compile Include="Utility\HexAscii.cs" />
+    <Page Include="Comm\InputString.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

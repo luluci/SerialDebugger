@@ -10,6 +10,7 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Comm
 {
+    using System.Windows;
     using Utility;
 
     public class FieldValue : BindableBase, IDisposable
@@ -20,6 +21,8 @@ namespace SerialDebugger.Comm
         public ReactivePropertySlim<Int64> Value { get; set; }
         public ReactivePropertySlim<int> SelectIndex { get; set; }
         public ReactivePropertySlim<Field.ChangeStates> ChangeState { get; set; }
+        // 参照用
+        public UIElement UI { get; set; }
 
         public FieldValue(Field field)
         {

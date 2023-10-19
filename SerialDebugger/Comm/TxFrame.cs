@@ -480,6 +480,32 @@ namespace SerialDebugger.Comm
             return str.ToString();
         }
 
+        public string MakeCharField2String(int field_idx, int buffer_idx)
+        {
+            // 初期設定
+            if (field_idx < Fields.Count && Fields[field_idx].InputType == Field.InputModeType.Char)
+            {
+
+            }
+            else
+            {
+                return "";
+            }
+            // 先頭ノードチェック
+            var root = Fields[field_idx];
+            var str_len = root.selecter.StrLen;
+            var raw = new byte[str_len];
+            var raw_idx = 0;
+            raw[raw_idx] = Buffers[buffer_idx].Buffer[field_idx];
+            raw_idx++;
+            //
+            for (; raw_idx<str_len; raw_idx++)
+            {
+                raw[raw_idx] = Buffers[buffer_idx].Buffer[field_idx+raw_idx];
+            }
+            
+            return System.Text.Encoding.UTF8.GetString(raw);
+        }
 
         public string MakeLogVisualize(int buff_idx)
         {

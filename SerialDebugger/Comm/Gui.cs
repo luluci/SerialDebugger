@@ -32,6 +32,7 @@ namespace SerialDebugger.Comm
         public static GuiCharEditConverter CharEditConverter = new GuiCharEditConverter();
         public static GuiTxSendFixNameConverter TxSendFixNameConverter = new GuiTxSendFixNameConverter();
         public static GuiTxSendFixBGColorConverter TxSendFixBGColorConverter = new GuiTxSendFixBGColorConverter();
+        public static GuiCharMultiBindConverter CharMultiBindConverter = new GuiCharMultiBindConverter();
         public static GuiBitColBgConverter[] BitColBgConverter = new GuiBitColBgConverter[]
         {
             // 2byte
@@ -356,7 +357,7 @@ namespace SerialDebugger.Comm
         /// <param name="rowspan"></param>
         /// <param name="colspan"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGui(Field field, string field_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGui(Field field, FieldValue value, string frame_path, string field_path, string field_value_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             switch (field.InputType)
             {
@@ -366,7 +367,7 @@ namespace SerialDebugger.Comm
                 case Field.InputModeType.Script:
                     return MakeInputGuiSelecter(field, field, field_path, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Char:
-                    return MakeInputGuiEditChar(field, field, value_path, row, col, rowspan, colspan);
+                    return MakeInputGuiEditChar(field, value, field, frame_path, field_path, field_value_path, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Edit:
                     return MakeInputGuiEdit(field, field, value_path, row, col, rowspan, colspan);
                 case Field.InputModeType.Checksum:
@@ -551,7 +552,7 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="tgt"></param>
         /// <returns></returns>
-        public static UIElement MakeInputGuiEditChar(Field field, Object param, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
+        public static UIElement MakeInputGuiEditChar(Field field, FieldValue field_value, Object param, string frame_path, string field_path, string field_value_path, string value_path, int row, int col, int rowspan = -1, int colspan = -1)
         {
             // ベース作成
             var sp = new StackPanel
@@ -575,11 +576,23 @@ namespace SerialDebugger.Comm
             // charグループの最初のGUIにだけstring入力ボタンを表示
             if (field.selecter.CharPos == 0)
             {
+                // command
+                var bind_cmd = new Binding("OnClickInputString");
+                var bind_cmd_param = new Binding(field_path);
+                var mbind_param = new MultiBinding();
+                mbind_param.Bindings.Add(new Binding(frame_path));
+                mbind_param.Bindings.Add(new Binding(field_path));
+                mbind_param.Bindings.Add(new Binding(field_value_path));
+                mbind_param.Converter = CharMultiBindConverter;
                 // string入力用ボタン
                 var btn = new Button();
                 btn.Content = "Input";
                 btn.Width = InputColStrBtnWidth;
+                btn.SetBinding(Button.CommandProperty, bind_cmd);
+                btn.SetBinding(Button.CommandParameterProperty, mbind_param);
                 sp.Children.Add(btn);
+                //
+                field_value.UI = btn;
             }
 
             //

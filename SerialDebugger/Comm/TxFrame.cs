@@ -480,6 +480,42 @@ namespace SerialDebugger.Comm
             return str.ToString();
         }
 
+        public void SetString2CharField(string str, int field_idx, int buffer_idx)
+        {
+            // UTF16 -> UTF8
+            var bytes = System.Text.Encoding.UTF8.GetBytes(str);
+            // 先頭Fieldチェック
+            var root = Fields[field_idx];
+            var str_len = root.selecter.StrLen;
+            var str_max_pos = str_len;
+            // UTF8バイト列がCharFieldより大きい場合は1文字分のバイト列が入るところまでで区切る
+            if (bytes.Length > str_len)
+            {
+                // 後ろ側から探索
+                // 上位2bitが0b10だと複数バイトシーケンスの2バイト目以降
+                // 1バイト目が出現するまでループ
+                while ((bytes[str_max_pos] & 0xC0) == 0x80 && str_max_pos >= 0)
+                {
+                    str_max_pos--;
+                }
+            }
+            else
+            {
+                str_max_pos = bytes.Length;
+            }
+            // コピー可能な分のbytesをTxFieldBufferにコピー
+            int idx = 0;
+            for (; idx < str_max_pos; idx++)
+            {
+                Buffers[buffer_idx].FieldValues[field_idx + idx].Value.Value = bytes[idx];
+            }
+            // 入力が無かったバッファはゼロクリア
+            for (; idx < str_len; idx++)
+            {
+                Buffers[buffer_idx].FieldValues[field_idx + idx].Value.Value = 0;
+            }
+        }
+
         public string MakeCharField2String(int field_idx, int buffer_idx)
         {
             // 初期設定
@@ -491,7 +527,7 @@ namespace SerialDebugger.Comm
             {
                 return "";
             }
-            // 先頭ノードチェック
+            // 先頭Fieldチェック
             var root = Fields[field_idx];
             var str_len = root.selecter.StrLen;
             var raw = new byte[str_len];

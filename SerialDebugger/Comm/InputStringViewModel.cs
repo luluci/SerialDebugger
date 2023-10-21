@@ -10,19 +10,36 @@ using Reactive.Bindings.Extensions;
 
 namespace SerialDebugger.Comm
 {
+    using System.Windows;
     using Utility;
 
     public class InputStringViewModel : BindableBase, IDisposable
     {
         public ReactivePropertySlim<string> InputString { get; set; }
         public ReactivePropertySlim<string> Caption { get; set; }
+        public ReactiveCommand OnLostFocus { get; set; }
 
-        public InputStringViewModel()
+        public Comm.TxFrame TxFrameRef { get; set; }
+        public Comm.Field FieldRef { get; set; }
+        public Comm.TxFieldBuffer TxFieldBufferRef { get; set; }
+
+        Window window_;
+
+        public InputStringViewModel(Window window)
         {
+            window_ = window;
+
             InputString = new ReactivePropertySlim<string>();
             InputString.AddTo(Disposables);
             Caption = new ReactivePropertySlim<string>();
             Caption.AddTo(Disposables);
+
+            OnLostFocus = new ReactiveCommand();
+            //OnLostFocus.Subscribe(x =>
+            //{
+            //    window.Hide();
+            //})
+            OnLostFocus.AddTo(Disposables);
         }
 
 

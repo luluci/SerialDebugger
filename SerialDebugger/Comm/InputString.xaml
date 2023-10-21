@@ -1,14 +1,33 @@
-﻿<UserControl x:Class="SerialDebugger.Comm.InputString"
+﻿<Window x:Class="SerialDebugger.Comm.InputString"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SerialDebugger.Comm"
-             mc:Ignorable="d" Height="62.148" Width="252.447">
+             xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:rp="clr-namespace:Reactive.Bindings.Interactivity;assembly=ReactiveProperty.WPF"
+             mc:Ignorable="d"
+             Height="59.148" Width="252.447" WindowStyle="None" Visibility="Visible" WindowState="Minimized" ResizeMode="NoResize" 
+              ShowInTaskbar="False" >
+    <bh:Interaction.Triggers>
+        <bh:EventTrigger EventName="Deactivated">
+            <rp:EventToReactiveCommand Command="{Binding OnLostFocus}">
+                
+            </rp:EventToReactiveCommand>
+        </bh:EventTrigger>
+    </bh:Interaction.Triggers>
     <Grid Background="#FFF5F0F0">
         <Border BorderBrush="Black" BorderThickness="1">
             <StackPanel Orientation="Vertical">
-                <TextBox Margin="10,5,10,0" Height="20" VerticalAlignment="Top" Text="{Binding InputString.Value}" />
+                <TextBox Margin="10,5,10,0" Height="20" VerticalAlignment="Top" Text="{Binding InputString.Value}" x:Name="InputTextBox">
+                    <bh:Interaction.Triggers>
+                        <bh:EventTrigger EventName="LostFocus">
+                            <rp:EventToReactiveCommand Command="{Binding OnLostFocus}">
+
+                            </rp:EventToReactiveCommand>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
+                </TextBox>
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,0" >
                     <Grid>
                         <Border BorderThickness="1" Margin="10,0,5,0" BorderBrush="Gray">
@@ -23,4 +42,4 @@
             </StackPanel>
         </Border>
     </Grid>
-</UserControl>
+</Window>

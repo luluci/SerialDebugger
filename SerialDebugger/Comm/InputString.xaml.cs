@@ -19,7 +19,7 @@ namespace SerialDebugger.Comm
     /// <summary>
     /// InputString.xaml の相互作用ロジック
     /// </summary>
-    public partial class InputString : UserControl
+    public partial class InputString : Window
     {
         public InputStringViewModel vm;
 
@@ -27,8 +27,15 @@ namespace SerialDebugger.Comm
         {
             InitializeComponent();
             //
-            vm = new InputStringViewModel();
+            vm = new InputStringViewModel(this);
             DataContext = vm;
         }
+
+        public void SetFocus()
+        {
+            InputTextBox.Focus();
+            InputTextBox.SelectAll();
+        }
+        
     }
 }

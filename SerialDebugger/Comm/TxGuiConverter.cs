@@ -166,17 +166,31 @@ namespace SerialDebugger.Comm
     {
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var temp = (char)((Int64)value & 0xFF);
-            var field = (Field)parameter;
-            // 16進数表示
-            return $"{temp}";
+            var temp = (Int64)value & 0xFF;
+            //var field = (Field)parameter;
+            if (0x21 <= temp && temp <= 0x7E)
+            {
+                return $"{(char)temp}";
+            }
+            else
+            {
+                // 16進数表示
+                return $"\\x{temp:X02}";
+            }
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var temp = (string)value;
-            var field = parameter as Field;
-            return temp[0];
+            //var field = parameter as Field;
+            if (temp[0] == '\\')
+            {
+                return Convert.ToInt64(temp.Substring(2), 16);
+            }
+            else
+            {
+                return temp[0];
+            }
         }
     }
 

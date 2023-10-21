@@ -45,6 +45,7 @@
 					"name": "char_1",
 					"fields": [
 						{ "name": "str1[0]", "type": "Char", "char": "A" },
+						{ "name": "separator", "bit_size": 8, "value": 0 },
 						{ "name": "str1[1]", "type": "Char", "char": "B" },
 						{ "name": "str1[2]", "type": "Char", "char": "C" },
 						{ "name": "separator", "bit_size": 8, "value": 0 },
@@ -57,9 +58,10 @@
 				{
 					"name": "str_1",
 					"fields": [
-						{ "name": "str3", "type": "String", "string": "GHIJK" },
-						{ "name": "separator", "bit_size": 8, "value": 0 },
-						{ "name": "str4", "type": "String", "string": "LMN" }
+						{ "name": "str3", "type": "String", "string": "G" },
+						{ "name": "str3", "type": "String", "string": "HI" },
+						{ "name": "str3", "type": "String", "string": "JKL" },
+						{ "name": "str3", "type": "String", "string": "MNOPQRS" }
 					],
 					"backup_buffer_size": 2
 				}

@@ -88,9 +88,11 @@ namespace SerialDebugger
         public ReactiveCommand OnClickAutoTxShortcut { get; set; }
         public ReactiveCommand OnClickAutoTxScroll { get; set; }
         // Comm: common
-        Comm.InputString inputString;
+        // string入力I/F
+        Comm.InputString inputString { get; set; }
         public ReactiveCommand OnClickInputString { get; set; }
-        Popup popupInputString;
+        public ReactivePropertySlim<bool> IsEnableInputString { get; set; }
+
         // Script
         public ReactiveCommand OnClickOpenScript { get; set; }
         // Log
@@ -183,28 +185,40 @@ namespace SerialDebugger
             // Log
             Log = Logger.GetLogData();
 
-            //
-            inputString = new Comm.InputString();
-            popupInputString = new Popup();
-            popupInputString.StaysOpen = false;
-            popupInputString.Child = inputString;
-            popupInputString.Closed += (object sender, EventArgs e) => {
-                int i = 0;
-                i++;
-            };
+            // 文字列入力ポップアップウインドウ
+            IsEnableInputString = new ReactivePropertySlim<bool>(true);
+            IsEnableInputString.AddTo(Disposables);
             OnClickInputString = new ReactiveCommand();
             OnClickInputString
                 .Subscribe(x =>
                 {
-                    //var tuple = (Tuple<Object, Object>)x;
-                    var tuple = ((Object, Object, Object))x;
-                    var frame = (Comm.TxFrame)tuple.Item1;
-                    var field = (Comm.Field)tuple.Item2;
-                    var buffer = (Comm.TxFieldBuffer)tuple.Item3;
-                    inputString.vm.Caption.Value = $"{field.selecter.StrLen}バイトまで受付可";
-                    inputString.vm.InputString.Value = frame.MakeCharField2String(field.Id, buffer.Id);
-                    popupInputString.PlacementTarget = buffer.FieldValues[field.Id].UI;
-                    popupInputString.IsOpen = !popupInputString.IsOpen;
+                    try
+                    {
+                        IsEnableInputString.Value = false;
+
+                        // 文字列入力ポップアップの入力準備
+                        //var tuple = (Tuple<Object, Object>)x;
+                        var tuple = ((Object, Object, Object))x;
+                        var frame = (Comm.TxFrame)tuple.Item1;
+                        var field = (Comm.Field)tuple.Item2;
+                        var buffer = (Comm.TxFieldBuffer)tuple.Item3;
+                        inputString.vm.TxFrameRef = frame;
+                        inputString.vm.FieldRef = field;
+                        inputString.vm.TxFieldBufferRef = buffer;
+                        inputString.vm.Caption.Value = $"{field.selecter.StrLen}バイトまで受付可";
+                        inputString.vm.InputString.Value = frame.MakeCharField2String(field.Id, buffer.Id);
+                        var pt = buffer.FieldValues[field.Id].UI.PointToScreen(new Point(0.0d, 0.0d));
+                        inputString.Top = pt.Y + buffer.FieldValues[field.Id].UI.RenderSize.Height;
+                        inputString.Left = pt.X;
+                        inputString.Visibility = Visibility.Visible;
+                        inputString.Show();
+                        inputString.SetFocus();
+                    }
+                    catch (Exception ex)
+                    {
+                        inputString.Hide();
+                        Logger.Add("Logic error?: " + ex.Message);
+                    }
                 })
                 .AddTo(Disposables);
             //
@@ -344,6 +358,34 @@ namespace SerialDebugger
 
         public async Task InitAsync()
         {
+
+            //
+            inputString = new Comm.InputString
+            {
+                Visibility = Visibility.Hidden,
+                WindowState = WindowState.Normal,
+                //Owner = window,
+            };
+            inputString.vm.OnLostFocus.Subscribe(x =>
+            {
+                try
+                {
+                    if (!(inputString.vm.TxFrameRef is null) && !(inputString.vm.FieldRef is null) && !(inputString.vm.TxFieldBufferRef is null))
+                    {
+                        // 入力内容をTxFieldBufferに反映
+                        inputString.vm.TxFrameRef.SetString2CharField(inputString.vm.InputString.Value, inputString.vm.FieldRef.Id, inputString.vm.TxFieldBufferRef.Id);
+                    }
+                }
+                finally
+                {
+                    inputString.vm.TxFrameRef = null;
+                    inputString.vm.FieldRef = null;
+                    inputString.vm.TxFieldBufferRef = null;
+                    inputString.Hide();
+                    IsEnableInputString.Value = true;
+                }
+            });
+
             // グローバルインスタンスはMainWindowのViewModelで管理する
             // Scriptの初期化が終わってから登録するのでここでDisposable登録
             Script.Interpreter.GetDisposable().AddTo(Disposables);
@@ -849,6 +891,7 @@ return true;
                 if (disposing)
                 {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
+                    inputString.Close();
                     this.Disposables.Dispose();
                 }
 

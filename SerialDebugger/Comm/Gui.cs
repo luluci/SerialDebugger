@@ -630,6 +630,7 @@ namespace SerialDebugger.Comm
             label.LayoutTransform = new RotateTransform(-90);
             label.Padding = new Thickness(0,0,2,0);
             label.HorizontalContentAlignment = HorizontalAlignment.Right;
+            label.Foreground = group.Color;
             //label.VerticalContentAlignment = VerticalAlignment.Top;
 
             // borderにVerticalAlignmentを指定すると高さがlabelに合わせて変更されてしまうため

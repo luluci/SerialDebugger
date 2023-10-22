@@ -1305,6 +1305,15 @@ namespace SerialDebugger.Settings
             {
                 throw new Exception($"groups[{id}]({group.Name}): begin/end がfields定義数を超過しています。");
             }
+            Brush color;
+            if (Object.ReferenceEquals(group.Color, string.Empty))
+            {
+                color = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                color = new SolidColorBrush((Color)ColorConverter.ConvertFromString(group.Color));
+            }
             Brush bgcolor;
             if (Object.ReferenceEquals(group.BackgroundColor, string.Empty))
             {
@@ -1315,7 +1324,7 @@ namespace SerialDebugger.Settings
                 bgcolor = new SolidColorBrush((Color)ColorConverter.ConvertFromString(group.BackgroundColor));
             }
             // group初期化
-            var g = new Group(id, group.Name, group.Begin, group.End, group.IdBegin, bgcolor);
+            var g = new Group(id, group.Name, group.Begin, group.End, group.IdBegin, color, bgcolor);
             // field
             // bit位置
             g.BitBegin = f.Fields[g.Begin].BytePos * 8 + f.Fields[g.Begin].BitPos;

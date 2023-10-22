@@ -27,6 +27,7 @@ namespace SerialDebugger.Comm
         // group内表示ID開始値
         public int IdBegin { get; }
         //
+        public Brush Color { get; }
         public Brush BackgroundColor { get; }
 
         // 表示用データ
@@ -34,13 +35,14 @@ namespace SerialDebugger.Comm
         public int BitEnd { get; set; }
         public int BitLen { get; set; }
 
-        public Group(int id, string name, int begin, int end, int id_begin, Brush bgcolor)
+        public Group(int id, string name, int begin, int end, int id_begin, Brush color, Brush bgcolor)
         {
             Id = id;
             Name = name;
             Begin = begin;
             End = end;
             IdBegin = id_begin;
+            Color = color;
             BackgroundColor = bgcolor;
         }
 

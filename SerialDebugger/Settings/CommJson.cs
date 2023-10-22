@@ -375,6 +375,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
 
+            [JsonPropertyName("color")]
+            public string Color { get; set; } = string.Empty;
+
             [JsonPropertyName("bgcolor")]
             public string BackgroundColor { get; set; } = string.Empty;
 

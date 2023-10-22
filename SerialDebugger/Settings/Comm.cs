@@ -14,6 +14,7 @@ using System.Windows;
 
 namespace SerialDebugger.Settings
 {
+    using System.Windows.Media;
     using Utility;
 
     class Comm : BindableBase, IDisposable
@@ -160,7 +161,7 @@ namespace SerialDebugger.Settings
             }
 
 
-            // AutoTx整合性チェック
+            // Rx整合性チェック
             ValidateRx();
         }
 
@@ -891,6 +892,7 @@ namespace SerialDebugger.Settings
                     }
                 }
                 // Groups作成
+                // Fieldsに応じて情報作成するため,Fields作成後に実施
                 MakeGroups(frame, f);
                 // TxFrame作成後にBackupBuffer作成
                 InitTxBuffers(frame, f);
@@ -1284,23 +1286,48 @@ namespace SerialDebugger.Settings
             {
                 for (int group_id=0; group_id<frame.Groups.Count; group_id++)
                 {
-                    f.Groups.Add(MakeGroup(frame.Groups[group_id], group_id));
-                }
-            }
-            // 送信データバックアップバッファ初期化
-            if (!(frame.BackupBuffers is null))
-            {
-                // バックアップバッファは[1]から開始
-                // Jsonバックアップバッファ設定は[0]から開始
-                for (int i = 0; i < frame.BackupBuffers.Count; i++)
-                {
-                    InitTxBuffer(frame.BackupBuffers[i], f, i + 1);
+                    f.Groups.Add(MakeGroup(frame.Groups[group_id], group_id, f));
                 }
             }
         }
-        private Group MakeGroup(Json.CommGroup group, int id)
+        private Group MakeGroup(Json.CommGroup group, int id, TxFrame f)
         {
-            var g = new Group(id, group.Name, group.Begin, group.End, group.IdBegin);
+            // check
+            if (Object.ReferenceEquals(group.Name, string.Empty))
+            {
+                throw new Exception($"groups[{id}]: nameを指定してください。");
+            }
+            if (group.Begin > group.End)
+            {
+                throw new Exception($"groups[{id}]({group.Name}): begin <= end で設定してください。");
+            }
+            if (group.Begin >= f.Fields.Count || group.End >= f.Fields.Count)
+            {
+                throw new Exception($"groups[{id}]({group.Name}): begin/end がfields定義数を超過しています。");
+            }
+            Brush bgcolor;
+            if (Object.ReferenceEquals(group.BackgroundColor, string.Empty))
+            {
+                bgcolor = SystemColors.ControlBrush;
+            }
+            else
+            {
+                bgcolor = new SolidColorBrush((Color)ColorConverter.ConvertFromString(group.BackgroundColor));
+            }
+            // group初期化
+            var g = new Group(id, group.Name, group.Begin, group.End, group.IdBegin, bgcolor);
+            // field
+            // bit位置
+            g.BitBegin = f.Fields[g.Begin].BytePos * 8 + f.Fields[g.Begin].BitPos;
+            g.BitEnd = g.BitBegin;
+            int bit_diff = 0;
+            for (int field_id = group.Begin; field_id <= group.End; field_id++)
+            {
+                bit_diff += f.Fields[field_id].BitSize;
+            }
+            g.BitLen = bit_diff;
+            g.BitEnd = g.BitBegin + bit_diff;
+
             return g;
         }
 

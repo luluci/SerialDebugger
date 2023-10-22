@@ -18,7 +18,7 @@
 			{
 				"byte_index": 25,
 				"bit_index": 25,
-				"group": 20,
+				"group": 40,
 				"field_value": 40,
 				"field_name": 100,
 				"field_input": 80,
@@ -47,10 +47,18 @@
 					"name": "char_1",
 					"groups": [
 						{
-							"name": "group1",
-							"begin": 2,
+							"name": "header",
+							"bgcolor": "#FF8080",
+							"begin": 0,
 							"end": 3,
 							"id_begin": 1
+						},
+						{
+							"name": "body",
+							"bgcolor": "#8080FF",
+							"begin": 4,
+							"end": 7,
+							"id_begin": -10
 						}
 					],
 					"fields": [
@@ -66,12 +74,23 @@
 					"backup_buffer_size": 2
 				},
 				{
-					"name": "str_1",
+					"name": "test_2",
+					"groups": [
+						{
+							"name": "group1",
+							"begin": 1,
+							"end": 6,
+							"id_begin": 1
+						}
+					],
 					"fields": [
-						{ "name": "str3", "type": "String", "string": "G" },
-						{ "name": "str3", "type": "String", "string": "HI" },
-						{ "name": "str3", "type": "String", "string": "JKL" },
-						{ "name": "str3", "type": "String", "string": "MNOPQRS" }
+						{ "name": "value1", "bit_size": 3, "value": 0 },
+						{ "name": "value2", "bit_size": 3, "value": 0 },
+						{ "name": "value3", "bit_size": 3, "value": 0 },
+						{ "name": "value4", "bit_size": 1, "value": 0 },
+						{ "name": "value5", "bit_size": 7, "value": 0 },
+						{ "name": "value6", "bit_size": 12, "value": 0 },
+						{ "name": "value7", "bit_size": 17, "value": 0 }
 					],
 					"backup_buffer_size": 2
 				}

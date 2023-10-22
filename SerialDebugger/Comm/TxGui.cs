@@ -283,10 +283,11 @@ namespace SerialDebugger.Comm
         {
             int bitlength = frame.Length * 8;
             int width = 0;
+            ColumnInfo info;
             // Gridに列を作成
             for (int col_idx = 0; col_idx < col_info_sort.Length; col_idx++)
             {
-                var info = col_info_sort[col_idx];
+                info = col_info_sort[col_idx];
                 if (info.IsEnable)
                 {
                     for (int col_idx2 = 0; col_idx2 < info.ColLen; col_idx2++)
@@ -315,7 +316,6 @@ namespace SerialDebugger.Comm
                 // bit単位でfieldサイズを指定可能でるため、1bitずつループして表示を作成する
                 for (int bit = 0; bit < bitlength; bit++)
                 {
-                    ColumnInfo info;
                     is_byte = ((bit % 8) == 0);
                     // column作成: byte
                     // 8bit区切り＝1バイト区切りの表示項目作成
@@ -467,8 +467,45 @@ namespace SerialDebugger.Comm
                 }
 
             }
+            // group表示
+            MakeBodyGroup(setting, col_info, col_info_sort, grid, frame, frame_no);
 
             return width;
+        }
+        private static void MakeBodyGroup(Settings.SettingInfo setting, ColumnInfo[] col_info, ColumnInfo[] col_info_sort, Grid grid, TxFrame frame, int frame_no)
+        {
+            var info = col_info[(int)SettingGui.Col.Group];
+            if (info.IsEnable)
+            {
+                int bit_pos = 0;
+
+                foreach (var group in frame.Groups)
+                {
+                    // 表示に隙間があったら埋める
+                    if (bit_pos < group.BitBegin)
+                    {
+                        int bit_diff = group.BitBegin - bit_pos;
+                        grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit_pos, info.Order, bit_diff, info.ColLen));
+                    }
+                    bit_pos = group.BitBegin;
+
+                    // group作成
+                    // Name列作成
+                    grid.Children.Add(Gui.MakeGroupGuiName(group, group.BitBegin, info.Order));
+                    // Id列作成
+                    Gui.MakeGroupGuiByteId(group, grid, group.BitBegin, info.Order+1);
+
+                    //
+                    bit_pos += group.BitLen;
+                }
+                // 表示に隙間があったら埋める
+                int bitlength = frame.Length * 8;
+                if (bit_pos < bitlength)
+                {
+                    int bit_diff = bitlength - bit_pos;
+                    grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit_pos, info.Order, bit_diff, info.ColLen));
+                }
+            }
         }
 
         /// <summary>

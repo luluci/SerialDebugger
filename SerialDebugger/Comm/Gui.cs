@@ -618,5 +618,62 @@ namespace SerialDebugger.Comm
             return border;
         }
 
+
+
+        public static UIElement MakeGroupGuiName(Group group, int row, int col)
+        {
+            var label = new Label();
+            label.Content = group.Name;
+            label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            label.Width = label.DesiredSize.Width;
+            label.Height = 20;
+            label.LayoutTransform = new RotateTransform(-90);
+            label.Padding = new Thickness(0,0,2,0);
+            label.HorizontalContentAlignment = HorizontalAlignment.Right;
+            //label.VerticalContentAlignment = VerticalAlignment.Top;
+
+            // borderにVerticalAlignmentを指定すると高さがlabelに合わせて変更されてしまうため
+            // gridを介して作成する。
+            var grid = new Grid();
+            grid.VerticalAlignment = VerticalAlignment.Top;
+            grid.HorizontalAlignment = HorizontalAlignment.Center;
+            grid.Children.Add(label);
+            //
+            var border = Gui.MakeBorder1();
+            border.Child = grid;
+            border.Background = group.BackgroundColor;
+            Grid.SetRow(border, row);
+            Grid.SetColumn(border, col);
+            int bit_len = group.BitEnd - group.BitBegin;
+            Grid.SetRowSpan(border, bit_len);
+            // Grid.SetColumnSpan(border, 1);
+
+            return border;
+        }
+
+        public static void MakeGroupGuiByteId(Group group, Grid grid, int row, int col)
+        {
+            // バイト単位での番号付けをする
+            // bit余りがある場合も通信バッファとしてのバイト区切りで表示する
+            int id = group.IdBegin;
+            int bit_pos = row;
+            int bit_len = 0;
+
+            while (bit_pos < group.BitEnd)
+            {
+                // 次のバイト位置を算出
+                bit_len = 8 - (bit_pos % 8);
+                if (bit_pos + bit_len > group.BitEnd)
+                {
+                    bit_len = group.BitEnd - bit_pos;
+                }
+
+                grid.Children.Add(Gui.MakeTextBlockStyle1($"{id}", bit_pos, col, bit_len, 1));
+                //
+                id++;
+                bit_pos += bit_len;
+            }
+            
+        }
     }
 }

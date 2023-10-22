@@ -890,6 +890,8 @@ namespace SerialDebugger.Settings
                         buff.Data = buff.Buffer.ToArray();
                     }
                 }
+                // Groups作成
+                MakeGroups(frame, f);
                 // TxFrame作成後にBackupBuffer作成
                 InitTxBuffers(frame, f);
 
@@ -1273,6 +1275,33 @@ namespace SerialDebugger.Settings
             }
 
             return result;
+        }
+
+        private void MakeGroups(Json.CommTxFrame frame, TxFrame f)
+        {
+            // groups解析
+            if (!(frame.Groups is null))
+            {
+                for (int group_id=0; group_id<frame.Groups.Count; group_id++)
+                {
+                    f.Groups.Add(MakeGroup(frame.Groups[group_id], group_id));
+                }
+            }
+            // 送信データバックアップバッファ初期化
+            if (!(frame.BackupBuffers is null))
+            {
+                // バックアップバッファは[1]から開始
+                // Jsonバックアップバッファ設定は[0]から開始
+                for (int i = 0; i < frame.BackupBuffers.Count; i++)
+                {
+                    InitTxBuffer(frame.BackupBuffers[i], f, i + 1);
+                }
+            }
+        }
+        private Group MakeGroup(Json.CommGroup group, int id)
+        {
+            var g = new Group(id, group.Name, group.Begin, group.End, group.IdBegin);
+            return g;
         }
 
 

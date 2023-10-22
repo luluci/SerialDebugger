@@ -21,6 +21,7 @@ namespace SerialDebugger.Settings
         {
             ByteIndex,      // Byteインデックス表示列
             BitIndex,       // Bitインデックス表示列
+            Group,          // グループ表示列
             FieldValue,     // Field設定値表示列
             FieldName,      // Field名表示列
             FieldInput,     // Field値入力列
@@ -39,8 +40,8 @@ namespace SerialDebugger.Settings
         {
             // 初期値を入れておく
             Window = new WindowInfo { Width = 900, Height = 700 };
-            ColOrder = new int[(int)Col.Size] { 0, 1, 2, 3, 4, 5, 6, 7, };
-            ColWidth = new int[(int)Col.Size] { 25, 25, 40, 80, 80, 50, 10, 80 };
+            ColOrder = new int[(int)Col.Size] { 0, 1, -1, 2, 3, 4, 5, 6, 7, };
+            ColWidth = new int[(int)Col.Size] { 25, 25, 20, 40, 80, 80, 50, 10, 80 };
         }
         
         public void AnalyzeJson(Json.Gui json)
@@ -66,6 +67,7 @@ namespace SerialDebugger.Settings
             {
                 ColOrder[(int)Col.ByteIndex] = json.ColOrder.ByteIndex;
                 ColOrder[(int)Col.BitIndex] = json.ColOrder.BitIndex;
+                ColOrder[(int)Col.Group] = json.ColOrder.Group;
                 ColOrder[(int)Col.FieldValue] = json.ColOrder.FieldValue;
                 ColOrder[(int)Col.FieldName] = json.ColOrder.FieldName;
                 ColOrder[(int)Col.FieldInput] = json.ColOrder.FieldInput;
@@ -77,6 +79,7 @@ namespace SerialDebugger.Settings
             {
                 ColWidth[(int)Col.ByteIndex] = json.ColWidth.ByteIndex;
                 ColWidth[(int)Col.BitIndex] = json.ColWidth.BitIndex;
+                ColWidth[(int)Col.Group] = json.ColWidth.Group;
                 ColWidth[(int)Col.FieldValue] = json.ColWidth.FieldValue;
                 ColWidth[(int)Col.FieldName] = json.ColWidth.FieldName;
                 ColWidth[(int)Col.FieldInput] = json.ColWidth.FieldInput;
@@ -121,6 +124,9 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("bit_index")]
             public int BitIndex { get; set; } = 0;
+
+            [JsonPropertyName("group")]
+            public int Group { get; set; } = -1;
 
             [JsonPropertyName("field_value")]
             public int FieldValue { get; set; } = 0;

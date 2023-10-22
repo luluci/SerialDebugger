@@ -212,6 +212,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("fields")]
             public IList<CommField> Fields { get; set; }
 
+            [JsonPropertyName("groups")]
+            public IList<CommGroup> Groups { get; set; }
+
             [JsonPropertyName("backup_buffer_size")]
             public int BackupBufferSize { get; set; } = 0;
 
@@ -365,6 +368,22 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("value_ascii")]
             public string ValueAscii { get; set; } = string.Empty;
+        }
+
+        public class CommGroup
+        {
+            [JsonPropertyName("name")]
+            public string Name { get; set; } = string.Empty;
+
+            [JsonPropertyName("begin")]
+            public int Begin { get; set; } = 0;
+
+            [JsonPropertyName("end")]
+            public int End { get; set; } = -1;
+
+            [JsonPropertyName("id_begin")]
+            public int IdBegin { get; set; } = 0;
+
         }
 
     }

@@ -1,29 +1,29 @@
 {
-	"name": "Test_field定義_Char_1",
+	"name": "Test_field定義_Group_1",
 	
 	"gui": {
 		"column_order":
 			{
-				"byte_index": 0,
-				"bit_index": 1,
-				"group": 2,
-				"field_value": 3,
-				"field_name": 4,
-				"field_input": 5,
-				"tx_bytes": 6,
-				"spacer": 7,
-				"tx_buffer": 8
+				"byte_index": 10,
+				"bit_index": 5,
+				"group": 20,
+				"field_value": 30,
+				"field_name": 25,
+				"field_input": 26,
+				"tx_bytes": 60,
+				"spacer": 70,
+				"tx_buffer": 80
 			},
 		"column_width":
 			{
 				"byte_index": 25,
 				"bit_index": 25,
-				"group": 40,
+				"group": 20,
 				"field_value": 40,
 				"field_name": 100,
-				"field_input": 110,
+				"field_input": 80,
 				"tx_bytes": 50,
-				"spacer": 20,
+				"spacer": 10,
 				"tx_buffer": 80
 			}
 	},
@@ -45,6 +45,14 @@
 			"frames": [
 				{
 					"name": "char_1",
+					"groups": [
+						{
+							"name": "group1",
+							"begin": 2,
+							"end": 3,
+							"id_begin": 1
+						}
+					],
 					"fields": [
 						{ "name": "str1[0]", "type": "Char", "char": "A" },
 						{ "name": "separator", "bit_size": 8, "value": 0 },

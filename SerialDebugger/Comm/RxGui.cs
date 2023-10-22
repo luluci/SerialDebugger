@@ -19,6 +19,7 @@ namespace SerialDebugger.Comm
         {
             0,      // Byteインデックス表示列
             1,       // Bitインデックス表示列
+            -1,     // Group表示列
             -1,     // Field設定値表示列
             2,      // Field名表示列
             -1,     // Field値入力列

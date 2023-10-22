@@ -41,6 +41,9 @@ namespace SerialDebugger.Comm
         // LogをVisualizeするか
         public bool IsLogVisualize { get; }
 
+        //
+        public ReactiveCollection<Group> Groups { get; set; }
+
         /// <summary>
         /// TxFrame全体の変更状況
         /// </summary>
@@ -73,6 +76,9 @@ namespace SerialDebugger.Comm
 
             Buffers = new ReactiveCollection<TxFieldBuffer>();
             Buffers.AddTo(Disposables);
+            //
+            Groups = new ReactiveCollection<Group>();
+            Groups.AddTo(Disposables);
             //
             ChangeState = new ReactivePropertySlim<Field.ChangeStates>();
             ChangeState.AddTo(Disposables);

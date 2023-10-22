@@ -76,6 +76,7 @@
     <Compile Include="Comm\AutoTxGui.cs" />
     <Compile Include="Comm\AutoTxGuiConverter.cs" />
     <Compile Include="Comm\AutoTxJob.cs" />
+    <Compile Include="Comm\Group.cs" />
     <Compile Include="Comm\Gui.cs" />
     <Compile Include="Comm\InputString.xaml.cs">
       <DependentUpon>InputString.xaml</DependentUpon>

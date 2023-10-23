@@ -207,8 +207,8 @@ namespace SerialDebugger
                         inputString.vm.TxFieldBufferRef = buffer;
                         inputString.vm.Caption.Value = $"{field.selecter.StrLen}バイトまで受付可";
                         inputString.vm.InputString.Value = frame.MakeCharField2String(field.Id, buffer.Id);
-                        var pt = buffer.FieldValues[field.Id].UI.PointToScreen(new Point(0.0d, 0.0d));
-                        inputString.Top = pt.Y + buffer.FieldValues[field.Id].UI.RenderSize.Height;
+                        var pt = GetInputStringPos(buffer.FieldValues[field.Id].UI);
+                        inputString.Top = pt.Y;
                         inputString.Left = pt.X;
                         inputString.Visibility = Visibility.Visible;
                         inputString.Show();
@@ -414,6 +414,72 @@ namespace SerialDebugger
                 BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
                 Logger.Add("有効な設定ファイルが存在しません。");
             }
+        }
+
+        private Point GetInputStringPos(UIElement ui)
+        {
+            var wnd_pt = GetUIPos(window);
+            var wnd_w = window.RenderSize.Width;
+            var wnd_h = window.RenderSize.Height;
+            var wnd_right = wnd_pt.X + wnd_w;
+            var wnd_bottom = wnd_pt.Y + wnd_h;
+            var ui_pt = GetUIPos(ui);
+            var ui_w = ui.RenderSize.Width;
+            var ui_h = ui.RenderSize.Height;
+            var ui_right = ui_pt.X + ui_w;
+            var ui_bottom = ui_pt.Y + ui_h;
+            var popup_w = inputString.RenderSize.Width;
+            var popup_h = inputString.RenderSize.Height;
+
+            if (ui_bottom + popup_h <= wnd_bottom)
+            {
+                if (ui_pt.X + popup_w <= wnd_right)
+                {
+                    ui_pt.Y = ui_bottom;
+                    return ui_pt;
+                }
+                else if (ui_right - popup_w >= wnd_pt.X)
+                {
+                    ui_pt.X = ui_right - popup_w;
+                    ui_pt.Y = ui_bottom;
+                    return ui_pt;
+                }
+                else
+                {
+                    // いずれにせよはみ出る場合はボタンの左下を起点に表示
+                }
+            }
+            else if (ui_pt.Y - popup_h >= wnd_pt.Y)
+            {
+                if (ui_pt.X + popup_w <= wnd_right)
+                {
+                    ui_pt.Y = ui_pt.Y - popup_h;
+                    return ui_pt;
+                }
+                else if (ui_right - popup_w >= wnd_pt.X)
+                {
+                    ui_pt.X = ui_right - popup_w;
+                    ui_pt.Y = ui_pt.Y - popup_h;
+                    return ui_pt;
+                }
+                else
+                {
+                    // いずれにせよはみ出る場合はボタンの左下を起点に表示
+                }
+            }
+            else
+            {
+                // いずれにせよはみ出る場合はボタンの左下を起点に表示
+            }
+            // 
+            ui_pt.Y = ui_bottom;
+            return ui_pt;
+        }
+        public Point GetUIPos(UIElement ui)
+        {
+            var pt = ui.PointToScreen(new Point(0.0d, 0.0d));
+            var transform = PresentationSource.FromVisual(window).CompositionTarget.TransformFromDevice;
+            return transform.Transform(pt);
         }
 
         public async Task UpdateSettingAsync()

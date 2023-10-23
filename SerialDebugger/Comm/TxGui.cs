@@ -485,7 +485,7 @@ namespace SerialDebugger.Comm
                     if (bit_pos < group.BitBegin)
                     {
                         int bit_diff = group.BitBegin - bit_pos;
-                        grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit_pos, info.Order, bit_diff, info.ColLen));
+                        grid.Children.Add(Gui.MakeTextBlockStyle1("", bit_pos, info.Order, bit_diff, info.ColLen));
                     }
                     bit_pos = group.BitBegin;
 
@@ -503,7 +503,7 @@ namespace SerialDebugger.Comm
                 if (bit_pos < bitlength)
                 {
                     int bit_diff = bitlength - bit_pos;
-                    grid.Children.Add(Gui.MakeTextBlockStyle1("-", bit_pos, info.Order, bit_diff, info.ColLen));
+                    grid.Children.Add(Gui.MakeTextBlockStyle1("", bit_pos, info.Order, bit_diff, info.ColLen));
                 }
             }
         }

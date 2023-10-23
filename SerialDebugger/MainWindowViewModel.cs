@@ -421,8 +421,9 @@ namespace SerialDebugger
             var wnd_pt = GetUIPos(window);
             var wnd_w = window.RenderSize.Width;
             var wnd_h = window.RenderSize.Height;
+            double titleBarHeight = SystemParameters.CaptionHeight;
             var wnd_right = wnd_pt.X + wnd_w;
-            var wnd_bottom = wnd_pt.Y + wnd_h;
+            var wnd_bottom = wnd_pt.Y + wnd_h - titleBarHeight * 1.5;
             var ui_pt = GetUIPos(ui);
             var ui_w = ui.RenderSize.Width;
             var ui_h = ui.RenderSize.Height;
@@ -430,6 +431,7 @@ namespace SerialDebugger
             var ui_bottom = ui_pt.Y + ui_h;
             var popup_w = inputString.RenderSize.Width;
             var popup_h = inputString.RenderSize.Height;
+            //var screen = GetWholeScreenRect();
 
             if (ui_bottom + popup_h <= wnd_bottom)
             {
@@ -480,6 +482,33 @@ namespace SerialDebugger
             var pt = ui.PointToScreen(new Point(0.0d, 0.0d));
             var transform = PresentationSource.FromVisual(window).CompositionTarget.TransformFromDevice;
             return transform.Transform(pt);
+        }
+        public System.Drawing.Rectangle GetWholeScreenRect()
+        {
+            int left = 0;
+            int right = 0;
+            int top = 0;
+            int bottom = 0;
+            foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+            {
+                if (left > screen.Bounds.Left)
+                {
+                    left = screen.Bounds.Left;
+                }
+                if (right < screen.Bounds.Right)
+                {
+                    right = screen.Bounds.Right;
+                }
+                if (top > screen.Bounds.Top)
+                {
+                    top = screen.Bounds.Top;
+                }
+                if (bottom < screen.Bounds.Bottom)
+                {
+                    bottom = screen.Bounds.Bottom;
+                }
+            }
+            return new System.Drawing.Rectangle(left, top, right - left, bottom - top);
         }
 
         public async Task UpdateSettingAsync()

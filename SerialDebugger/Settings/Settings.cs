@@ -169,7 +169,7 @@ namespace SerialDebugger.Settings
             }
             catch (Exception ex)
             {
-                info.Comm.ClearDict();
+                info.Comm.Clear();
                 Logger.AddException(ex, "設定ファイル読み込みエラー:");
             }
             return false;

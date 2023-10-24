@@ -54,8 +54,13 @@ namespace SerialDebugger.Settings
             AutoTxJobNameDict = new Dictionary<string, int>();
         }
 
-        public void ClearDict()
+        public void Clear()
         {
+            //
+            Tx.Clear();
+            Rx.Clear();
+            AutoTx.Clear();
+            //
             TxNameDict.Clear();
             RxNameDict.Clear();
             RxPatternDict.Clear();

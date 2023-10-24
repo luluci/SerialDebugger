@@ -44,6 +44,8 @@ namespace SerialDebugger
         // Comm: Tx
         public ReactiveCollection<Comm.TxFrame> TxFrames { get; set; }
         public ReactiveCommand OnClickTxDataSend { get; set; }
+        public ReactiveCommand OnClickTxDataCopy { get; set; }
+        
         // Tx Shortcut定義
         public class TxShortcutNode
         {
@@ -179,6 +181,24 @@ namespace SerialDebugger
                 .Subscribe(x => {
                     var frame = (Comm.TxFieldBuffer)x;
                     SerialTxBufferSendFix(frame);
+                })
+                .AddTo(Disposables);
+            OnClickTxDataCopy = new ReactiveCommand();
+            OnClickTxDataCopy
+                .Subscribe(x => {
+                    var frame = (Comm.TxFieldBuffer)x;
+                    int idx = 0;
+                    var sb = new StringBuilder();
+                    sb.Append("\"value\": [");
+                    sb.Append($" {frame.FieldValues[idx].Value.Value}");
+                    idx++;
+                    for (; idx < frame.FieldValues.Count; idx++)
+                    {
+                        sb.Append($", {frame.FieldValues[idx].Value.Value}");
+                    }
+                    sb.Append(" ]");
+                    // クリップボードにコピー
+                    Clipboard.SetText(sb.ToString());
                 })
                 .AddTo(Disposables);
 

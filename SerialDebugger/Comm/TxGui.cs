@@ -34,11 +34,11 @@ namespace SerialDebugger.Comm
             foreach (var frame in frames)
             {
                 // frameごとにgroup定義があるのでここで列表示情報を作成する
-                var (col_info, col_info_sort) = MakeColInfo(Gui.setting, frame, frame_no);
+                var (col_info, col_info_sort, col_max) = MakeColInfo(Gui.setting, frame, frame_no);
                 // frameごとにGUI作成
                 var (grid1, grid2, grid3) = MakeBase(grid, margin_l);
-                var w = MakeHeader(Gui.setting, col_info, col_info_sort, grid2, frame, frame_no);
-                w = MakeBody(Gui.setting, col_info, col_info_sort, grid3, frame, frame_no);
+                var w = MakeHeader(Gui.setting, col_info, col_info_sort, col_max, grid2, frame, frame_no);
+                w = MakeBody(Gui.setting, col_info, col_info_sort, col_max, grid3, frame, frame_no);
 
                 //margin_l += (grid1.Width + 50);
                 margin_l += (w + 30);
@@ -57,7 +57,7 @@ namespace SerialDebugger.Comm
             public int ColLen { get; set; }
         }
 
-        private static (ColumnInfo[], ColumnInfo[]) MakeColInfo(Settings.SettingInfo setting, TxFrame frame, int frame_no)
+        private static (ColumnInfo[], ColumnInfo[], int) MakeColInfo(Settings.SettingInfo setting, TxFrame frame, int frame_no)
         {
             var col_array = new ColumnInfo[(int)SettingGui.Col.Size];
             var col_array_sort = new ColumnInfo[(int)SettingGui.Col.Size];
@@ -115,7 +115,7 @@ namespace SerialDebugger.Comm
                 }
             }
 
-            return (col_array, col_array_sort);
+            return (col_array, col_array_sort, new_order);
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace SerialDebugger.Comm
             return (grid, grid_header, grid_body);
         }
 
-        private static int MakeHeader(Settings.SettingInfo setting, ColumnInfo[] col_info, ColumnInfo[] col_info_sort, Grid grid, TxFrame frame, int frame_no)
+        private static int MakeHeader(Settings.SettingInfo setting, ColumnInfo[] col_info, ColumnInfo[] col_info_sort, int col_max, Grid grid, TxFrame frame, int frame_no)
         {
             int width = 0;
             // Gridに列を作成
@@ -197,6 +197,12 @@ namespace SerialDebugger.Comm
             {
                 ColumnInfo info;
                 // Frame名称作成
+                // 
+                int frame_col_len = 5;
+                if (frame_col_len >= col_max)
+                {
+                    frame_col_len = col_max - 1;
+                }
                 string name;
                 if (Setting.Data.Comm.DisplayId)
                 {
@@ -206,7 +212,7 @@ namespace SerialDebugger.Comm
                 {
                     name = frame.Name;
                 }
-                grid.Children.Add(Gui.MakeTextBlockStyle2(name, 0, 0, -1, 5));
+                grid.Children.Add(Gui.MakeTextBlockStyle2(name, 0, 0, -1, frame_col_len));
                 // column作成: byte
                 info = col_info[(int)SettingGui.Col.ByteIndex];
                 if (info.IsEnable)
@@ -241,6 +247,8 @@ namespace SerialDebugger.Comm
                 info = col_info[(int)SettingGui.Col.FieldInput];
                 if (info.IsEnable)
                 {
+                    // Copyボタン作成
+                    grid.Children.Add(MakeTxCopyButton($"TxFrames[{frame_no}].Buffers[0]", "OnClickTxDataCopy", 0, info.Order));
                     grid.Children.Add(Gui.MakeTextBlockStyle1("Input", 1, info.Order, -1, info.ColLen));
                 }
                 // Buffer列作成
@@ -279,7 +287,7 @@ namespace SerialDebugger.Comm
             return width;
         }
 
-        private static int MakeBody(Settings.SettingInfo setting, ColumnInfo[] col_info, ColumnInfo[] col_info_sort, Grid grid, TxFrame frame, int frame_no)
+        private static int MakeBody(Settings.SettingInfo setting, ColumnInfo[] col_info, ColumnInfo[] col_info_sort, int col_max, Grid grid, TxFrame frame, int frame_no)
         {
             int bitlength = frame.Length * 8;
             int width = 0;
@@ -542,6 +550,36 @@ namespace SerialDebugger.Comm
             var bind_bgcolor = new Binding(buff_path + ".ChangeState.Value");
             bind_bgcolor.Converter = Gui.TxSendFixBGColorConverter;
             btn.SetBinding(Button.BorderBrushProperty, bind_bgcolor);
+
+            return btn;
+        }
+
+        
+        private static Button MakeTxCopyButton(string buff_path, string cmnd_path, int row, int col, int rowspan = -1, int colspan = -1)
+        {
+            var btn = new Button();
+            btn.Height = 20;
+            btn.Margin = new Thickness(5, 0, 5, 0);
+            btn.VerticalAlignment = VerticalAlignment.Center;
+            Grid.SetRow(btn, row);
+            Grid.SetColumn(btn, col);
+            if (rowspan != -1)
+            {
+                Grid.SetRowSpan(btn, rowspan);
+            }
+            if (colspan != -1)
+            {
+                Grid.SetColumnSpan(btn, colspan);
+            }
+
+            // Binding
+            // Command
+            var bind_cmnd = new Binding(cmnd_path);
+            var bind_param = new Binding(buff_path);
+            btn.SetBinding(Button.CommandProperty, bind_cmnd);
+            btn.SetBinding(Button.CommandParameterProperty, bind_param);
+            // Text
+            btn.Content = "Copy";
 
             return btn;
         }

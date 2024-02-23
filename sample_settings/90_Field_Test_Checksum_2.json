@@ -1,0 +1,89 @@
+{
+	"name": "Test_field定義_Checksum_2",
+	
+	"comm": {
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_1",
+					"fields": [
+						{
+							"name": "bit0",
+							"bit_size": 1,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "bit2-3",
+							"bit_size": 2,
+							"value": 3,
+							"type": "Edit"
+						},
+						{
+							"name": "bit4-7",
+							"bit_size": 5,
+							"value": 5,
+							"type": "Edit"
+						},
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 1,
+								"method": "Sum"
+							}
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 1,
+								"method": "Sum"
+							}
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 4,
+								"method": "Sum"
+							}
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 4,
+								"method": "2compl"
+							}
+						}
+					]
+				}
+			]
+		}
+	}
+}

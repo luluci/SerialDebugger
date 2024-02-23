@@ -1016,8 +1016,6 @@ namespace SerialDebugger.Settings
             // チェックサム
             if (f.HasChecksum)
             {
-                var i = f.ChecksumIndex;
-                var field = f.Fields[i];
                 f.UpdateChecksum(fb);
             }
         }

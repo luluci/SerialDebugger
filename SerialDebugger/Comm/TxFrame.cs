@@ -53,8 +53,8 @@ namespace SerialDebugger.Comm
         public Point Point;
 
         // checksum
-        public bool HasChecksum { get; set; } = false;
-        public int ChecksumIndex { get; set; }
+        public bool HasChecksum { get; set; }
+        public List<Field> ChecksumRefList { get; set; }
 
         public TxFrame(int id, string name, int buffer_size, bool ascii, bool log_visualize)
         {
@@ -113,6 +113,10 @@ namespace SerialDebugger.Comm
                 }
             });
             Buffers.AddTo(Disposables);
+
+            // checksum
+            HasChecksum = false;
+            ChecksumRefList = new List<Field>();
         }
 
         public void Add(Field field)
@@ -135,28 +139,28 @@ namespace SerialDebugger.Comm
             int bit_pos = 0;
             int byte_pos = 0;
             int disp_len = 0;
-            foreach (var f in Fields)
+            foreach (var field in Fields)
             {
                 // BuffersにFieldを登録
                 foreach (var buff in Buffers)
                 {
-                    buff.FieldValues.Add(new FieldValue(f));
+                    buff.FieldValues.Add(new FieldValue(field));
                 }
                 // Field位置セット
-                f.BitPos = bit_pos;
-                f.BytePos = byte_pos;
-                f.ByteSize = (bit_pos + f.BitSize + 7) / 8;
+                field.BitPos = bit_pos;
+                field.BytePos = byte_pos;
+                field.ByteSize = (bit_pos + field.BitSize + 7) / 8;
                 // Frame情報更新
-                BitLength += f.BitSize;
+                BitLength += field.BitSize;
                 // 送信生データ作成
-                inival = f.InitValue;
-                if (f.IsReverseEndian)
+                inival = field.InitValue;
+                if (field.IsReverseEndian)
                 {
-                    inival = f.ReverseEndian(inival);
+                    inival = field.ReverseEndian(inival);
                 }
-                value |= (inival & f.Mask) << f.BitPos;
+                value |= (inival & field.Mask) << field.BitPos;
                 // Field位置更新
-                bit_pos += f.BitSize;
+                bit_pos += field.BitSize;
                 while (bit_pos >= 8)
                 {
                     // 送信生データに1バイトたまったら送信バイトシーケンスに登録
@@ -172,23 +176,24 @@ namespace SerialDebugger.Comm
                     bit_pos -= 8;
                 }
                 //
-                if ((f.BitSize % 8) == 0 && f.BitPos == 0)
+                if ((field.BitSize % 8) == 0 && field.BitPos == 0)
                 {
-                    f.IsByteDisp = true;
+                    field.IsByteDisp = true;
                 }
                 // 表示データ数
-                disp_len += f.InnerFields.Count;
+                disp_len += field.InnerFields.Count;
                 // checksum
-                if (f.IsChecksum)
+                if (field.IsChecksum)
                 {
-                    // ChecksumFieldは1つだけ対応
-                    if (HasChecksum)
-                    {
-                        Logger.Add($"チェックサムフィールドは1つだけ指定してください : Frame={Name} Field={Fields[ChecksumIndex].Name}");
-                    }
+                    // ChecksumField複数設定を許可する
                     // 後優先で上書きする
                     HasChecksum = true;
-                    ChecksumIndex = field_no;
+                    ChecksumRefList.Add(field);
+                }
+                //
+                if (field.Id != field_no)
+                {
+                    Logger.Add($"Logic error?");
                 }
                 //
                 field_no++;
@@ -217,25 +222,28 @@ namespace SerialDebugger.Comm
             // チェックサム整合性チェック
             if (HasChecksum)
             {
-                var cs = Fields[ChecksumIndex];
-                // チェックサム計算範囲末尾省略時はチェックサムノード手前を指定
-                if (cs.Checksum.End == -1)
+                foreach (var cs in ChecksumRefList)
                 {
-                    cs.Checksum.End = cs.BytePos - 1;
+                    // チェックサム計算範囲末尾省略時はチェックサムノード手前を指定
+                    if (cs.Checksum.End == -1)
+                    {
+                        cs.Checksum.End = cs.BytePos - 1;
+                    }
+                    // チェックサム計算範囲がChecksumノードをまたがる、または、要素数を上回るときNG
+                    if ((cs.Checksum.End >= cs.BytePos) || (cs.Checksum.End >= Length))
+                    {
+                        cs.Checksum.End = cs.BytePos > Length ? Length : cs.BytePos;
+                        cs.Checksum.End--;
+                        Logger.Add($"Checksum Range is invalid: Fix to {cs.Checksum.Begin}-{cs.Checksum.End}");
+                    }
+                    // チェックサム計算して初期化
+                    var sum = CalcChecksum(Buffers[0].Buffer, cs);
+                    foreach (var buff in Buffers)
+                    {
+                        buff.FieldValues[cs.Id].Value.Value = sum;
+                    }
                 }
-                // チェックサム計算範囲がChecksumノードをまたがる、または、要素数を上回るときNG
-                if ((cs.Checksum.End >= cs.BytePos) || (cs.Checksum.End >= Length))
-                {
-                    cs.Checksum.End = cs.BytePos > Length ? Length : cs.BytePos;
-                    cs.Checksum.End--;
-                    Logger.Add($"Checksum Range is invalid: Fix to {cs.Checksum.Begin}-{cs.Checksum.End}");
-                }
-                // チェックサム計算して初期化
-                var sum = CalcChecksum(Buffers[0].Buffer);
-                foreach (var buff in Buffers)
-                {
-                    buff.FieldValues[ChecksumIndex].Value.Value = sum;
-                }
+                
             }
             // 送信データ作成
             if (AsAscii)
@@ -326,8 +334,11 @@ namespace SerialDebugger.Comm
 
         public void UpdateChecksum(TxFieldBuffer buffer)
         {
-            var cs = buffer.FieldValues[ChecksumIndex];
-            cs.Value.Value = CalcChecksum(buffer.Buffer);
+            foreach (var cs in ChecksumRefList)
+            {
+                var csv = buffer.FieldValues[cs.Id];
+                csv.Value.Value = CalcChecksum(buffer.Buffer, cs);
+            }
         }
 
         /// <summary>
@@ -336,9 +347,8 @@ namespace SerialDebugger.Comm
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        public Int64 CalcChecksum(IList<byte> buffer)
+        public Int64 CalcChecksum(IList<byte> buffer, Field cs)
         {
-            var cs = Fields[ChecksumIndex];
             // 合計算出
             Int64 sum = 0;
             for (int i = cs.Checksum.Begin; i <= cs.Checksum.End; i++)

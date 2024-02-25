@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace SerialDebugger.Settings
 {
-    class Gui
+    public class Gui
     {
         public class WindowInfo
         {

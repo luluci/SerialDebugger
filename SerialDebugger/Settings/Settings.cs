@@ -19,7 +19,7 @@ namespace SerialDebugger.Settings
     using Utility;
     using Logger = SerialDebugger.Log.Log;
 
-    class SettingInfo
+    public class SettingInfo
     {
         // 設定ファイル情報
         public string FilePath { get; set; }
@@ -36,7 +36,7 @@ namespace SerialDebugger.Settings
         public Script Script { get; set; } = new Script();
     }
 
-    static class Settings
+    public static class Settings
     {
         static public SettingsImpl Impl = new SettingsImpl();
         //static public ReactiveCollection<SettingInfo> DataList { get; set; }
@@ -73,7 +73,7 @@ namespace SerialDebugger.Settings
         }
     }
 
-    class SettingsImpl : BindableBase, IDisposable
+    public class SettingsImpl : BindableBase, IDisposable
     {
         //public ReactiveCollection<SettingInfo> DataList { get; set; }
         //public ReactivePropertySlim<int> DataIndex { get; set; }

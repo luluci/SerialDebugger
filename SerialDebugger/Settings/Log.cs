@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SerialDebugger.Settings
 {
-    class Log
+    public class Log
     {
         public string Directory { get; set; }
         public int MaxSize { get; set; } = 100;

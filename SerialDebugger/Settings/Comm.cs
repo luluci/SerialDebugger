@@ -17,7 +17,7 @@ namespace SerialDebugger.Settings
     using System.Windows.Media;
     using Utility;
 
-    class Comm : BindableBase, IDisposable
+    public class Comm : BindableBase, IDisposable
     {
         public bool DisplayId { get; set; }
 

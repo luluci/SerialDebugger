@@ -5,19 +5,38 @@ var autoproc_state = 0;
 const Job_AutoScript = () => {
 	let stop = false;
 	let rx_check = false;
+	let result = false;
+
+	// if (!Comm.IsSerialOpen()) {
+	// 	Comm.AutoTx.Result = false;
+	// 	return;
+	// }
 
 	switch (autoproc_state) {
 		case 0:
+			if (Comm.IsSerialOpen()) {
+				autoproc_state++;
+			} else {
+				result = Comm.OpenSerial("COM6");
+				if (result) {
+					autoproc_state++;
+				}
+			}
+			break;
+
+		case 1:
 			// 受信解析失敗する設定にする
 			Comm.Tx[0][0][1] = 111;
 			Comm.Tx.Fix(0, 0);
 			// Tx送信
-			Comm.Tx.Send(0,0);
-			// next
-			autoproc_state++;
+			result = Comm.Tx.Send(0,0);
+			if (result) {
+				// 送信成功で次へ移行
+				autoproc_state++;
+			}
 			break;
 
-		case 1:
+		case 2:
 			// Timeout判定チェック
 			if (Comm.RxMatch.IsTimeout) {
 				Utility.Log("[Script] case 1: OK");
@@ -27,17 +46,19 @@ const Job_AutoScript = () => {
 			}
 			break;
 
-		case 2:
+		case 3:
 			// 受信解析失敗する設定で再送
 			Comm.Tx[0][0][1] = 111;
 			Comm.Tx.Fix(0, 0);
 			// Tx送信
-			Comm.Tx.Send(0, 0);
-			// next
-			autoproc_state++;
+			result = Comm.Tx.Send(0, 0);
+			if (result) {
+				// 送信成功で次へ移行
+				autoproc_state++;
+			}
 			break;
 
-		case 3:
+		case 4:
 			// Any受信判定チェック
 			if (Comm.RxMatch.HasAnyRecv) {
 				Utility.Log("[Script] case 3: OK");
@@ -47,17 +68,19 @@ const Job_AutoScript = () => {
 			}
 			break;
 
-		case 4:
+		case 5:
 			// 受信解析成功する設定で再送
 			Comm.Tx[0][0][1] = 1;
 			Comm.Tx.Fix(0, 0);
 			// Tx送信
-			Comm.Tx.Send(0, 0);
-			// next
-			autoproc_state++;
+			result = Comm.Tx.Send(0, 0);
+			if (result) {
+				// 送信成功で次へ移行
+				autoproc_state++;
+			}
 			break;
 
-		case 5:
+		case 6:
 			// Rxチェック
 			for (let i = 0; i < Comm.RxMatch.Count; i++) {
 				if (Comm.RxMatch[i].FrameId == 0 && Comm.RxMatch[i].PatternId == 0) {
@@ -73,18 +96,20 @@ const Job_AutoScript = () => {
 			//Utility.Log("[Script] Rx Wait..");
 			break;
 
-		case 6:
+		case 7:
 			// 受信解析成功する設定で再送
 			Comm.Tx[0][0][1] = 1;
 			Comm.Tx[0][0][3]++;
 			Comm.Tx.Fix(0, 0);
 			// Tx送信
-			Comm.Tx.Send(0, 0);
-			// next
-			autoproc_state++;
+			result = Comm.Tx.Send(0, 0);
+			if (result) {
+				// 送信成功で次へ移行
+				autoproc_state++;
+			}
 			break;
 
-		case 7:
+		case 8:
 			// Any受信判定チェック
 			if (Comm.RxMatch.HasAnyRecv) {
 				Utility.Log("[Script] case 7: OK");
@@ -94,7 +119,7 @@ const Job_AutoScript = () => {
 			}
 			break;
 
-		case 8:
+		case 9:
 			if (Comm.Tx[0][0][3] < 14) {
 				Comm.Tx[0][0][3]++;
 				Utility.Log("[Script] case 8: change value.");

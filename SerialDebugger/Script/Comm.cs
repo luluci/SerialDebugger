@@ -25,6 +25,8 @@ namespace SerialDebugger.Script
         public ReactiveCollection<SerialDebugger.Comm.AutoTxJob> AutoTxJobsRef { get; set; }
         // Serial: Protocol
         public Serial.Protocol ProtocolRef { get; set; }
+        public MainWindowViewModel ToolRef { get; set; }
+
         // WebView2向けI/F
         public CommTxFramesIf Tx { get; set; }
         public CommAutoTxJobsIf AutoTx { get; set; }
@@ -54,11 +56,14 @@ namespace SerialDebugger.Script
             AutoTx.AutoTxJobsRef = autotx;
             Rx.RxFrames(rx);
         }
-        public void Init(Serial.Protocol protocol)
+        public void Init(Serial.Protocol protocol, MainWindowViewModel tool)
         {
+            //
             ProtocolRef = protocol;
             Tx.ProtocolRef = protocol;
             RxMatch.ProtocolRef = protocol;
+            //
+            ToolRef = tool;
         }
 
         public bool IsSerialOpen()
@@ -66,6 +71,10 @@ namespace SerialDebugger.Script
             return ProtocolRef.IsSerialOpen;
         }
 
+        public bool OpenSerial(string name)
+        {
+            return ToolRef.ScriptIfOpenSerial(name);
+        }
 
         public Int64 TxField(int frame_id, int field_id)
         {

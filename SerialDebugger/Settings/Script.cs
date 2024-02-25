@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SerialDebugger.Settings
 {
-    class Script
+    public class Script
     {
         public List<string> Import { get; set; } = new List<string>();
         public string OnLoad { get; set; } = string.Empty;

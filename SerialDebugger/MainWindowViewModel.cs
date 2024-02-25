@@ -22,7 +22,7 @@ namespace SerialDebugger
     using Logger = Log.Log;
     using Setting = Settings.Settings;
 
-    class MainWindowViewModel : BindableBase, IDisposable, IClosing
+    public class MainWindowViewModel : BindableBase, IDisposable, IClosing
     {
         // Title
         static string ToolTitle = "SerialDebugger";
@@ -787,7 +787,7 @@ namespace SerialDebugger
                 // 通信管理クラス作成
                 protocol = new Serial.Protocol(polling, rx_timeout, TxFrames, RxFrames, AutoTxJobs);
                 // Script
-                Script.Interpreter.Engine.Comm.Init(protocol);
+                Script.Interpreter.Engine.Comm.Init(protocol, this);
 
                 return true;
             }
@@ -891,6 +891,37 @@ namespace SerialDebugger
             }
         }
 
+        /// <summary>
+        /// Script用インターフェース：シリアルポート接続
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public bool ScriptIfOpenSerial(string name)
+        {
+            bool result;
+
+            // シリアルポート接続有無チェック
+            if (IsSerialOpen.Value)
+            {
+                return false;
+            }
+
+            // COMポート設定チェック
+            result = serialSetting.vm.SetComPort(name);
+            if (!result)
+            {
+                return false;
+            }
+
+            // シリアルポート接続
+            SerialStart();
+            if (!IsSerialOpen.Value)
+            {
+                return false;
+            }
+
+            return true;
+        }
 
 
 

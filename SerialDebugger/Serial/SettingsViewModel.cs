@@ -27,8 +27,12 @@ namespace SerialDebugger.Serial
             public string Disp { get; set; }
         }
 
+        // COM port
         public ReactiveCollection<string> ComList { get; set; }
         public ReactivePropertySlim<int> ComListSelectIndex { get; set; }
+        // COMポート逆引き辞書
+        public Dictionary<string, int> ComDict { get; set; }
+
         private int[] Baudrates = { 4800, 9600, 115200 };
         public ReactiveCollection<int> BaudrateList { get; set; }
         public ReactivePropertySlim<int> BaudrateListSelectIndex { get; set; }
@@ -59,6 +63,7 @@ namespace SerialDebugger.Serial
             ComList.AddTo(Disposables);
             ComListSelectIndex = new ReactivePropertySlim<int>(0);
             ComListSelectIndex.AddTo(Disposables);
+            ComDict = new Dictionary<string, int>();
             InitComPort();
             // baudrate
             // ComboBoxをEditableにして、Textから設定を読み出す
@@ -146,14 +151,45 @@ namespace SerialDebugger.Serial
 
         public void InitComPort()
         {
-            // COMポート
+            // COMポートを取得
             string[] ports = SerialPort.GetPortNames();
+            // 初期化
             ComList.Clear();
-            foreach (var port in ports)
+            ComDict.Clear();
+            // COMポート一覧作成
+            for (int idx = 0; idx < ports.Length; idx++)
             {
+                var port = ports[idx];
                 ComList.Add(port);
+                ComDict.Add(port, idx);
             }
+            // COMポート選択位置を初期化
             ComListSelectIndex.Value = 0;
+        }
+
+        public bool SetComPort(int idx)
+        {
+            if (idx >= ComList.Count)
+            {
+                return false;
+            }
+            // COMポートをリストのインデックスで指定
+            ComListSelectIndex.Value = idx;
+            return true;
+        }
+        public bool SetComPort(string name)
+        {
+            // COMポートを名前(例: "COM1")で指定
+            int idx;
+            if (ComDict.TryGetValue(name, out idx))
+            {
+                ComListSelectIndex.Value = idx;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void SetSerialSetting(SerialDebugger.Settings.Serial serial)

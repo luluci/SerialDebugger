@@ -43,8 +43,13 @@ namespace SerialDebugger.Script
             TxFramesRef[frame_id].Buffers[buffer_id].BufferFix();
         }
 
-        public void Send(int frame_id, int buffer_id)
+        public bool Send(int frame_id, int buffer_id)
         {
+            if (!ProtocolRef.IsSerialOpen)
+            {
+                return false;
+            }
+
             var fb = ProtocolRef.GetTxBuffer(frame_id, buffer_id);
             string name = fb.Name;
             byte[] buff = fb.Data;
@@ -52,10 +57,17 @@ namespace SerialDebugger.Script
             ProtocolRef.SendData(buff, 0, buff.Length);
             // Log出力
             Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, 0, buff.Length)}");
+
+            return true;
         }
 
-        public void SendPart(int frame_id, int buffer_id, int offset, int length)
+        public bool SendPart(int frame_id, int buffer_id, int offset, int length)
         {
+            if (!ProtocolRef.IsSerialOpen)
+            {
+                return false;
+            }
+
             var fb = ProtocolRef.GetTxBuffer(frame_id, buffer_id);
             string name = fb.Name;
             byte[] buff = fb.Data;
@@ -63,6 +75,8 @@ namespace SerialDebugger.Script
             ProtocolRef.SendData(buff, offset, length);
             // Log出力
             Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, offset, length)}");
+
+            return true;
         }
     }
 

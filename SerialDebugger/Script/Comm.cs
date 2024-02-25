@@ -61,6 +61,10 @@ namespace SerialDebugger.Script
             RxMatch.ProtocolRef = protocol;
         }
 
+        public bool IsSerialOpen()
+        {
+            return ProtocolRef.IsSerialOpen;
+        }
 
 
         public Int64 TxField(int frame_id, int field_id)

@@ -111,6 +111,7 @@ namespace SerialDebugger
         // シリアル通信管理変数
         SerialPort serialPort;
         Serial.Protocol protocol;
+        Task protocolTask;
 
         public MainWindowViewModel(MainWindow window)
         {
@@ -141,9 +142,9 @@ namespace SerialDebugger
             TextSerialOpen = new ReactivePropertySlim<string>("COM接続");
             TextSerialOpen.AddTo(Disposables);
             OnClickSerialOpen = new ReactiveCommand();
-            OnClickSerialOpen.Subscribe(async (x) => 
+            OnClickSerialOpen.Subscribe((x) => 
                 {
-                    await SerialMain();
+                    SerialMain();
                 })
                 .AddTo(Disposables);
             IsEnableSerialOpen = new ReactivePropertySlim<bool>(true);
@@ -415,6 +416,8 @@ namespace SerialDebugger
             InitGui();
             // 設定ファイル読み込み
             await Setting.InitAsync(Settings);
+            // protocolは未作成なので初期化不要
+            // await StopProtocol();
 
             // 有効な設定ファイルを読み込んでいたら
             if (Settings.Count > 0)
@@ -422,7 +425,15 @@ namespace SerialDebugger
                 // 最初に取得したファイルを読み込む
                 SettingsSelectIndex.Value = 0;
                 var result = await LoadSettingAsync();
-                if (!result)
+                if (result)
+                {
+                    // AutoTxを常時実行するためにProtocolタスクを起動する
+                    // 設定読み込み成功していたらprotocolを作成
+                    result = MakeProtocol();
+                    // Protocolタスク開始
+                    protocolTask = protocol.Run();
+                }
+                else
                 {
                     SetMsgNoSettings();
                 }
@@ -539,12 +550,24 @@ namespace SerialDebugger
                 Logger.Clear();
                 // 現在表示中のGUIを破棄
                 InitGui();
+                // protocol起動中なら終了する
+                await StopProtocol();
 
                 // GUI再構築するため明示的にGC起動しておく
                 await Task.Run(() => { GC.Collect(); });
                 //Logger.Add($"GC: {GC.GetTotalMemory(false)}");
+
+                // 選択して設定ファイルをロードする
                 var result = await LoadSettingAsync();
-                if (!result)
+                if (result)
+                {
+                    // AutoTxを常時実行するためにProtocolタスクを起動する
+                    // 設定読み込み成功していたらprotocolを作成
+                    result = MakeProtocol();
+                    // Protocolタスク開始
+                    protocolTask = protocol.Run();
+                }
+                else
                 {
                     SetMsgNoSettings();
                 }
@@ -753,11 +776,55 @@ namespace SerialDebugger
             }
         }
 
-        private async Task SerialMain()
+        private bool MakeProtocol()
+        {
+            try
+            {
+                // 初期化
+                // 通信設定
+                var polling = serialSetting.vm.PollingCycle.Value;
+                var rx_timeout = serialSetting.vm.RxTimeout.Value;
+                // 通信管理クラス作成
+                protocol = new Serial.Protocol(polling, rx_timeout, TxFrames, RxFrames, AutoTxJobs);
+                // Script
+                Script.Interpreter.Engine.Comm.Init(protocol);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.Add($"Make protocl Error: {e.Message}");
+                return false;
+            }
+        }
+        private async Task StopProtocol()
+        {
+            if (!(protocol is null))
+            {
+                // task終了を通知
+                protocol.Stop();
+                //
+                switch (protocolTask.Status)
+                {
+                    case TaskStatus.Running:
+                        // Running中のみ停止を待つ
+                        await protocolTask;
+                        break;
+
+                    default:
+                        // 他の状態はすべて停止してるはず
+                        // 念のためawaitしてしまって問題ない？
+                        await protocolTask;
+                        break;
+                }
+            }
+        }
+
+        private void SerialMain()
         {
             if (!IsSerialOpen.Value)
             {
-                await SerialStart();
+                SerialStart();
             }
             else
             {
@@ -765,7 +832,7 @@ namespace SerialDebugger
             }
         }
 
-        private async Task SerialStart()
+        private void SerialStart()
         {
             try
             {
@@ -775,42 +842,24 @@ namespace SerialDebugger
                 // 通信設定
                 var polling = serialSetting.vm.PollingCycle.Value;
                 var rx_timeout = serialSetting.vm.RxTimeout.Value;
-                // 通信管理クラス作成
-                protocol = new Serial.Protocol(serialPort, polling, rx_timeout, TxFrames, RxFrames, AutoTxJobs);
-                // Script
-                Script.Interpreter.Engine.Comm.Init(protocol);
+
+                // Protocolタスクシリアル通信開始
+                protocol.OpenSerial(serialPort, polling, rx_timeout);
+
                 // GUI更新
                 // COM切断を有効化
                 IsSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM切断";
-                // シリアル通信開始
-                await protocol.Run();
             }
             catch (OperationCanceledException e)
             {
+                SerialFinish();
                 Logger.Add($"Comm Cancel: {e.Message}");
             }
             catch (Exception e)
             {
+                SerialFinish();
                 Logger.Add($"Error: {e.Message}");
-            }
-            finally
-            {
-                // COM終了でプロトコル破棄
-                //protocol.Dispose();
-                protocol = null;
-                // Scriptクリア
-                Script.Interpreter.Engine.Comm.Init(protocol);
-                // COMポート終了
-                if (!(serialPort is null))
-                {
-                    serialPort.Close();
-                    serialPort = null;
-                }
-                // GUI処理
-                IsSerialOpen.Value = false;
-                IsEnableSerialOpen.Value = true;
-                TextSerialOpen.Value = "COM接続";
             }
         }
 
@@ -818,11 +867,23 @@ namespace SerialDebugger
         {
             try
             {
-                // スレッド終了メッセージ送信
-                protocol.Stop();
-                // 
+                // 終了処理中はGUI操作ブロック
                 IsEnableSerialOpen.Value = false;
                 TextSerialOpen.Value = "切断中";
+
+                // Protocolタスクシリアル通信終了
+                protocol.CloseSerial();
+                // COMポート終了
+                if (!(serialPort is null))
+                {
+                    serialPort.Close();
+                    serialPort = null;
+                }
+
+                // 終了処理完了でGUI有効化
+                IsSerialOpen.Value = false;
+                IsEnableSerialOpen.Value = true;
+                TextSerialOpen.Value = "COM接続";
             }
             catch (Exception e)
             {
@@ -1006,6 +1067,9 @@ return true;
                 if (disposing)
                 {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
+                    // 一応protocolに停止指令を出す
+                    // 以降の
+                    protocol.Stop();
                     inputString.Close();
                     this.Disposables.Dispose();
                 }

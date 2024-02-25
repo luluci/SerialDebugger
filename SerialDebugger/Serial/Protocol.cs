@@ -33,6 +33,11 @@ namespace SerialDebugger.Serial
         public RxData()
         {
             RxBuff = new byte[BuffSize];
+            Init();
+        }
+
+        public void Init()
+        {
             RxBuffOffset = 0;
             RxBuffTgtPos = 0;
         }
@@ -56,6 +61,7 @@ namespace SerialDebugger.Serial
         public ReactiveCollection<Comm.AutoTxJob> AutoTxJobs;
 
         // 通信管理
+        public bool IsSerialOpen { get; set; }
         bool IsRunning;
         int PollingCycle;
         int RxTimeout;
@@ -86,10 +92,10 @@ namespace SerialDebugger.Serial
         //DispatcherTimer AutoTxTimer;
         //bool IsAutoTxRunning = false;
 
-        public Protocol(SerialPort serial, int polling, int rx_timeout, ReactiveCollection<Comm.TxFrame> TxFrames, ReactiveCollection<Comm.RxFrame> RxFrames, ReactiveCollection<Comm.AutoTxJob> AutoTxJobs)
+        public Protocol(int polling, int rx_timeout, ReactiveCollection<Comm.TxFrame> TxFrames, ReactiveCollection<Comm.RxFrame> RxFrames, ReactiveCollection<Comm.AutoTxJob> AutoTxJobs)
         {
             // 参照設定
-            Serial = serial;
+            Serial = null;
             this.TxFrames = TxFrames;
             this.RxFrames = RxFrames;
             this.AutoTxJobs = AutoTxJobs;
@@ -101,6 +107,7 @@ namespace SerialDebugger.Serial
             MultiMatch = Setting.Data.Comm.RxMultiMatch;
             InvertBit = Setting.Data.Comm.RxInvertBit;
             HasScriptMatch = Setting.Data.Comm.RxHasScriptMatch;
+
             // 受信解析結果
             Result = new RxData();
             // Queueサイズ計算
@@ -117,6 +124,7 @@ namespace SerialDebugger.Serial
             }
             //
             MatchResultPos = 0;
+
             // AutoTx
             // 定義が存在する場合のみ処理するためのフラグを作成
             IsAutoTxRunning = AutoTxJobs.Count > 0;
@@ -124,8 +132,6 @@ namespace SerialDebugger.Serial
             // 受信ハンドラ設定
             // ハンドラでフラグを立てて、通信ループでバッファを浚う。
             HasRecieve = false;
-            serial.DataReceived += Serial_DataReceived;
-            serial.ReadTimeout = 0;
 
             // 受信ハンドラを別タスクで動かすとき
             //// 定期処理
@@ -137,7 +143,8 @@ namespace SerialDebugger.Serial
         {
             try
             {
-                InitBeforeCommStart();
+                CancelTokenSource = new CancellationTokenSource();
+                InitBeforeTaskStart();
 
                 IsRunning = true;
                 while (IsRunning)
@@ -159,6 +166,40 @@ namespace SerialDebugger.Serial
             }
         }
 
+        public void OpenSerial(SerialPort serial, int polling, int rx_timeout)
+        {
+            if (IsSerialOpen)
+            {
+                CloseSerial();
+            }
+
+            //
+            Serial = serial;
+            PollingCycle = polling;
+            RxTimeout = rx_timeout;
+            
+            // 受信ハンドラ設定
+            // ハンドラでフラグを立てて、通信ループでバッファを浚う。
+            HasRecieve = false;
+            Serial.DataReceived += Serial_DataReceived;
+            Serial.ReadTimeout = 0;
+
+            //
+            IsSerialOpen = true;
+        }
+        public void CloseSerial()
+        {
+            // シリアル通信終了処置
+            // ハンドラを終了してシリアル受信イベントを無効化だけしておく
+            if (!(Serial is null))
+            {
+                Serial.DataReceived -= Serial_DataReceived;
+            }
+            IsSerialOpen = false;
+            Serial = null;
+            HasRecieve = false;
+        }
+
         public void Stop()
         {
             // 通信終了通知
@@ -166,9 +207,9 @@ namespace SerialDebugger.Serial
         }
 
         /// <summary>
-        /// 通信開始前の初期化処理
+        /// タスク開始前の初期化処理
         /// </summary>
-        public void InitBeforeCommStart()
+        public void InitBeforeTaskStart()
         {
             // AutoTx初期化
             foreach (var job in AutoTxJobs)
@@ -203,8 +244,7 @@ namespace SerialDebugger.Serial
                 }
             }
             // 受信バッファ初期化
-            Result.RxBuffOffset = 0;
-            Result.RxBuffTgtPos = 0;
+            Result.Init();
             // 結果初期化
             MatchResultPos = 0;
             // Script I/F初期化

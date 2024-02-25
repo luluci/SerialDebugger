@@ -214,9 +214,12 @@ namespace SerialDebugger.Comm
                 switch (Actions[ActiveActionIndex].Type)
                 {
                     case AutoTxActionType.Send:
-                        ActSend(protocol);
-                        // 次のActionに移行
-                        check = NextAction();
+                        // シリアル送信処理
+                        if (ActSend(protocol))
+                        {
+                            // 次のActionに移行
+                            check = NextAction();
+                        }
                         break;
 
                     case AutoTxActionType.Wait:
@@ -362,8 +365,14 @@ namespace SerialDebugger.Comm
             return false;
         }
 
-        private void ActSend(Serial.Protocol protocol)
+        private bool ActSend(Serial.Protocol protocol)
         {
+            // シリアルポートが開いてないと送信不可
+            if (!protocol.IsSerialOpen)
+            {
+                return false;
+            }
+
             var action = Actions[ActiveActionIndex];
             var fb = protocol.GetTxBuffer(action.TxFrameIndex, action.TxFrameBuffIndex);
             string name = fb.Name;
@@ -374,6 +383,8 @@ namespace SerialDebugger.Comm
             WaitTimer.Start();
             // Log出力
             Logger.Add($"[Tx][{name}] {Logger.Byte2Str(buff, action.TxFrameOffset, action.TxFrameLength)}");
+
+            return true;
         }
 
         private bool ActWait()

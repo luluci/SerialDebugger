@@ -129,8 +129,10 @@
 		}
 		// index.htmlのonLoad初期化処理
 		var graph_area;
+		var debug_console;
 		const WebView2_Loaded = () => {
 			graph_area = document.getElementById('graph_block');
+			debug_console = document.getElementById('debug_console');
 		}
 		// ↑ロジックを理解した上で変更すること↑
 		const zeroPadding = (value, len) => {
@@ -182,6 +184,9 @@
 		<div class="h_axis">h_axis</div>
 		<div class="h_axis_right">h_axis_right</div>
 		<div class="footer">footer</div>
+	</div>
+	<div id="debug_console">
+		
 	</div>
 </body>
 </html>

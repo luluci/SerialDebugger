@@ -32,6 +32,8 @@ namespace SerialDebugger.Serial
         public ReactivePropertySlim<int> ComListSelectIndex { get; set; }
         // COMポート逆引き辞書
         public Dictionary<string, int> ComDict { get; set; }
+        // 参照用
+        public string[] ComPortStrList { get; set; }
 
         private int[] Baudrates = { 4800, 9600, 115200 };
         public ReactiveCollection<int> BaudrateList { get; set; }
@@ -153,6 +155,7 @@ namespace SerialDebugger.Serial
         {
             // COMポートを取得
             string[] ports = SerialPort.GetPortNames();
+            ComPortStrList = ports;
             // 初期化
             ComList.Clear();
             ComDict.Clear();

@@ -71,9 +71,23 @@ namespace SerialDebugger.Script
             return ProtocolRef.IsSerialOpen;
         }
 
+        public string[] GetComPortList()
+        {
+            var list = ToolRef.ScriptIfGetComPortList();
+            return list;
+        }
+        public void RefreshComPortList()
+        {
+            ToolRef.ScriptIfRefreshComPortList();
+        }
+
         public bool OpenSerial(string name)
         {
             return ToolRef.ScriptIfOpenSerial(name);
+        }
+        public void CloseSerial()
+        {
+            ToolRef.ScriptIfCloseSerial();
         }
 
         public Int64 TxField(int frame_id, int field_id)

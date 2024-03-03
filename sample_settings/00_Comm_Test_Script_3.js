@@ -17,7 +17,16 @@ const Job_AutoScript = () => {
 			if (Comm.IsSerialOpen()) {
 				autoproc_state++;
 			} else {
-				result = Comm.OpenSerial("COM6");
+				// COMポートリストを取得
+				Comm.RefreshComPortList();
+				let com_ports = Comm.GetComPortList();
+				let com_port_len = com_ports.length;
+				let com_port = "COM1";
+				// com_port = com_ports[com_port_len-1];
+				// Utility.Log(com_port);
+				// debug_console.textContent = com_port;
+
+				result = Comm.OpenSerial(com_port);
 				if (result) {
 					autoproc_state++;
 				}
@@ -25,7 +34,7 @@ const Job_AutoScript = () => {
 			break;
 
 		case 1:
-			// 受信解析失敗する設定にする
+		// 受信解析失敗する設定にする
 			Comm.Tx[0][0][1] = 111;
 			Comm.Tx.Fix(0, 0);
 			// Tx送信
@@ -130,6 +139,7 @@ const Job_AutoScript = () => {
 				stop = true;
 				autoproc_state = 0;
 				Utility.Log("[Script] case 8: OK");
+				Comm.CloseSerial();
 			}
 			Comm.Tx.Fix(0, 0);
 			break;

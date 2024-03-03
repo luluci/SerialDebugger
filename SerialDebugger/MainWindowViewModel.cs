@@ -891,6 +891,15 @@ namespace SerialDebugger
             }
         }
 
+        public string[] ScriptIfGetComPortList()
+        {
+            return serialSetting.vm.ComPortStrList;
+        }
+        public void ScriptIfRefreshComPortList()
+        {
+            serialSetting.vm.InitComPort();
+        }
+
         /// <summary>
         /// Script用インターフェース：シリアルポート接続
         /// </summary>
@@ -921,6 +930,14 @@ namespace SerialDebugger
             }
 
             return true;
+        }
+
+        public void ScriptIfCloseSerial()
+        {
+            if (IsSerialOpen.Value)
+            {
+                SerialFinish();
+            }
         }
 
 

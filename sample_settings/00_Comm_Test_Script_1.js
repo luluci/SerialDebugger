@@ -82,3 +82,23 @@ const Rx_ptn3_match_body = (frame_id, pattern_id) => {
 	Comm.Rx.Result = result;
 }
 
+
+const Job_Test_Exec = () => {
+	try {
+		// Uint8ArrayをC#に引き渡すときはobjectになる
+		//const buffer = new ArrayBuffer(32);
+		//const send_data = new Uint8Array(buffer, 0, 32);
+		//let send_data = new Uint8Array(16);
+		//send_data[0] = 12;
+		//const send_data = new Uint8Array([21, 31]);
+		const send_data = [1, 2, 3];
+
+		Comm.SendData(send_data, 3);
+	}
+	catch (e) {
+		Comm.Error(e.message);
+	}
+
+	//
+	Comm.RxMatch.Result = true;
+}

@@ -127,6 +127,14 @@
 						{ "type": "Wait", "wait_time": 2000 },
 						{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }
 					]
+				},
+				{
+					"name": "Job_Test_Exec",
+					"alias": "JavaScriptテスト実行用ジョブ",
+					"active": false,
+					"actions": [
+						{ "type": "Script", "auto_tx_handler": "Job_Test_Exec()" }
+					]
 				}
 			]
 		},

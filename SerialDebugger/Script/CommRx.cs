@@ -287,7 +287,7 @@ namespace SerialDebugger.Script
         {
             get
             {
-                return RxMatchResultRef.PatternId;
+                return RxMatchResultRef.FrameId;
             }
         }
         public int PatternId

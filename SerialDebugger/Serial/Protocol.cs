@@ -26,20 +26,24 @@ namespace SerialDebugger.Serial
         public RxDataType Type { get; set; }
         public const int BuffSize = 1024;
         public byte[] RxBuff { get; set; }
+        public byte[] MatchBuff { get; set; }
         public int RxBuffOffset { get; set; }
         public int RxBuffTgtPos { get; set; }
+        public int MatchBuffPos { get; set; }
         public DateTime TimeStamp { get; set; }
 
         public RxData()
         {
             RxBuff = new byte[BuffSize];
-            Init();
-        }
-
-        public void Init()
-        {
+            MatchBuff = new byte[BuffSize];
             RxBuffOffset = 0;
             RxBuffTgtPos = 0;
+            MatchBuffPos = 0;
+        }
+        
+        public void Restart()
+        {
+            MatchBuffPos = 0;
         }
     }
 
@@ -243,8 +247,8 @@ namespace SerialDebugger.Serial
                     }
                 }
             }
-            // 受信バッファ初期化
-            Result.Init();
+            // 受信結果バッファをリスタート
+            Result.Restart();
             // 結果初期化
             MatchResultPos = 0;
             // Script I/F初期化
@@ -295,7 +299,7 @@ namespace SerialDebugger.Serial
         {
             // タイムアウト判定
             // 何かしらのデータ受信後、指定時間経過でタイムアウトする
-            if (Result.RxBuffOffset > 0)
+            if (Result.MatchBuffPos > 0)
             {
                 if (RxBeginTimer.WaitForMsec(RxTimeout) <= 0)
                 {
@@ -305,26 +309,42 @@ namespace SerialDebugger.Serial
             }
 
             // 受信バッファ読み出し
-            if (HasRecieve)
+            if (HasRecieve || Result.RxBuffOffset != Result.RxBuffTgtPos || Serial?.BytesToRead > 0)
             {
                 // 受信開始した時間を記憶
-                if (Result.RxBuffOffset == 0)
+                if (Result.MatchBuffPos == 0)
                 {
                     RxBeginTimer.Start();
                 }
                 // 最後に受信した時間を更新
                 RxEndTimer.Start();
 
-                // すぐに受信フラグを下す
-                // フラグを下した後にシリアル受信を読み出すことで取得漏れは無くなるはず
-                HasRecieve = false;
                 try
                 {
-                    // 受信バッファ読み出し
-                    var len = Serial.Read(Result.RxBuff, Result.RxBuffOffset, RxData.BuffSize - Result.RxBuffOffset);
-                    Result.RxBuffOffset += len;
+                    // 受信バッファに未解析分があるときはシリアル受信の読み出しをしない
+                    // 受信バッファが空で読み出しをしてしまうと例外が飛ぶので、無駄な処理をしないためにケアする
+                    if (Result.RxBuffOffset == Result.RxBuffTgtPos)
+                    {
+                        // すぐに受信フラグを下す
+                        // フラグを下した後にシリアル受信を読み出すことで取得漏れは無くなるはず
+                        HasRecieve = false;
+                        // 受信バッファ読み出し
+                        var len = Serial.Read(Result.RxBuff, Result.RxBuffOffset, RxData.BuffSize - Result.RxBuffOffset);
+                        Result.RxBuffOffset += len;
+                    }
                     // 受信解析
-                    if (await AnalyzeRx())
+                    var result = await AnalyzeRx();
+                    // 受信バッファケア
+                    // すべて読み出していたらクリアして領域を確保する
+                    // 受信バッファサイズ以上の受信があっても順繰りに処理できるようにするケア
+                    // 解析した分は受信解析マッチバッファに移してある
+                    if (Result.RxBuffOffset == Result.RxBuffTgtPos)
+                    {
+                        Result.RxBuffOffset = 0;
+                        Result.RxBuffTgtPos = 0;
+                    }
+                    // 何かしらマッチしていたら通知
+                    if (result)
                     {
                         Result.Type = RxDataType.Match;
                         Result.TimeStamp = RxEndTimer.GetTime();
@@ -365,6 +385,9 @@ namespace SerialDebugger.Serial
                     Result.RxBuff[Result.RxBuffTgtPos] = (byte)~Result.RxBuff[Result.RxBuffTgtPos];
                 }
                 var ch = Result.RxBuff[Result.RxBuffTgtPos];
+                // マッチ文字を登録
+                Result.MatchBuff[Result.MatchBuffPos] = ch;
+                Result.MatchBuffPos++;
                 // 解析
                 foreach (var frame in RxFrames)
                 {
@@ -383,8 +406,11 @@ namespace SerialDebugger.Serial
                                     MatchResult[MatchResultPos].PatternRef = pattern;
                                     MatchResultPos++;
                                     // 複数マッチ不許可なら終了
+                                    // 二十foreachを抜け出すのが面倒なのでreturn
                                     if (!MultiMatch)
                                     {
+                                        // 使った文字を手動で消費
+                                        Result.RxBuffTgtPos++;
                                         return true;
                                     }
                                     result = true;
@@ -392,6 +418,15 @@ namespace SerialDebugger.Serial
                             }
                         }
                     }
+                }
+                // 1つでもマッチがあれば終了
+                if (result)
+                {
+                    // forの条件にresultを入れればインクリメントされると思うが、
+                    // わかりやすく明示的にインクリメントして終了
+                    // 使った文字を手動で消費
+                    Result.RxBuffTgtPos++;
+                    return true;
                 }
             }
 
@@ -470,7 +505,7 @@ namespace SerialDebugger.Serial
                     MatchResultIsTimeout = true;
                     // タイムアウトは1バイト以上の受信があるときのみ発生する。
                     // 受信バッファをログに出力して次の受信シーケンスに移行する。
-                    Logger.Add($"[Rx][Timeout] {Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset)}");
+                    Logger.Add($"[Rx][Timeout] {Logger.Byte2Str(Result.MatchBuff, 0, Result.MatchBuffPos)}");
                     // 受信タイムアウトを自動操作に通知
                     await AutoTxExecRxEvent();
                     break;
@@ -520,13 +555,13 @@ namespace SerialDebugger.Serial
                 {
                     // Visualizeログ作成
                     // RxPatternへの受信値反映も同時に実施
-                    log = $"{RxFrames[frame_id].MakeLogVisualize(Result.RxBuff, Result.RxBuffOffset, result.PatternRef)}, ({Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset)})";
+                    log = $"{RxFrames[frame_id].MakeLogVisualize(Result.MatchBuff, Result.MatchBuffPos, result.PatternRef)}, ({Logger.Byte2Str(Result.MatchBuff, 0, Result.MatchBuffPos)})";
                 }
                 else
                 {
                     // RxPatternに受信値を反映
-                    RxFrames[frame_id].UpdateRxPatternDisp(Result.RxBuff, Result.RxBuffOffset, result.PatternRef);
-                    log = Logger.Byte2Str(Result.RxBuff, 0, Result.RxBuffOffset);
+                    RxFrames[frame_id].UpdateRxPatternDisp(Result.MatchBuff, Result.MatchBuffPos, result.PatternRef);
+                    log = Logger.Byte2Str(Result.MatchBuff, 0, Result.MatchBuffPos);
                 }
                 Logger.Add($"[Rx][{sb.ToString()}] {log}");
             }

@@ -1,0 +1,216 @@
+{
+	"name": "Test_通信_受信解析テスト_1_2フレーム分同時受信",
+	
+	"gui": {
+		"window":
+			{
+				"width": 1200,
+				"height": 700
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"comm": {
+		"display_id": true,
+	
+		"rx": {
+			"enable_multi_match": true,
+			"frames": [
+				{
+					"name": "Rx_Frame_1",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"type": "Edit"
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"type": "Edit",
+							"base": 10
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_1-1",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 1 },
+								{ "value": 2 },
+								{ "value": 3 }
+							]
+						},
+						{
+							"name": "Rx_Pattern_1-2",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 4 },
+								{ "value": 5 },
+								{ "value": 6 }
+							]
+						}
+					]
+				},
+				{
+					"name": "Rx_Frame_2",
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"type": "Edit"
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field4",
+							"bit_size": 8,
+							"type": "Edit",
+							"base": 10
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_2-1",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 1 },
+								{ "value": 2 },
+								{ "value": 3 },
+								{ "value": 4 }
+							]
+						},
+						{
+							"name": "Rx_Pattern_2-2",
+							"active": true,
+							"log_visualize": true,
+							"matches": [
+								{ "value": 5 },
+								{ "value": 6 },
+								{ "value": 7 },
+								{ "type": "Any" }
+							]
+						}
+					]
+				}
+			]
+		},
+	
+		"auto_tx": {
+			"jobs": [
+			]
+		},
+	
+		"tx": {
+			"frames": [
+				{
+					"name": "Frame_A",
+					"as_ascii": false,
+					"fields": [
+						{
+							"name": "field1",
+							"bit_size": 8,
+							"value": 1
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 2,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field3",
+							"bit_size": 8,
+							"value": 3,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field4",
+							"bit_size": 8,
+							"value": 4,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field5",
+							"bit_size": 8,
+							"value": 5,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field6",
+							"bit_size": 8,
+							"value": 6,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "field7",
+							"bit_size": 8,
+							"value": 7,
+							"type": "Edit",
+							"base": 10
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"method": "2compl"
+							}
+						}
+					],
+					"backup_buffer_size": 2,
+					"backup_buffers": [
+						{
+							"name": "設定_Rx_Pattern_1",
+							"value": [ 240, 1, 255, 255 ]
+						},
+						{
+							"name": "設定_Rx_Pattern_2",
+							"value": [ 240, 255, 1, 255 ]
+						},
+						{
+							"name": "設定_Rx_Pattern_3",
+							"value": [ 240, 1, 1, 255 ]
+						}
+					]
+				}
+			]
+		}
+	}
+}

@@ -25,25 +25,33 @@ namespace SerialDebugger.Serial
     {
         public RxDataType Type { get; set; }
         public const int BuffSize = 1024;
+        public const int MatchBuffSize = 1024;
         public byte[] RxBuff { get; set; }
         public byte[] MatchBuff { get; set; }
         public int RxBuffOffset { get; set; }
         public int RxBuffTgtPos { get; set; }
         public int MatchBuffPos { get; set; }
+        public bool MatchBuffOver { get; set; }
         public DateTime TimeStamp { get; set; }
 
         public RxData()
         {
             RxBuff = new byte[BuffSize];
-            MatchBuff = new byte[BuffSize];
+            // マッチバッファ
+            // Scriptによるマッチを使うと無限にマッチを重ねられるため、適当なバッファサイズ決め打ちとする
+            // バッファに格納するときのチェックだけ実施する
+            // 設定ファイルで指定できるようにしてもいいかも
+            MatchBuff = new byte[MatchBuffSize];
             RxBuffOffset = 0;
             RxBuffTgtPos = 0;
             MatchBuffPos = 0;
+            MatchBuffOver = false;
         }
         
         public void Restart()
         {
             MatchBuffPos = 0;
+            MatchBuffOver = false;
         }
     }
 
@@ -386,8 +394,18 @@ namespace SerialDebugger.Serial
                 }
                 var ch = Result.RxBuff[Result.RxBuffTgtPos];
                 // マッチ文字を登録
-                Result.MatchBuff[Result.MatchBuffPos] = ch;
-                Result.MatchBuffPos++;
+                // 配列範囲チェック
+                if (Result.MatchBuffPos < RxData.MatchBuffSize)
+                {
+                    Result.MatchBuff[Result.MatchBuffPos] = ch;
+                    Result.MatchBuffPos++;
+                }
+                else
+                {
+                    // マッチがバッファサイズ以上続いている
+                    // バースト通信で1kは考えにくいが…
+                    Result.MatchBuffOver = true;
+                }
                 // 解析
                 foreach (var frame in RxFrames)
                 {
@@ -563,7 +581,13 @@ namespace SerialDebugger.Serial
                     RxFrames[frame_id].UpdateRxPatternDisp(Result.MatchBuff, Result.MatchBuffPos, result.PatternRef);
                     log = Logger.Byte2Str(Result.MatchBuff, 0, Result.MatchBuffPos);
                 }
-                Logger.Add($"[Rx][{sb.ToString()}] {log}");
+                // マッチバッファ超過ワーニング
+                string warn = "";
+                if (Result.MatchBuffOver)
+                {
+                    warn = " (受信データバッファが溢れました。未表示の受信データがあります。)";
+                }
+                Logger.Add($"[Rx][{sb.ToString()}] {log}{warn}");
             }
         }
 

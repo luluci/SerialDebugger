@@ -34,6 +34,18 @@ namespace SerialDebugger.Settings
         public Serial Serial { get; set; } = new Serial();
         public Comm Comm { get; set; } = new Comm();
         public Script Script { get; set; } = new Script();
+
+        public void ClearForReload()
+        {
+            // リロード用クリア
+            // 初期読み込み以外の情報をクリアする
+            Output = new Output();
+            Gui = new Gui();
+            Serial = new Serial();
+            Comm = new Comm();
+            Script = new Script();
+            IsLoaded = false;
+        }
     }
 
     public static class Settings

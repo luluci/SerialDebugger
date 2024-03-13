@@ -173,7 +173,7 @@ namespace SerialDebugger
                 .Subscribe(async (int idx) =>
                 {
                     IsEnableSerialOpen.Value = false;
-                    await UpdateSettingAsync();
+                    await UpdateSettingAsync(false);
                     IsEnableSerialOpen.Value = true;
                 })
                 .AddTo(Disposables);
@@ -424,7 +424,7 @@ namespace SerialDebugger
             {
                 // 最初に取得したファイルを読み込む
                 SettingsSelectIndex.Value = 0;
-                var result = await LoadSettingAsync();
+                var result = await LoadSettingAsync(false);
                 if (result)
                 {
                     // AutoTxを常時実行するためにProtocolタスクを起動する
@@ -542,7 +542,7 @@ namespace SerialDebugger
             return new System.Drawing.Rectangle(left, top, right - left, bottom - top);
         }
 
-        public async Task UpdateSettingAsync()
+        public async Task UpdateSettingAsync(bool force_load)
         {
             try
             {
@@ -558,7 +558,7 @@ namespace SerialDebugger
                 //Logger.Add($"GC: {GC.GetTotalMemory(false)}");
 
                 // 選択して設定ファイルをロードする
-                var result = await LoadSettingAsync();
+                var result = await LoadSettingAsync(force_load);
                 if (result)
                 {
                     // AutoTxを常時実行するためにProtocolタスクを起動する
@@ -606,11 +606,16 @@ namespace SerialDebugger
             BaseSerialAutoTxMsg.Value = "有効な設定が存在しません。";
         }
 
-        public async Task<bool> LoadSettingAsync()
+        public async Task<bool> LoadSettingAsync(bool force_load)
         {
             var data = Settings[SettingsSelectIndex.Value];
             // ログ設定更新
             Logger.UpdateSetting(data.Log);
+            // 強制ロード有効なら読み込み済み設定をクリアする
+            if (force_load && data.IsLoaded)
+            {
+                data.ClearForReload();
+            }
             // 未ロードファイルならロード処理
             if (!data.IsLoaded)
             {

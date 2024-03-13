@@ -23,10 +23,13 @@ namespace SerialDebugger
     public partial class MainWindow : Window
     {
         MainWindowViewModel vm;
+        Settings.ReloadDialog ReloadDialog;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            ReloadDialog = new Settings.ReloadDialog();
 
             // Logger初期化
             // 例外処理で使用するため最初に初期化しておく
@@ -68,6 +71,13 @@ namespace SerialDebugger
             // Window破棄の前に明示的にDisposeする
             // GCに任せるとデストラクタが走らない
             (vm as IDisposable)?.Dispose();
+            //
+            ReloadDialog.Dispose();
+        }
+
+        private void SettingReloadDialog_Click(object sender, RoutedEventArgs e)
+        {
+            ReloadDialog.ShowDialog();
         }
     }
 }

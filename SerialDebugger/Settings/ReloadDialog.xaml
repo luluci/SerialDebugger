@@ -1,0 +1,28 @@
+﻿<Window x:Class="SerialDebugger.Settings.ReloadDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SerialDebugger.Settings"
+        mc:Ignorable="d"
+        Title="設定ファイル" Height="123.869" Width="325.298" ResizeMode="NoResize" Closing="Window_Closing" Visibility="Hidden">
+    <Grid Margin="0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="35"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="現在の設定を破棄して設定ファイルをリロードします。&#xA;よろしいですか？" TextWrapping="WrapWithOverflow" FontFamily="Meiryo UI" FontSize="14" />
+            </Grid>
+            <Grid Grid.Row="1" Background="#FFF5F0F0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Row="1" Grid.Column="0" Content="OK" Width="100" Height="20" Click="Ok_Click"/>
+                <Button Grid.Row="1" Grid.Column="1" Content="Cancel" Width="100" Height="20" Click="Cancel_Click"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

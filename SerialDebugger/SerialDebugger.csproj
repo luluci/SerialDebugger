@@ -114,6 +114,9 @@
     <Compile Include="Settings\Log.cs" />
     <Compile Include="Settings\Output.cs" />
     <Compile Include="Settings\OutputJson.cs" />
+    <Compile Include="Settings\ReloadDialog.xaml.cs">
+      <DependentUpon>ReloadDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\Script.cs" />
     <Compile Include="Settings\Serial.cs" />
     <Compile Include="Settings\Settings.cs" />
@@ -148,6 +151,10 @@
     <Page Include="Serial\Settings.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Settings\ReloadDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

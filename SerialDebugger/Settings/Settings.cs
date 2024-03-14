@@ -39,6 +39,7 @@ namespace SerialDebugger.Settings
         {
             // リロード用クリア
             // 初期読み込み以外の情報をクリアする
+            Log = new Log();
             Output = new Output();
             Gui = new Gui();
             Serial = new Serial();

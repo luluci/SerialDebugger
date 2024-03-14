@@ -542,6 +542,11 @@ namespace SerialDebugger
             return new System.Drawing.Rectangle(left, top, right - left, bottom - top);
         }
 
+        public async Task ReloadSettingAsync()
+        {
+            await UpdateSettingAsync(true);
+        }
+
         public async Task UpdateSettingAsync(bool force_load)
         {
             try

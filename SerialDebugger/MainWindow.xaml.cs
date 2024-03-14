@@ -75,9 +75,22 @@ namespace SerialDebugger
             ReloadDialog.Dispose();
         }
 
-        private void SettingReloadDialog_Click(object sender, RoutedEventArgs e)
+        private async void SettingReloadDialog_Click(object sender, RoutedEventArgs e)
         {
-            ReloadDialog.ShowDialog();
+            try
+            {
+                // 設定値の変更等がすべてリセットされるため、
+                // 設定ファイルリロード前にダイアログで確認する
+                ReloadDialog.ShowDialog();
+                if (ReloadDialog.IsAccepted)
+                {
+                    await vm.ReloadSettingAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.AddException(ex, "設定ファイルリロードエラー:");
+            }
         }
     }
 }

@@ -31,7 +31,7 @@
                         <StackPanel Orientation="Horizontal" Margin="4,2,2,2">
                             <TextBlock Margin="0,2,0,0" Text="通信設定:" FontFamily="Meiryo UI"/>
                             <ComboBox ItemsSource="{Binding Settings}" DisplayMemberPath="Name" SelectedIndex="{Binding SettingsSelectIndex.Value}" IsEnabled="{Binding IsEnableSerialSetting.Value}" Margin="5,0,0,0" Width="235"/>
-                            <Button Width="40" Height="20" Content="更新" ToolTip="設定ファイルを再読み込みします" Margin="5,0,0,0" Click="SettingReloadDialog_Click"/>
+                            <Button Width="40" Height="20" Content="更新" ToolTip="設定ファイルを再読み込みします" Margin="5,0,0,0" Click="SettingReloadDialog_Click" IsEnabled="{Binding IsEnableSerialSetting.Value}"/>
                         </StackPanel>
                     </Border>
                 </Grid>

@@ -1,0 +1,124 @@
+{
+	"name": "Test_通信_Script_5_WebView2_Rx",
+	
+	"gui": {
+		"window":
+			{
+				"width": 900,
+				"height": 700
+			}
+	},
+	
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+	
+	"script": {
+		"import": [
+			"00_Comm_Test_Script_5.js"
+		],
+		"onload": "OnLoad_Test_Script_5()"
+	},
+	
+	"comm": {
+		"display_id": true,
+
+		"rx": {
+			"enable_multi_match": true,
+			"frames": [
+				{
+					"name": "Rx_Frame_1",
+					"fields": [
+						{
+							"name": "field_1",
+							"bit_size": 8,
+							"value": 240,
+							"type": "Edit"
+						},
+						{
+							"name": "field_2",
+							"bit_size": 8,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern_3_Script",
+							"active": true,
+							"log_visualize": false,
+							"matches": [
+								{"type": "Any" },
+								{"type": "Any" },
+								{"type": "Any" }
+							]
+						}
+					]
+				}
+			]
+		},
+	
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_AutoScript",
+					"alias": "テスト",
+					"active": true,
+					"actions": [
+						{ "type": "Log", "log": "<Job_AutoScript start.>" }
+					]
+				}
+			]
+		},
+	
+		"tx": {
+			"frames": [
+				{
+					"name": "Rx_Frame_1",
+					"fields": [
+						{
+							"name": "field_1",
+							"bit_size": 8,
+							"value": 240,
+							"type": "Edit"
+						},
+						{
+							"name": "field_2",
+							"bit_size": 8,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "Checksum",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 1,
+								"method": "2compl"
+							}
+						}
+					]
+				}
+			]
+		}
+	}
+}

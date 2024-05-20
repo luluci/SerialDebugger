@@ -24,7 +24,7 @@ namespace SerialDebugger.Script
     public class CommRxFramesIf
     {
         // Commデータへの参照
-        // Comm: Rx
+        // Comm: RxFrame
         public ReactiveCollection<SerialDebugger.Comm.RxFrame> RxFramesRef { get; set; }
 
         // I/F: C# -> WebView2
@@ -124,11 +124,12 @@ namespace SerialDebugger.Script
     public class CommRxFrameIf
     {
         // Commデータへの参照
-        // Comm: Rx
+        // Comm: RxFrames
         public SerialDebugger.Comm.RxFrame RxFrameRef { get; set; }
         //
         public CommRxFieldsIf CommRxFieldsIf { get; set; } = new CommRxFieldsIf();
-        
+        public CommRxPatternsIf CommRxPatternsIf { get; set; } = new CommRxPatternsIf();
+
         public CommRxFieldsIf Fields
         {
             get
@@ -142,6 +143,14 @@ namespace SerialDebugger.Script
             RxFrameRef = node;
             return this;
         }
+
+        public CommRxPatternsIf Patterns
+        {
+            get
+            {
+                return CommRxPatternsIf.RxPatterns(RxFrameRef.Patterns);
+            }
+        }
     }
 
 
@@ -150,7 +159,7 @@ namespace SerialDebugger.Script
     public class CommRxFieldsIf
     {
         // Commデータへの参照
-        // Comm: Rx
+        // Comm: Fields
         public ReactiveCollection<SerialDebugger.Comm.Field> RxFieldsRef { get; set; }
         //
         public CommRxFieldIf CommRxFieldIf { get; set; } = new CommRxFieldIf();
@@ -176,7 +185,7 @@ namespace SerialDebugger.Script
     public class CommRxFieldIf
     {
         // Commデータへの参照
-        // Comm: Tx
+        // Comm: Field
         public SerialDebugger.Comm.Field RxFieldRef { get; set; }
         // 最後に取得したFieldが定義するSelecter
         public CommRxFieldSelecterNode[] Selecter = {};
@@ -208,6 +217,124 @@ namespace SerialDebugger.Script
         public Int64 Key { get; set; }
         // "Value"はJavaScript側で何かと名前が衝突してNG
         public string Disp { get; set; }
+    }
+
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxPatternsIf
+    {
+        // Commデータへの参照
+        // Comm: RxPatterns
+        public ReactiveCollection<SerialDebugger.Comm.RxPattern> RxPatternsRef { get; set; }
+        //
+        public CommRxPatternIf CommRxPatternIf { get; set; } = new CommRxPatternIf();
+
+        public CommRxPatternsIf RxPatterns(ReactiveCollection<SerialDebugger.Comm.RxPattern> node)
+        {
+            RxPatternsRef = node;
+            return this;
+        }
+
+        [System.Runtime.CompilerServices.IndexerName("Items")]
+        public CommRxPatternIf this[int idx]
+        {
+            get
+            {
+                return CommRxPatternIf.RxPattern(RxPatternsRef[idx]);
+            }
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxPatternIf
+    {
+        // Commデータへの参照
+        // Comm: RxPattern
+        public SerialDebugger.Comm.RxPattern RxPatternRef { get; set; }
+        //
+        public CommRxMatchesIf CommRxMatchesIf { get; set; } = new CommRxMatchesIf();
+
+        public CommRxPatternIf RxPattern(SerialDebugger.Comm.RxPattern node)
+        {
+            RxPatternRef = node;
+            return this;
+        }
+
+        public CommRxMatchesIf Matches
+        {
+            get
+            {
+                return CommRxMatchesIf.RxMatches(RxPatternRef.Matches);
+            }
+        }
+
+        [System.Runtime.CompilerServices.IndexerName("Items")]
+        public CommRxMatchIf this[int idx]
+        {
+            get
+            {
+                return CommRxMatchesIf.RxMatches(RxPatternRef.Matches)[idx];
+            }
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxMatchesIf
+    {
+        // Commデータへの参照
+        // Comm: RxMatches
+        public ReactiveCollection<SerialDebugger.Comm.RxMatch> RxMatchesRef { get; set; }
+        //
+        public CommRxMatchIf CommRxMatchIf { get; set; } = new CommRxMatchIf();
+
+        public CommRxMatchesIf RxMatches(ReactiveCollection<SerialDebugger.Comm.RxMatch> data)
+        {
+            RxMatchesRef = data;
+            return this;
+        }
+        
+        [System.Runtime.CompilerServices.IndexerName("Items")]
+        public CommRxMatchIf this[int idx]
+        {
+            get
+            {
+                return CommRxMatchIf.RxMatch(RxMatchesRef[idx]);
+            }
+        }
+    }
+
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    [ComVisible(true)]
+    public class CommRxMatchIf
+    {
+        // Commデータへの参照
+        // Comm: RxMatch
+        public SerialDebugger.Comm.RxMatch RxMatchRef { get; set; }
+
+        public CommRxMatchIf RxMatch(SerialDebugger.Comm.RxMatch data)
+        {
+            RxMatchRef = data;
+            return this;
+        }
+
+        public string Disp
+        {
+            get
+            {
+                return RxMatchRef.Disp.Value;
+            }
+        }
+
+        public Int64 Value
+        {
+            get
+            {
+                return RxMatchRef.Value.Value;
+            }
+        }
     }
 
 

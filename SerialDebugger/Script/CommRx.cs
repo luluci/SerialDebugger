@@ -130,18 +130,18 @@ namespace SerialDebugger.Script
         public CommRxFieldsIf CommRxFieldsIf { get; set; } = new CommRxFieldsIf();
         public CommRxPatternsIf CommRxPatternsIf { get; set; } = new CommRxPatternsIf();
 
+        public CommRxFrameIf RxFrame(SerialDebugger.Comm.RxFrame node)
+        {
+            RxFrameRef = node;
+            return this;
+        }
+
         public CommRxFieldsIf Fields
         {
             get
             {
                 return CommRxFieldsIf.RxFields(RxFrameRef.Fields);
             }
-        }
-
-        public CommRxFrameIf RxFrame(SerialDebugger.Comm.RxFrame node)
-        {
-            RxFrameRef = node;
-            return this;
         }
 
         public CommRxPatternsIf Patterns
@@ -328,7 +328,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        public Int64 Value
+        public Int64 RawData
         {
             get
             {

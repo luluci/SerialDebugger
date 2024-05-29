@@ -146,26 +146,15 @@ namespace SerialDebugger.Script
             }
         }
 
-        public async Task LoadScriptFile(List<string> scripts)
+        public async Task LoadScriptFiles(List<string> scripts)
         {
             foreach (var script in scripts)
             {
                 if (!LoadedScript.TryGetValue(script, out bool value))
                 {
-                    var load_script = $@"
-(() => {{
-    var sc = document.createElement('script');
-    sc.src = '../Settings/{script}';
-    sc.onload = () => {{
-        Settings.ScriptLoaded = true;
-    }};
-    document.body.appendChild(sc);
-    return true;
-}})();
-";
                     Settings.ScriptLoaded = false;
-                    var result = await WebView2.CoreWebView2.ExecuteScriptAsync(load_script);
-                    if (result == "true")
+                    var result = await LoadScriptFile(script);
+                    if (result)
                     {
                         // Script読み込み完了まで待機, 5秒でタイムアウト
                         for (int timeup = 0; !Settings.ScriptLoaded && timeup < 50; timeup++)
@@ -181,6 +170,44 @@ namespace SerialDebugger.Script
                     }
                 }
             }
+        }
+
+        public async Task ReloadScriptFiles()
+        {
+            foreach (var script in LoadedScript)
+            {
+                Settings.ScriptLoaded = false;
+                var result = await LoadScriptFile(script.Key);
+                if (result)
+                {
+                    // Script読み込み完了まで待機, 5秒でタイムアウト
+                    for (int timeup = 0; !Settings.ScriptLoaded && timeup < 50; timeup++)
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+                else
+                {
+                    Logger.Add($"script: {script}の読み込みでエラーが発生しました。");
+                }
+            }
+        }
+
+        public async Task<bool> LoadScriptFile(string script)
+        {
+            var load_script = $@"
+(() => {{
+    var sc = document.createElement('script');
+    sc.src = '../Settings/{script}';
+    sc.onload = () => {{
+        Settings.ScriptLoaded = true;
+    }};
+    document.body.appendChild(sc);
+    return true;
+}})();
+";
+            var result = await WebView2.CoreWebView2.ExecuteScriptAsync(load_script);
+            return result == "true";
         }
 
         public async Task<int> MakeFieldSelecter(Comm.Field field)
@@ -258,8 +285,6 @@ MakeFieldExecScript(exec_func, {selecter.Count});
             //WebView2.CoreWebView2.AddHostObjectToScript("wri", EntryPoint);
             try
             {
-                // ロード済みスクリプトファイルリストクリア
-                LoadedScript.Clear();
                 // ツール側インターフェース登録
                 // Commオブジェクト登録
                 WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
@@ -268,6 +293,8 @@ MakeFieldExecScript(exec_func, {selecter.Count});
                 WebView2.CoreWebView2.AddHostObjectToScript("IO", IO);
                 // デフォルトスクリプトをLoad
                 await RunScriptLoaded("csLoaded()");
+                // Settingファイルスクリプトをリロード
+                await ReloadScriptFiles();
             }
             catch (Exception ex)
             {

@@ -28,7 +28,7 @@ namespace SerialDebugger.Settings
                     Import.Add(file);
                 }
                 // Commロード前にjsファイルをロード
-                await SerialDebugger.Script.Interpreter.Engine.LoadScriptFile(Import);
+                await SerialDebugger.Script.Interpreter.Engine.LoadScriptFiles(Import);
 
                 // onloadイベントハンドラ
                 // 設定ファイル読み込み完了後に実行する

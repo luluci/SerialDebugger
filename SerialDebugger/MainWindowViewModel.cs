@@ -614,6 +614,8 @@ namespace SerialDebugger
         public async Task<bool> LoadSettingAsync(bool force_load)
         {
             var data = Settings[SettingsSelectIndex.Value];
+            // WebView2を初期化してスクリプト類をリセットする
+            await Script.Interpreter.Engine.Reset();
             // ログ設定更新
             Logger.UpdateSetting(data.Log);
             // 強制ロード有効なら読み込み済み設定をクリアする
@@ -621,14 +623,19 @@ namespace SerialDebugger
             {
                 data.ClearForReload();
             }
-            // 未ロードファイルならロード処理
             if (!data.IsLoaded)
             {
+                // 未ロードファイルならロード処理
                 var result = await Setting.LoadAsync(data);
                 if (!result)
                 {
                     return false;
                 }
+            }
+            else
+            {
+                // ロード済みでもscriptをリセットしているので再読み込み
+                await Setting.ReloadScriptAsync(data);
             }
             // Script更新
             Script.Interpreter.ChangeSettingFile(data);
@@ -751,7 +758,7 @@ namespace SerialDebugger
             // 設定ファイル読み込み完了後にOnLoadイベントハンドラを実行
             if (data.Script.HasOnLoad)
             {
-                await Script.Interpreter.Engine.ExecuteScriptAsync(data.Script.OnLoad);
+                await Script.Interpreter.Engine.ExecOnLoadAsync(data.Script.OnLoad);
             }
 
             return true;

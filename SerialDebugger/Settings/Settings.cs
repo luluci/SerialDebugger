@@ -74,6 +74,11 @@ namespace SerialDebugger.Settings
             return result;
         }
 
+        static public async Task ReloadScriptAsync(SettingInfo info)
+        {
+            await Impl.ReloadScriptAsync(info);
+        }
+
         static public void Select(int idx)
         {
             /*
@@ -188,10 +193,15 @@ namespace SerialDebugger.Settings
             return false;
         }
 
+        public async Task ReloadScriptAsync(SettingInfo info)
+        {
+            await info.Script.ReloadAsync();
+        }
+
         private async Task MakeSettingAsync(Json.Settings json, SettingInfo info)
         {
             // Script
-            // 最初にjsをロードしておく
+            // Commで使うので最初にjsをロードしておく
             await info.Script.AnalyzeJsonAsync(json.Script);
             // Output
             info.Output.AnalyzeJson(json.Output);

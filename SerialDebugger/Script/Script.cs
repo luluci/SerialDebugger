@@ -62,9 +62,13 @@ namespace SerialDebugger.Script
         public UtilityIf Utility { get; set; }
         public IoIf IO { get; set; }
 
+        //
+        public bool NavigationCompleted { get; set; } = false;
 
         // Load済みScriptDict
         Dictionary<string, bool> LoadedScript;
+        // 実行済みScript
+        List<string> ExecedScript;
 
         public EngineWebView2()
         {
@@ -94,6 +98,7 @@ namespace SerialDebugger.Script
 
             //
             LoadedScript = new Dictionary<string, bool>();
+            ExecedScript = new List<string>();
         }
 
         public async Task Init()
@@ -110,6 +115,23 @@ namespace SerialDebugger.Script
             // 機能無効化設定
             // F5無効化が主目的
             //WebView2.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
+        }
+
+        public async Task Reset()
+        {
+            // settingファイル個別scriptをロードしていた場合、
+            // WebView2をリセットして初期状態にする
+            if (LoadedScript.Count > 0)
+            {
+                // スクリプト情報クリア
+                LoadedScript.Clear();
+                ExecedScript.Clear();
+                IO.Reset();
+                // WebView2リロード
+                NavigationCompleted = false;
+                WebView2.CoreWebView2.Reload();
+                await WaitWebView2NavigationCompleted();
+            }
         }
 
         public void ChangeSettingFile(Settings.SettingInfo data)
@@ -174,6 +196,8 @@ namespace SerialDebugger.Script
 
         public async Task ReloadScriptFiles()
         {
+            // WebView2がリセットされたときに前状態を復旧するために
+            // 読み込んでいたjsファイルを再読み込みする
             foreach (var script in LoadedScript)
             {
                 Settings.ScriptLoaded = false;
@@ -268,6 +292,35 @@ MakeFieldExecScript(exec_func, {selecter.Count});
             return comm;
         }
 
+        public async Task ExecOnLoadAsync(string onload)
+        {
+            await WebView2.ExecuteScriptAsync(onload);
+            ExecedScript.Add(onload);
+        }
+        public async Task ReExecOnLoadAsync()
+        {
+            foreach (var onload in ExecedScript)
+            {
+                await WebView2.ExecuteScriptAsync(onload);
+            }
+        }
+
+        public async Task<bool> WaitWebView2NavigationCompleted()
+        {
+            // 暫定でC#側フラグで管理。C#側からリロード(Navigation)をかけたときしか使えない。
+            // WebView2側でNavigationが起きたことを検出するためには、
+            // 動的に変数を追加してC#側で例外を使って参照できるかどうかで判定する？
+
+            // NavigationCompletedまで待機, 5秒でタイムアウト
+            int timeup;
+            int timeup_count = 50;
+            for (timeup = 0; !NavigationCompleted && timeup < timeup_count; timeup++)
+            {
+                await Task.Delay(100);
+            }
+            //
+            return timeup < timeup_count;
+        }
 
         private void webView_CoreWebView2InitializationCompleted(object sender, EventArgs e)
         {
@@ -285,6 +338,9 @@ MakeFieldExecScript(exec_func, {selecter.Count});
             //WebView2.CoreWebView2.AddHostObjectToScript("wri", EntryPoint);
             try
             {
+                // リロード時向け対応
+                IO.Reset();
+
                 // ツール側インターフェース登録
                 // Commオブジェクト登録
                 WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
@@ -293,8 +349,19 @@ MakeFieldExecScript(exec_func, {selecter.Count});
                 WebView2.CoreWebView2.AddHostObjectToScript("IO", IO);
                 // デフォルトスクリプトをLoad
                 await RunScriptLoaded("csLoaded()");
+
+                // 初期化完了を通知
+                //string webview2_init_fin = $@"var WebView2_SerialDebugger_Interface_NavigationCompleted = 1;";
+                //await WebView2.CoreWebView2.ExecuteScriptAsync(webview2_init_fin);
+
+                // WebView2側でNavigationが発生したときのみ以下のリロードが発生する想定
                 // Settingファイルスクリプトをリロード
                 await ReloadScriptFiles();
+                // OnLoadスクリプトを再実行
+                await ReExecOnLoadAsync();
+
+                //
+                NavigationCompleted = true;
             }
             catch (Exception ex)
             {

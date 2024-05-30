@@ -41,6 +41,11 @@ namespace SerialDebugger.Settings
             }
 
         }
+
+        public async Task ReloadAsync()
+        {
+            await SerialDebugger.Script.Interpreter.Engine.LoadScriptFiles(Import);
+        }
     }
 
     partial class Json

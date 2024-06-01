@@ -450,10 +450,10 @@ namespace SerialDebugger.Comm
             if (action.HasAutoTxHandler)
             {
                 // AutoTxイベントハンドラを持っていたらScript実行
-                Script.Interpreter.Engine.Comm.AutoTx.Result = true;
+                Script.Interpreter.Engine.WebView2If.Comm.AutoTx.Result = true;
                 await Script.Interpreter.Engine.ExecuteScriptAsync(action.AutoTxHandler);
                 // false時のみ再判定
-                if (!Script.Interpreter.Engine.Comm.AutoTx.Result)
+                if (!Script.Interpreter.Engine.WebView2If.Comm.AutoTx.Result)
                 {
                     result = false;
                 }
@@ -483,7 +483,7 @@ namespace SerialDebugger.Comm
                 // Rxイベントハンドラを持っていたらScript実行
                 await Script.Interpreter.Engine.ExecuteScriptAsync(action.RxHandler);
                 // false時のみ再判定
-                if (!Script.Interpreter.Engine.Comm.RxMatch.Result)
+                if (!Script.Interpreter.Engine.WebView2If.Comm.RxMatch.Result)
                 {
                     result = false;
                 }

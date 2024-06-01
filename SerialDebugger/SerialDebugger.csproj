@@ -103,6 +103,7 @@
       <DependentUpon>View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Script\ViewViewModel.cs" />
+    <Compile Include="Script\WebView2Interface.cs" />
     <Compile Include="Serial\Protocol.cs" />
     <Compile Include="Serial\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>

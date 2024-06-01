@@ -262,7 +262,7 @@ namespace SerialDebugger.Serial
             // Script I/F初期化
             if (HasScriptMatch)
             {
-                Script.Interpreter.Engine.Comm.Rx.Init();
+                Script.Interpreter.Engine.WebView2If.Comm.Rx.Init();
             }
         }
 

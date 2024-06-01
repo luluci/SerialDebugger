@@ -25,7 +25,7 @@ namespace SerialDebugger.Script
     {
         public static EngineWebView2 Engine;
 
-        static public async Task Init()
+        static public async Task Init(MainWindowViewModel tool)
         {
             // WebView2インスタンスの初期化前に実施する
             // dllをexeファイル内に取り込むのと相性が悪い。
@@ -34,12 +34,17 @@ namespace SerialDebugger.Script
             CoreWebView2Environment.SetLoaderDllFolderPath(rootPath);
             // WebView2表示ウインドウ初期化
             Engine = new EngineWebView2();
-            await Engine.Init();
+            await Engine.Init(tool);
         }
 
         static public void ChangeSettingFile(Settings.SettingInfo data)
         {
             Script.Interpreter.Engine.ChangeSettingFile(data);
+        }
+
+        static public void UpdateProtocol(Serial.Protocol protocol)
+        {
+            Engine.UpdateProtocol(protocol);
         }
 
         static public IDisposable GetDisposable()
@@ -57,10 +62,7 @@ namespace SerialDebugger.Script
         // json
         JsonSerializerOptions json_opt;
         // WebView2用通信操作I/F
-        public CommIf Comm { get; set; }
-        public SettingsIf Settings { get; set; }
-        public UtilityIf Utility { get; set; }
-        public IoIf IO { get; set; }
+        public WebView2Interface WebView2If { get; set; }
 
         //
         public bool NavigationCompleted { get; set; } = false;
@@ -91,17 +93,14 @@ namespace SerialDebugger.Script
             };
 
             //
-            Comm = new CommIf();
-            Settings = new SettingsIf();
-            Utility = new UtilityIf();
-            IO = new IoIf();
+            WebView2If = new WebView2Interface();
 
             //
             LoadedScript = new Dictionary<string, bool>();
             ExecedScript = new List<string>();
         }
 
-        public async Task Init()
+        public async Task Init(MainWindowViewModel tool)
         {
             // 初期化完了ハンドラ登録
             WebView2.CoreWebView2InitializationCompleted += webView_CoreWebView2InitializationCompleted;
@@ -109,12 +108,20 @@ namespace SerialDebugger.Script
             // JavaScript側からの呼び出し
             WebView2.WebMessageReceived += webView_WebMessageReceived;
 
+            //
+            WebView2If.Init(tool, View);
+
             // WebView2初期化
             await WebView2.EnsureCoreWebView2Async();
 
             // 機能無効化設定
             // F5無効化が主目的
             //WebView2.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
+        }
+
+        public void UpdateProtocol(Serial.Protocol protocol)
+        {
+            WebView2If.UpdateProtocol(protocol);
         }
 
         public async Task Reset()
@@ -126,7 +133,7 @@ namespace SerialDebugger.Script
                 // スクリプト情報クリア
                 LoadedScript.Clear();
                 ExecedScript.Clear();
-                IO.Reset();
+                WebView2If.IO.Reset();
                 // WebView2リロード
                 NavigationCompleted = false;
                 WebView2.CoreWebView2.Reload();
@@ -136,8 +143,8 @@ namespace SerialDebugger.Script
 
         public void ChangeSettingFile(Settings.SettingInfo data)
         {
-            Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
-            IO.Reset();
+            WebView2If.IO.Reset();
+            WebView2If.Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
         }
 
         public void ShowView(MainWindow window)
@@ -174,12 +181,12 @@ namespace SerialDebugger.Script
             {
                 if (!LoadedScript.TryGetValue(script, out bool value))
                 {
-                    Settings.ScriptLoaded = false;
+                    WebView2If.Settings.ScriptLoaded = false;
                     var result = await LoadScriptFile(script);
                     if (result)
                     {
                         // Script読み込み完了まで待機, 5秒でタイムアウト
-                        for (int timeup = 0; !Settings.ScriptLoaded && timeup < 50; timeup++)
+                        for (int timeup = 0; !WebView2If.Settings.ScriptLoaded && timeup < 50; timeup++)
                         {
                             await Task.Delay(100);
                         }
@@ -200,12 +207,12 @@ namespace SerialDebugger.Script
             // 読み込んでいたjsファイルを再読み込みする
             foreach (var script in LoadedScript)
             {
-                Settings.ScriptLoaded = false;
+                WebView2If.Settings.ScriptLoaded = false;
                 var result = await LoadScriptFile(script.Key);
                 if (result)
                 {
                     // Script読み込み完了まで待機, 5秒でタイムアウト
-                    for (int timeup = 0; !Settings.ScriptLoaded && timeup < 50; timeup++)
+                    for (int timeup = 0; !WebView2If.Settings.ScriptLoaded && timeup < 50; timeup++)
                     {
                         await Task.Delay(100);
                     }
@@ -237,19 +244,19 @@ namespace SerialDebugger.Script
         public async Task<int> MakeFieldSelecter(Comm.Field field)
         {
             // field参照登録
-            Settings.Init(field);
+            WebView2If.Settings.Init(field);
             // Script作成
             var script = MakeFieldSelecterScript(field.selecter);
             // Script実行
             await WebView2.ExecuteScriptAsync(script);
             //
-            if (Settings.Field.Result)
+            if (WebView2If.Settings.Field.Result)
             {
-                return Settings.Field.SelectIndex;
+                return WebView2If.Settings.Field.SelectIndex;
             }
             else
             {
-                throw new Exception(Settings.Field.Message);
+                throw new Exception(WebView2If.Settings.Field.Message);
             }
         }
 
@@ -339,14 +346,15 @@ MakeFieldExecScript(exec_func, {selecter.Count});
             try
             {
                 // リロード時向け対応
-                IO.Reset();
+                WebView2If.IO.Reset();
 
                 // ツール側インターフェース登録
                 // Commオブジェクト登録
-                WebView2.CoreWebView2.AddHostObjectToScript("Utility", Utility);
-                WebView2.CoreWebView2.AddHostObjectToScript("Settings", Settings);
-                WebView2.CoreWebView2.AddHostObjectToScript("Comm", Comm);
-                WebView2.CoreWebView2.AddHostObjectToScript("IO", IO);
+                WebView2.CoreWebView2.AddHostObjectToScript("SerialDebugger", WebView2If);
+                WebView2.CoreWebView2.AddHostObjectToScript("Utility", WebView2If.Utility);
+                WebView2.CoreWebView2.AddHostObjectToScript("Settings", WebView2If.Settings);
+                WebView2.CoreWebView2.AddHostObjectToScript("Comm", WebView2If.Comm);
+                WebView2.CoreWebView2.AddHostObjectToScript("IO", WebView2If.IO);
                 // デフォルトスクリプトをLoad
                 await RunScriptLoaded("csLoaded()");
 
@@ -393,7 +401,7 @@ MakeFieldExecScript(exec_func, {selecter.Count});
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
                     this.Disposables.Dispose();
                     (View.DataContext as IDisposable)?.Dispose();
-                    IO.Reset();
+                    WebView2If.IO.Reset();
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、下のファイナライザーをオーバーライドします。

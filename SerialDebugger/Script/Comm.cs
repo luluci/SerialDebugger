@@ -63,14 +63,17 @@ namespace SerialDebugger.Script
             AutoTx.AutoTxJobsRef = autotx;
             Rx.RxFrames(rx);
         }
-        public void Init(Serial.Protocol protocol, MainWindowViewModel tool)
+        public void Init(MainWindowViewModel tool)
+        {
+            //
+            ToolRef = tool;
+        }
+        public void Init(Serial.Protocol protocol)
         {
             //
             ProtocolRef = protocol;
             Tx.ProtocolRef = protocol;
             RxMatch.ProtocolRef = protocol;
-            //
-            ToolRef = tool;
         }
 
         public bool IsSerialOpen()

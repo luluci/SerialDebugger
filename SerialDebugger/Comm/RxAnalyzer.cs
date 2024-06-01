@@ -185,8 +185,8 @@ namespace SerialDebugger.Comm
         {
             var result = false;
             // Script引数,戻り値初期化
-            Script.Interpreter.Engine.Comm.Rx.Data = data;
-            Script.Interpreter.Engine.Comm.Rx.Result = Script.CommRxResult.MatchFailed;
+            Script.Interpreter.Engine.WebView2If.Comm.Rx.Data = data;
+            Script.Interpreter.Engine.WebView2If.Comm.Rx.Result = Script.CommRxResult.MatchFailed;
 
             // UIスレッドで実行している場合、WebView2/Script実行
             await Script.Interpreter.Engine.ExecuteScriptAsync(rule.RxRecieved);
@@ -207,7 +207,7 @@ namespace SerialDebugger.Comm
             //    }
             //});
 
-            switch (Script.Interpreter.Engine.Comm.Rx.Result)
+            switch (Script.Interpreter.Engine.WebView2If.Comm.Rx.Result)
             {
                 case Script.CommRxResult.MatchProgress:
                     // 

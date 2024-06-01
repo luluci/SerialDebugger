@@ -113,8 +113,12 @@
     <script language="javascript" type="text/javascript">
 		// C# -> WebView2 Event Handler
 		// C#側からWebView2の初期化が完了したらJavaScriptの初期化としてコールされる
+		var SerialDebugger;
+		var SerialDebuggerAsync;
 		const csLoaded = () => {
 			try {
+				SerialDebugger = chrome.webview.hostObjects.sync.SerialDebugger;
+				SerialDebuggerAsync = chrome.webview.hostObjects.SerialDebugger;
 				Utility_Loaded();
 				Settings_Loaded();
 				Comm_Loaded();

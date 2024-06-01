@@ -100,7 +100,7 @@ namespace SerialDebugger
         // Log
         public ReactiveCollection<string> Log { get; set; }
         // ベースGUI
-        MainWindow window;
+        public MainWindow Window { get; }
         UIElement BaseSerialTxOrig;
         UIElement BaseSerialRxOrig;
         UIElement BaseSerialAutoTxOrig;
@@ -116,7 +116,7 @@ namespace SerialDebugger
         public MainWindowViewModel(MainWindow window)
         {
             Comm.RxAnalyzer.Dispatcher = window.Dispatcher;
-            this.window = window;
+            this.Window = window;
             // 初期表示のGridは動的に入れ替えるので最初に参照を取得しておく
             BaseSerialTxOrig = window.BaseSerialTx.Children[0];
             BaseSerialRxOrig = window.BaseSerialRx.Children[0];
@@ -449,9 +449,9 @@ namespace SerialDebugger
 
         private Point GetInputStringPos(UIElement ui)
         {
-            var wnd_pt = GetUIPos(window);
-            var wnd_w = window.RenderSize.Width;
-            var wnd_h = window.RenderSize.Height;
+            var wnd_pt = GetUIPos(Window);
+            var wnd_w = Window.RenderSize.Width;
+            var wnd_h = Window.RenderSize.Height;
             double titleBarHeight = SystemParameters.CaptionHeight;
             var wnd_right = wnd_pt.X + wnd_w;
             var wnd_bottom = wnd_pt.Y + wnd_h - titleBarHeight * 1.5;
@@ -511,7 +511,7 @@ namespace SerialDebugger
         public Point GetUIPos(UIElement ui)
         {
             var pt = ui.PointToScreen(new Point(0.0d, 0.0d));
-            var transform = PresentationSource.FromVisual(window).CompositionTarget.TransformFromDevice;
+            var transform = PresentationSource.FromVisual(Window).CompositionTarget.TransformFromDevice;
             return transform.Transform(pt);
         }
         public System.Drawing.Rectangle GetWholeScreenRect()
@@ -591,15 +591,15 @@ namespace SerialDebugger
         public void InitGui()
         {
             WindowTitle.Value = $"{ToolTitle}";
-            window.BaseSerialTx.Children.Clear();
-            window.BaseSerialRx.Children.Clear();
-            window.BaseSerialAutoTx.Children.Clear();
+            Window.BaseSerialTx.Children.Clear();
+            Window.BaseSerialRx.Children.Clear();
+            Window.BaseSerialAutoTx.Children.Clear();
             BaseSerialTxMsg.Value = "設定ファイル読み込み中...";
             BaseSerialRxMsg.Value = "設定ファイル読み込み中...";
             BaseSerialAutoTxMsg.Value = "設定ファイル読み込み中...";
-            window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
-            window.BaseSerialRx.Children.Add(BaseSerialRxOrig);
-            window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
+            Window.BaseSerialTx.Children.Add(BaseSerialTxOrig);
+            Window.BaseSerialRx.Children.Add(BaseSerialRxOrig);
+            Window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
             TxShortcut.Clear();
             RxShortcut.Clear();
         }
@@ -642,8 +642,8 @@ namespace SerialDebugger
             // GUI作成
             Comm.Gui.Init(data);
             WindowTitle.Value = $"{ToolTitle} [{data.Name}]";
-            window.Width = data.Gui.Window.Width;
-            window.Height = data.Gui.Window.Height;
+            Window.Width = data.Gui.Window.Width;
+            Window.Height = data.Gui.Window.Height;
             // COMポート設定更新
             serialSetting.vm.SetSerialSetting(data.Serial);
             // Tx設定
@@ -655,11 +655,11 @@ namespace SerialDebugger
                 // GUI作成
                 var tx = Comm.TxGui.Make();
                 // GUI反映
-                window.BaseSerialTx.Children.Clear();
-                window.BaseSerialTx.Children.Add(tx);
+                Window.BaseSerialTx.Children.Clear();
+                Window.BaseSerialTx.Children.Add(tx);
                 // GUI座標取得のために画面更新, Tabを表示しないと座標が取得できない
                 TabSelectedIndex.Value = 0;
-                window.BaseSerialTx.UpdateLayout();
+                Window.BaseSerialTx.UpdateLayout();
                 // GUI反映後処理
                 foreach (var frame in TxFrames)
                 {
@@ -668,7 +668,7 @@ namespace SerialDebugger
                     {
                         Grid node = (Grid)tx.Children[frame.Id];
                         var temp_point = new Point(0, 0);
-                        frame.Point = node.TranslatePoint(temp_point, window.TxScrollViewer);
+                        frame.Point = node.TranslatePoint(temp_point, Window.TxScrollViewer);
                         //var point = node.Children[0].TransformToAncestor(window.TxScrollViewer).Transform(frame.Point);
                     }
                     // ショートカット作成
@@ -697,11 +697,11 @@ namespace SerialDebugger
                 // GUI作成
                 var rx = Comm.RxGui.Make();
                 // GUI反映
-                window.BaseSerialRx.Children.Clear();
-                window.BaseSerialRx.Children.Add(rx);
+                Window.BaseSerialRx.Children.Clear();
+                Window.BaseSerialRx.Children.Add(rx);
                 // GUI座標取得のために画面更新
                 TabSelectedIndex.Value = 1;
-                window.BaseSerialRx.UpdateLayout();
+                Window.BaseSerialRx.UpdateLayout();
                 //
                 foreach (var frame in RxFrames)
                 {
@@ -709,7 +709,7 @@ namespace SerialDebugger
                     {
                         Grid node = (Grid)rx.Children[frame.Id];
                         var temp_point = new Point(0, 0);
-                        frame.Point = node.TranslatePoint(temp_point, window.RxScrollViewer);
+                        frame.Point = node.TranslatePoint(temp_point, Window.RxScrollViewer);
                         //var point = node.Children[0].TransformToAncestor(window.TxScrollViewer).Transform(frame.Point);
                     }
                     // Shortcut作成
@@ -731,8 +731,8 @@ namespace SerialDebugger
                 // GUI作成
                 var autotx = Comm.AutoTxGui.Make(data);
                 // GUI反映
-                window.BaseSerialAutoTx.Children.Clear();
-                window.BaseSerialAutoTx.Children.Add(autotx);
+                Window.BaseSerialAutoTx.Children.Clear();
+                Window.BaseSerialAutoTx.Children.Add(autotx);
                 // Shortcut作成
                 foreach (var job in AutoTxJobs)
                 {
@@ -769,7 +769,7 @@ namespace SerialDebugger
             // Binding先インスタンスを切り替えたため、再接続しないとGUIに反映されない
             // 新インスタンスにBinding設定
             var bind = new Binding("AutoTxJobs");
-            window.AutoTxShortcut.SetBinding(ComboBox.ItemsSourceProperty, bind);
+            Window.AutoTxShortcut.SetBinding(ComboBox.ItemsSourceProperty, bind);
             AutoTxShortcutSelectedIndex.Value = 0;
             AutoTxShortcutSelectedIndex.ForceNotify();
             // AutoTxイベント購読
@@ -804,7 +804,8 @@ namespace SerialDebugger
                 // 通信管理クラス作成
                 protocol = new Serial.Protocol(polling, rx_timeout, TxFrames, RxFrames, AutoTxJobs);
                 // Script
-                Script.Interpreter.Engine.Comm.Init(protocol, this);
+                Script.Interpreter.UpdateProtocol(protocol);
+                Script.Interpreter.Engine.WebView2If.Comm.Init(protocol);
 
                 return true;
             }

@@ -477,7 +477,7 @@ namespace SerialDebugger.Comm
 
                             case RxMatchType.Script:
                                 // Scriptでマッチした分をログに出力
-                                var script_log = Script.Interpreter.Engine.Comm.Rx.Log[Id][pattern.Id];
+                                var script_log = Script.Interpreter.Engine.WebView2If.Comm.Rx.Log[Id][pattern.Id];
                                 field_id += script_log.Count;
                                 for (int match_id = 0; match_id < script_log.Count; match_id++)
                                 {

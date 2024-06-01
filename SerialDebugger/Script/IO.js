@@ -7,8 +7,8 @@ var IO;
 var IOAsync;
 
 const IO_Loaded = () => {
-	IO = chrome.webview.hostObjects.sync.IO;
-    IOAsync = chrome.webview.hostObjects.IO;
+	IO = SerialDebugger.IO;
+    IOAsync = SerialDebuggerAsync.IO;
 }
 
 

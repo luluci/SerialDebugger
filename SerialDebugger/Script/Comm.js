@@ -10,8 +10,8 @@ var MatchSuccess;
 
 
 const Comm_Loaded = () => {
-	Comm = chrome.webview.hostObjects.sync.Comm;
-    CommAsync = chrome.webview.hostObjects.Comm;
+	Comm = SerialDebugger.Comm;
+    CommAsync = SerialDebuggerAsync.Comm;
 
     MatchProgress = Comm.Rx.MatchProgress;
     MatchFailed = Comm.Rx.MatchFailed;

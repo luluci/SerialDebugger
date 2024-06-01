@@ -7,8 +7,8 @@ var Utility;
 var UtilityAsync;
 
 const Utility_Loaded = () => {
-	Utility = chrome.webview.hostObjects.sync.Utility;
-    UtilityAsync = chrome.webview.hostObjects.Utility;
+	Utility = SerialDebugger.Utility;
+    UtilityAsync = SerialDebuggerAsync.Utility;
 }
 
 

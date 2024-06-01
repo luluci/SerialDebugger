@@ -7,8 +7,8 @@ var Settings;
 var SettingsAsync;
 
 const Settings_Loaded = () => {
-	Settings = chrome.webview.hostObjects.sync.Settings;
-    SettingsAsync = chrome.webview.hostObjects.Settings;
+	Settings = SerialDebugger.Settings;
+    SettingsAsync = SerialDebuggerAsync.Settings;
 }
 
 const MakeFieldExecScript = (func, count) => {

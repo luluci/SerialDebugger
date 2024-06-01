@@ -21,7 +21,7 @@ const Job_AutoScript = () => {
 				Comm.RefreshComPortList();
 				let com_ports = Comm.GetComPortList();
 				let com_port_len = com_ports.length;
-				let com_port = "COM1";
+				let com_port = "COM6";
 				// com_port = com_ports[com_port_len-1];
 				// Utility.Log(com_port);
 				// debug_console.textContent = com_port;

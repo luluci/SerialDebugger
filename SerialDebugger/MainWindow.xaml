@@ -153,6 +153,11 @@
                                 <ItemsPresenter />
                             </ControlTemplate>
                         </ListBox.Template>
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="コピー" Command="{Binding OnClickLogCopy}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItem}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
                     </ListBox>
                 </ScrollViewer>
             </GroupBox>

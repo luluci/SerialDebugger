@@ -99,6 +99,7 @@ namespace SerialDebugger
         public ReactiveCommand OnClickOpenScript { get; set; }
         // Log
         public ReactiveCollection<string> Log { get; set; }
+        public ReactiveCommand OnClickLogCopy { get; set; }
         // ベースGUI
         public MainWindow Window { get; }
         UIElement BaseSerialTxOrig;
@@ -205,6 +206,16 @@ namespace SerialDebugger
 
             // Log
             Log = Logger.GetLogData();
+            OnClickLogCopy = new ReactiveCommand();
+            OnClickLogCopy.Subscribe(log =>
+                {
+                    var logstr = log as string;
+                    if (logstr != null)
+                    {
+                        Clipboard.SetText(logstr);
+                    }
+                })
+                .AddTo(Disposables);
 
             // 文字列入力ポップアップウインドウ
             IsEnableInputString = new ReactivePropertySlim<bool>(true);

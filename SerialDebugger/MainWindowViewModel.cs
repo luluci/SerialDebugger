@@ -238,7 +238,7 @@ namespace SerialDebugger
                     catch (Exception ex)
                     {
                         inputString.Hide();
-                        Logger.Add("Logic error?: " + ex.Message);
+                        Logger.Add("[System] Logic error?: " + ex.Message);
                     }
                 })
                 .AddTo(Disposables);
@@ -868,16 +868,19 @@ namespace SerialDebugger
                 // COM切断を有効化
                 IsSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM切断";
+
+                //
+                Logger.Add("[System] COM port open.");
             }
             catch (OperationCanceledException e)
             {
                 SerialFinish();
-                Logger.Add($"Comm Cancel: {e.Message}");
+                Logger.Add($"[System] Comm Cancel: {e.Message}");
             }
             catch (Exception e)
             {
                 SerialFinish();
-                Logger.Add($"Error: {e.Message}");
+                Logger.Add($"[System] COM Error: {e.Message}");
             }
         }
 
@@ -902,10 +905,13 @@ namespace SerialDebugger
                 IsSerialOpen.Value = false;
                 IsEnableSerialOpen.Value = true;
                 TextSerialOpen.Value = "COM接続";
+
+                //
+                Logger.Add("[System] COM port close.");
             }
             catch (Exception e)
             {
-                Logger.Add($"Error: {e.Message}");
+                Logger.Add($"[System] Error: {e.Message}");
             }
         }
 

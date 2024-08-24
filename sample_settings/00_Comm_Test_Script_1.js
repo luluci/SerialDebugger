@@ -102,3 +102,27 @@ const Job_Test_Exec = () => {
 	//
 	Comm.RxMatch.Result = true;
 }
+
+const Job_ScriptTest_1 = () => {
+	let count = 0;
+	let data;
+	let disp;
+
+	// 
+	count = Comm.Rx[0].Fields.Count;
+	Utility.Log(`[Script] Rx[0].Fields.Count == ${count}`);
+	// 
+	count = Comm.Rx[0].Patterns.Count;
+	Utility.Log(`[Script] Rx[0].Patterns.Count == ${count}`);
+	// 
+	count = Comm.Rx[0].Patterns[0].Count;
+	Utility.Log(`[Script] Rx[0].Patterns[0].Count == ${count}`);
+	// 
+	count = Comm.Rx[0].Patterns[0].Matches.Count;
+	Utility.Log(`[Script] Rx[0].Patterns[0].Matches.Count == ${count}`);
+	// 
+	disp = Comm.Rx[0].Patterns[0][0].Disp;
+	Utility.Log(`[Script] Rx[0].Patterns[0][0].Disp == ${disp}`);
+	data = Comm.Rx[0].Patterns[0][0].RawData;
+	Utility.Log(`[Script] Rx[0].Patterns[0][0].RawData == ${data}`);
+}

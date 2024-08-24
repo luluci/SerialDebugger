@@ -135,6 +135,17 @@
 					"actions": [
 						{ "type": "Script", "auto_tx_handler": "Job_Test_Exec()" }
 					]
+				},
+				{
+					"name": "Job_ScriptTest_1",
+					"alias": "JavaScript単発実行テスト_1",
+					"active": false,
+					"actions": [
+						{
+							"type": "Script",
+							"auto_tx_handler": "Job_ScriptTest_1()"
+						}
+					]
 				}
 			]
 		},

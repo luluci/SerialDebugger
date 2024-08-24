@@ -1230,39 +1230,85 @@ const Comm_Loaded = () => {
 | Comm.Rx | object | 
 | Comm.RxMatch | object | 
 
+##### Comm.Tx
+
+| Interface | Format | Description |
+----|----|---- 
+| Comm.Tx[] | TxBuffers[] | Txで定義したFramesからインデックス[]で指定したFrameの送信データバッファコンテナへアクセスするI/F
+| Comm.Tx.Fix(int frame_id, int buffer_id) | void | 引数で指定した送信データバッファの変更を確定する
+| Comm.Tx.Send(int frame_id, int buffer_id) | void | 引数で指定した送信データバッファを送信する
+| Comm.Tx.SendPart(int frame_id, int buffer_id, int offset, int length) | void | 引数で指定した送信データバッファの内、[offset]バイト目から[length]バイト分のデータを送信する
+
 ##### Comm.Rx
 
 | Interface | Format | Description |
 ----|----|---- 
-| Comm.Rx.Init() | void | 
-| Comm.Rx.AddLog(int frame_id, int pattern_id, string log) | void | 
-| Comm.Rx[] | RxFrame | 受信解析(Rx)で定義したFrameへアクセスするI/F
+| Comm.Rx.Init() | void | 受信解析データ初期化:Logクリア
+| Comm.Rx.AddLog(int frame_id, int pattern_id, string log) | void | Scriptによる受信解析でマッチと判定したデータをログとして保存する
+| Comm.Rx[] | RxFrame | 受信解析(Rx)で定義したFramesからインデックス[]で指定したFrameへアクセスするI/F
 
 ##### Comm.Rx.RxFrame
 
 | Interface | Format | Description |
 ----|----|---- 
-| RxFrame.Fields[] | Field | FieldへアクセスするI/F
+| RxFrame.Fields | RxFields | 受信解析Field定義へアクセスするI/F
+| RxFrame.Patterns | RxPatterns | 受信解析パターン定義へアクセスするI/F
 
-##### Comm.Rx.RxFrame.Field
+##### Comm.Rx.RxFrame.RxFields
+
+| Interface | Format | Description |
+----|----|---- 
+| RxFields.Count | number | Fieldsが持つFieldの数
+| RxFields[] | RxField | Field定義へアクセスするI/F
+
+##### Comm.Rx.RxFrame.RxFields.RxField
 
 | Interface | Format | Description |
 ----|----|---- 
 | Field.GetDict() | Dict | Fieldで定義される選択リストを取得する
 
-##### Comm.Rx.RxFrame.Field.Dict
+##### Comm.Rx.RxFrame.RxFields.RxField.Dict
 
 | Interface | Format | Description |
 ----|----|---- 
 | Dict.Count | number | 選択リスト要素数
 | Dict[] | Node | 選択リスト要素
 
-##### Comm.Rx.RxFrame.Field.Dict.Node
+##### Comm.Rx.RxFrame.RxFields.RxField.Dict.Node
 
 | Interface | Format | Description |
 ----|----|---- 
 | Node.Value | number | 値
 | Node.GetValue() | string | 表示文字列
+
+##### Comm.Rx.RxFrame.RxPatterns
+
+| Interface | Format | Description |
+----|----|---- 
+| RxPatterns.Count | number | RxPatternsが持つRxPatternの数
+| RxPatterns[] | RxPattern | RxPattern定義へアクセスするI/F
+
+##### Comm.Rx.RxFrame.RxPatterns.RxPattern
+
+| Interface | Format | Description |
+----|----|---- 
+| RxPattern.Matches | RxMatches | RxPatternが持つRxMatchesへアクセスするI/F
+| RxPattern.Count | number | RxPatternが持つRxMatchesの要素数
+| RxPattern[] | RxMatch | RxMatchesからインデックス[]で指定したRxMatchへアクセスするI/F
+
+##### Comm.Rx.RxFrame.RxPatterns.RxPattern.RxMatches
+
+| Interface | Format | Description |
+----|----|---- 
+| RxMatches.Count | number | RxMatchesが持つRxMatchの数
+| RxMatches[] | RxMatch | RxMatch定義へアクセスするI/F
+
+##### Comm.Rx.RxFrame.RxPatterns.RxPattern.RxMatches.RxMatch
+
+| Interface | Format | Description |
+----|----|---- 
+| RxMatch.Disp | string | 受信値の表示用定義
+| RxMatch.RawData | number | 受信値
 
 
 ##### Comm.RxMatch

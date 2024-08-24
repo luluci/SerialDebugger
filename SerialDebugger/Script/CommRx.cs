@@ -170,6 +170,14 @@ namespace SerialDebugger.Script
             return this;
         }
 
+        public int Count
+        {
+            get
+            {
+                return RxFieldsRef.Count;
+            }
+        }
+
         [System.Runtime.CompilerServices.IndexerName("Items")]
         public CommRxFieldIf this[int idx]
         {
@@ -236,6 +244,14 @@ namespace SerialDebugger.Script
             return this;
         }
 
+        public int Count
+        {
+            get
+            {
+                return RxPatternsRef.Count;
+            }
+        }
+
         [System.Runtime.CompilerServices.IndexerName("Items")]
         public CommRxPatternIf this[int idx]
         {
@@ -270,6 +286,14 @@ namespace SerialDebugger.Script
             }
         }
 
+        public int Count
+        {
+            get
+            {
+                return RxPatternRef.Matches.Count;
+            }
+        }
+
         [System.Runtime.CompilerServices.IndexerName("Items")]
         public CommRxMatchIf this[int idx]
         {
@@ -295,7 +319,15 @@ namespace SerialDebugger.Script
             RxMatchesRef = data;
             return this;
         }
-        
+
+        public int Count
+        {
+            get
+            {
+                return RxMatchesRef.Count;
+            }
+        }
+
         [System.Runtime.CompilerServices.IndexerName("Items")]
         public CommRxMatchIf this[int idx]
         {

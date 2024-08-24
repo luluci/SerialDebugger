@@ -1,5 +1,5 @@
 {
-	"name": "Test_通信_Scriptマッチング_1_VisualizeLog",
+	"name": "Test_Script_1_JavaScript-C#_I/F全般",
 	
 	"gui": {
 		"window":
@@ -23,7 +23,7 @@
 	
 	"script": {
 		"import": [
-			"00_Comm_Test_Script_1.js"
+			"10_Script_Test_1.js"
 		]
 	},
 	
@@ -94,18 +94,15 @@
 					],
 					"patterns": [
 						{
-							"name": "Rx_Pattern_3_Script",
+							"name": "Rx_Pattern_1",
 							"active": true,
-							"log_visualize": true,
+							"log_visualize": false,
 							"matches": [
-								{
-									"type": "Script",
-									"rx_recieved": "Rx_ptn3_match_header"
-								},
-								{
-									"rx_begin": "Rx_ptn3_init",
-									"rx_recieved": "Rx_ptn3_match_body"
-								}
+								{ "value": 1 },
+								{ "value": 2 },
+								{ "value": 3 },
+								{ "value": 4 },
+								{ "type": "Any" }
 							]
 						}
 					]
@@ -116,24 +113,14 @@
 		"auto_tx": {
 			"jobs": [
 				{
-					"name": "Job_Auto_1",
-					"alias": "Frame_Aを繰り返す",
+					"name": "Job_ScriptTest_1",
+					"alias": "JavaScript単発実行テスト_1",
 					"active": false,
 					"actions": [
-						{ "type": "Log", "log": "<Job_Auto_1 start.>" },
-						{ "type": "Send", "tx_frame": "Frame_A" },
-						{ "type": "Script", "rx_handler": "Job1_0_RxMatch()" },
-						{ "type": "Script", "auto_tx_handler": "Job1_0_Format5()" },
-						{ "type": "Wait", "wait_time": 2000 },
-						{ "type": "Jump", "alias": "<Loop>", "jump_to": 1 }
-					]
-				},
-				{
-					"name": "Job_Test_Exec",
-					"alias": "JavaScriptテスト実行用ジョブ",
-					"active": false,
-					"actions": [
-						{ "type": "Script", "auto_tx_handler": "Job_Test_Exec()" }
+						{
+							"type": "Script",
+							"auto_tx_handler": "Job_ScriptTest_1()"
+						}
 					]
 				}
 			]

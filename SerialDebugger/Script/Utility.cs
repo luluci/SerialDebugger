@@ -24,5 +24,10 @@ namespace SerialDebugger.Script
         {
             Logger.Add(msg);
         }
+
+        public string GetTimestamp()
+        {
+            return Logger.GetTimestamp();
+        }
     }
 }

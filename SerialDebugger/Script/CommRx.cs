@@ -203,6 +203,14 @@ namespace SerialDebugger.Script
             RxFieldRef = node;
             return this;
         }
+
+        public string Name
+        {
+            get
+            {
+                return RxFieldRef.Name;
+            }
+        }
         
         public CommRxFieldSelecterNode[] GetSelecter()
         {
@@ -283,6 +291,14 @@ namespace SerialDebugger.Script
             get
             {
                 return CommRxMatchesIf.RxMatches(RxPatternRef.Matches);
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return RxPatternRef.Name;
             }
         }
 

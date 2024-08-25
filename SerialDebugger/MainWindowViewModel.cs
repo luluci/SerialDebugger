@@ -100,6 +100,7 @@ namespace SerialDebugger
         // Log
         public ReactiveCollection<string> Log { get; set; }
         public ReactiveCommand OnClickLogCopy { get; set; }
+        public ReactiveCommand OnClickLogClear { get; set; }
         // ベースGUI
         public MainWindow Window { get; }
         UIElement BaseSerialTxOrig;
@@ -215,6 +216,12 @@ namespace SerialDebugger
                         Clipboard.SetText(logstr);
                     }
                 })
+                .AddTo(Disposables);
+            OnClickLogClear = new ReactiveCommand();
+            OnClickLogClear.Subscribe(x =>
+            {
+                Logger.Clear();
+            })
                 .AddTo(Disposables);
 
             // 文字列入力ポップアップウインドウ

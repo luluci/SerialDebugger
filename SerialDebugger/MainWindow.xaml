@@ -156,10 +156,17 @@
                         <ListBox.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="コピー" Command="{Binding OnClickLogCopy}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItem}"/>
+                                <Separator/>
+                                <MenuItem Header="ログクリア" Command="{Binding OnClickLogClear}"/>
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
                 </ScrollViewer>
+                <GroupBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="ログクリア" Command="{Binding OnClickLogClear}"/>
+                    </ContextMenu>
+                </GroupBox.ContextMenu>
             </GroupBox>
         </Grid>
     </Grid>

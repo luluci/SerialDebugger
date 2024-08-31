@@ -123,6 +123,7 @@ namespace SerialDebugger.Comm
             //
             var tb = new TextBlock();
             tb.Text = text;
+            tb.ToolTip = text;
             tb.Background = SystemColors.ControlBrush;
             tb.TextAlignment = TextAlignment.Center;
             //

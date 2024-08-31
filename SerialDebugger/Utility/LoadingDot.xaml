@@ -1,0 +1,146 @@
+﻿<UserControl x:Class="SerialDebugger.Utility.LoadingDot"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SerialDebugger.Utility"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             x:Name="Root">
+    <UserControl.Resources>
+        <!--  アニメーションパラメータ  -->
+        <Style TargetType="{x:Type FrameworkElement}" x:Key="LoadEllipseVisible">
+            <Setter Property="Visibility" Value="Visible"/>
+        </Style>
+        <Style TargetType="{x:Type FrameworkElement}" x:Key="LoadEllipseHidden">
+            <Setter Property="Visibility" Value="Hidden"/>
+        </Style>
+        <!--  アニメーション時間  -->
+        <KeyTime x:Key="LoadKeyTime1">00:00:00</KeyTime>
+        <KeyTime x:Key="LoadKeyTime2">00:00:0.40</KeyTime>
+        <KeyTime x:Key="LoadKeyTime3">00:00:0.80</KeyTime>
+        <KeyTime x:Key="LoadKeyTime4">00:00:1.20</KeyTime>
+        <KeyTime x:Key="LoadKeyTime5">00:00:0.80</KeyTime>
+        <KeyTime x:Key="LoadKeyTimeEnd">00:00:02</KeyTime>
+
+        <Storyboard x:Key="LoadingAnimation">
+            <!-- 1つ目 -->
+            <ObjectAnimationUsingKeyFrames RepeatBehavior="Forever" Storyboard.TargetName="LoadEllipse1" Storyboard.TargetProperty="Visibility">
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime1}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Hidden</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime2}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime3}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime4}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTimeEnd}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+            </ObjectAnimationUsingKeyFrames>
+            <!-- 2つ目 -->
+            <ObjectAnimationUsingKeyFrames RepeatBehavior="Forever" Storyboard.TargetName="LoadEllipse2" Storyboard.TargetProperty="Visibility">
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime1}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Hidden</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime2}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Hidden</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime3}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime4}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTimeEnd}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+            </ObjectAnimationUsingKeyFrames>
+            <!-- 3つ目 -->
+            <ObjectAnimationUsingKeyFrames RepeatBehavior="Forever" Storyboard.TargetName="LoadEllipse3" Storyboard.TargetProperty="Visibility">
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime1}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Hidden</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime2}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Hidden</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime3}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Hidden</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTime4}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+                <DiscreteObjectKeyFrame KeyTime="{StaticResource LoadKeyTimeEnd}">
+                    <DiscreteObjectKeyFrame.Value>
+                        <Visibility>Visible</Visibility>
+                    </DiscreteObjectKeyFrame.Value>
+                </DiscreteObjectKeyFrame>
+            </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+    </UserControl.Resources>
+    <!--
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard Storyboard="{StaticResource LoadingAnimation}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
+    -->
+    <Grid DataContext="{Binding ElementName=Root}" Background="{Binding Background}" Width="{Binding Width}" Height="{Binding Height}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="60"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="1" Grid.Column="1" DataContext="{Binding ElementName=Root}" FontSize="30" Text="{Binding Text}" TextAlignment="Center" Foreground="{Binding Foreground}"/>
+        <Canvas Grid.Row="1" Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,0,15">
+            <Grid Margin="15,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="20"/>
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="LoadEllipse1" Grid.Column="0" Width="{Binding DotSize}" Height="{Binding DotSize}" Fill="{Binding Foreground}" Visibility="Visible"/>
+                <Ellipse x:Name="LoadEllipse2" Grid.Column="1" Width="{Binding DotSize}" Height="{Binding DotSize}" Fill="{Binding Foreground}" Visibility="Visible"/>
+                <Ellipse x:Name="LoadEllipse3" Grid.Column="2" Width="{Binding DotSize}" Height="{Binding DotSize}" Fill="{Binding Foreground}" Visibility="Visible"/>
+            </Grid>
+        </Canvas>
+    </Grid>
+</UserControl>

@@ -18,6 +18,7 @@ using System.Threading;
 namespace SerialDebugger
 {
     using System.Reactive.Linq;
+    using System.Windows.Media;
     using Utility;
     using Logger = Log.Log;
     using Setting = Settings.Settings;
@@ -114,6 +115,13 @@ namespace SerialDebugger
         SerialPort serialPort;
         Serial.Protocol protocol;
         Task protocolTask;
+
+        // Loading画面
+        public ReactivePropertySlim<Visibility> LoadingVisibility { get; set; }
+        public ReactivePropertySlim<SolidColorBrush> LoadingBackground { get; set; }
+        public ReactivePropertySlim<SolidColorBrush> LoadingForeground { get; set; }
+        public ReactivePropertySlim<string> LoadingText { get; set; }
+        public ReactivePropertySlim<bool> LoadingIsFrozen { get; set; }
 
         public MainWindowViewModel(MainWindow window)
         {
@@ -219,9 +227,9 @@ namespace SerialDebugger
                 .AddTo(Disposables);
             OnClickLogClear = new ReactiveCommand();
             OnClickLogClear.Subscribe(x =>
-            {
-                Logger.Clear();
-            })
+                {
+                    Logger.Clear();
+                })
                 .AddTo(Disposables);
 
             // 文字列入力ポップアップウインドウ
@@ -390,6 +398,18 @@ namespace SerialDebugger
                     Script.Interpreter.Engine.ShowView(window);
                 })
                 .AddTo(Disposables);
+
+            // Loading
+            LoadingVisibility = new ReactivePropertySlim<Visibility>(Visibility.Hidden);
+            LoadingVisibility.AddTo(Disposables);
+            LoadingBackground = new ReactivePropertySlim<SolidColorBrush>(new SolidColorBrush(System.Windows.Media.Color.FromArgb(0xA0, 0x20, 0x20, 0x20)));
+            LoadingBackground.AddTo(Disposables);
+            LoadingForeground = new ReactivePropertySlim<SolidColorBrush>(new SolidColorBrush(System.Windows.Media.Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF)));
+            LoadingForeground.AddTo(Disposables);
+            LoadingText = new ReactivePropertySlim<string>("Loading...");
+            LoadingText.AddTo(Disposables);
+            LoadingIsFrozen = new ReactivePropertySlim<bool>(true);
+            LoadingIsFrozen.AddTo(Disposables);
 
             // Debug
             DebugInit();
@@ -631,6 +651,10 @@ namespace SerialDebugger
 
         public async Task<bool> LoadSettingAsync(bool force_load)
         {
+            LoadingText.Value = "設定ファイル読み込み中";
+            LoadingIsFrozen.Value = false;
+            LoadingVisibility.Value = Visibility.Visible;
+
             var data = Settings[SettingsSelectIndex.Value];
             // WebView2を初期化してスクリプト類をリセットする
             await Script.Interpreter.Engine.Reset();
@@ -779,6 +803,8 @@ namespace SerialDebugger
                 await Script.Interpreter.Engine.ExecOnLoadAsync(data.Script.OnLoad);
             }
 
+            LoadingVisibility.Value = Visibility.Hidden;
+            LoadingIsFrozen.Value = true;
             return true;
         }
 
@@ -1159,7 +1185,7 @@ return true;
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)。
                     // 一応protocolに停止指令を出す
                     // 以降の
-                    protocol.Stop();
+                    if (!(protocol is null)) protocol.Stop();
                     inputString.Close();
                     this.Disposables.Dispose();
                 }

@@ -26,22 +26,22 @@ namespace SerialDebugger.Script
             Dispose();
         }
 
-        public FileIf GetFile(string path)
+        public FileIf GetFile(string path, string enc = "utf8")
         {
             var id = FileStack.Count;
             if (path.Length == 0)
             {
                 path = Logger.GetLogFilePath();
             }
-            var file = new FileIf(id, path);
+            var file = new FileIf(id, path, enc);
             FileStack.Add(file);
             return file;
         }
 
-        public FileIf GetFileAutoName(string dir, string file)
+        public FileIf GetFileAutoName(string dir, string file, string ext = ".txt", string enc = "utf8")
         {
-            var path = Logger.MakeAutoNamePath(dir, file);
-            return GetFile(path);
+            var path = Logger.MakeAutoNamePath(dir, file, ext);
+            return GetFile(path, enc);
         }
 
 
@@ -63,13 +63,17 @@ namespace SerialDebugger.Script
         public bool IsOpen;
         public System.IO.StreamWriter Writer;
 
-        public FileIf(int id, string path)
+        private static Encoding encoding_utf8_bom = Encoding.UTF8;
+        private static Encoding encoding_utf8 = new System.Text.UTF8Encoding(false);
+        private static Encoding encoding_sjis = System.Text.Encoding.GetEncoding("shift_jis");
+
+        public FileIf(int id, string path, string enc)
         {
             Id = id;
             if (!Object.ReferenceEquals(path, string.Empty))
             {
                 IsOpen = true;
-                Writer = MakeWriteStream(path);
+                Writer = MakeWriteStream(path, enc);
                 if (Writer is null)
                 {
                     IsOpen = false;
@@ -91,7 +95,7 @@ namespace SerialDebugger.Script
             }
         }
 
-        static public System.IO.StreamWriter MakeWriteStream(string path)
+        static public System.IO.StreamWriter MakeWriteStream(string path, string enc)
         {
             try
             {
@@ -102,7 +106,23 @@ namespace SerialDebugger.Script
                 {
                     System.IO.Directory.CreateDirectory(dir);
                 }
-                return new System.IO.StreamWriter(path);
+                // Encoding指定
+                var encoding = encoding_utf8;
+                switch (enc)
+                {
+                    case "sjis":
+                    case "SJIS":
+                    case "ShiftJIS":
+                    case "Shift_JIS":
+                        encoding = encoding_sjis;
+                        break;
+
+                    default:
+                        // UTF-8
+                        break;
+                }
+                //
+                return new System.IO.StreamWriter(path, false, encoding);
             }
             catch (Exception ex)
             {

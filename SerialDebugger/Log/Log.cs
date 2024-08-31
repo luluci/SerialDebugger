@@ -142,7 +142,7 @@ namespace SerialDebugger.Log
             }
         }
 
-        static public string MakeAutoNamePath(string dir, string filepre)
+        static public string MakeAutoNamePath(string dir, string filepre, string ext = ".txt")
         {
             // ディレクトリが指定されていたら
             // ディレクトリが無ければ作成
@@ -159,7 +159,7 @@ namespace SerialDebugger.Log
             }
             // パス作成
             var dt = DateTime.Now;
-            var filepath = $"{dir}/{filepre}_{dt.ToString("yyyyMMddHHmm")}.txt";
+            var filepath = $"{dir}/{filepre}_{dt.ToString("yyyyMMddHHmm")}{ext}";
             return filepath;
         }
 

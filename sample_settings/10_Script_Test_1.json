@@ -76,7 +76,7 @@
 							]
 						},
 						{
-							"name": "field_3-2",
+							"name": "フィールド_3-2",
 							"bit_size": 4,
 							"value": 2,
 							"type": "Edit"
@@ -120,6 +120,17 @@
 						{
 							"type": "Script",
 							"auto_tx_handler": "Job_ScriptTest_1()"
+						}
+					]
+				},
+				{
+					"name": "Job_ScriptTest_2",
+					"alias": "JavaScript単発実行テスト_2",
+					"active": false,
+					"actions": [
+						{
+							"type": "Script",
+							"auto_tx_handler": "Job_ScriptTest_2()"
 						}
 					]
 				}
@@ -174,7 +185,7 @@
 							]
 						},
 						{
-							"name": "field_3-2",
+							"name": "フィールド_3-2",
 							"bit_size": 4,
 							"value": 2,
 							"type": "Edit"

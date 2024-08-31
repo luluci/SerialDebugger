@@ -22,7 +22,7 @@ class lib_Logger_Rx {
 		let fields = frm.Fields;
 		if (fields.Count > 0) {
 			// File Open
-			this.fp = IO.GetFileAutoName(this.dir_path, this.file_prefix);
+			this.fp = IO.GetFileAutoName(this.dir_path, this.file_prefix, ".csv", "sjis");
 			//
 			let header = "timestamp";
 			for (let i=0; i<fields.Count; i++) {
@@ -82,4 +82,21 @@ const Job_ScriptTest_1 = () => {
 	logger.init();
 	logger.log();
 	logger.close();
+}
+
+const Job_ScriptTest_2 = () => {
+	// File Open
+	let fp;
+	// 1
+	fp = IO.GetFileAutoName("./log_js/", "script_test", ".csv", "sjis");
+	fp.Write("SJIS, .csv出力テスト");
+	fp.Dispose();
+	// 2
+	fp = IO.GetFileAutoName("./log_js/", "script_test", ".csv");
+	fp.Write("UTF8, .csv出力テスト");
+	fp.Dispose();
+	// 3
+	fp = IO.GetFileAutoName("./log_js/", "script_test");
+	fp.Write("UTF8, .txt出力テスト");
+	fp.Dispose();
 }

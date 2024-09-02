@@ -417,72 +417,103 @@ namespace SerialDebugger
 
         public async Task InitAsync()
         {
+            // Script初期化
+            try
+            {
+                // 通信定義GUI作成に使用するので先に初期化する
+                await Script.Interpreter.Init(this);
 
-            //
-            inputString = new Comm.InputString
-            {
-                Visibility = Visibility.Hidden,
-                WindowState = WindowState.Normal,
-                //Owner = window,
-            };
-            inputString.vm.OnLostFocus.Subscribe(x =>
-            {
-                try
+                //
+                inputString = new Comm.InputString
                 {
-                    if (!(inputString.vm.TxFrameRef is null) && !(inputString.vm.FieldRef is null) && !(inputString.vm.TxFieldBufferRef is null))
+                    Visibility = Visibility.Hidden,
+                    WindowState = WindowState.Normal,
+                    //Owner = window,
+                };
+                inputString.vm.OnLostFocus.Subscribe(x =>
+                {
+                    try
                     {
-                        // 入力内容をTxFieldBufferに反映
-                        inputString.vm.TxFrameRef.SetString2CharField(inputString.vm.InputString.Value, inputString.vm.FieldRef.Id, inputString.vm.TxFieldBufferRef.Id);
+                        if (!(inputString.vm.TxFrameRef is null) && !(inputString.vm.FieldRef is null) && !(inputString.vm.TxFieldBufferRef is null))
+                        {
+                            // 入力内容をTxFieldBufferに反映
+                            inputString.vm.TxFrameRef.SetString2CharField(inputString.vm.InputString.Value, inputString.vm.FieldRef.Id, inputString.vm.TxFieldBufferRef.Id);
+                        }
                     }
-                }
-                finally
-                {
-                    inputString.vm.TxFrameRef = null;
-                    inputString.vm.FieldRef = null;
-                    inputString.vm.TxFieldBufferRef = null;
-                    inputString.Hide();
-                    IsEnableInputString.Value = true;
-                }
-            });
+                    finally
+                    {
+                        inputString.vm.TxFrameRef = null;
+                        inputString.vm.FieldRef = null;
+                        inputString.vm.TxFieldBufferRef = null;
+                        inputString.Hide();
+                        IsEnableInputString.Value = true;
+                    }
+                });
 
-            // グローバルインスタンスはMainWindowのViewModelで管理する
-            // Scriptの初期化が終わってから登録するのでここでDisposable登録
-            Script.Interpreter.GetDisposable().AddTo(Disposables);
-            Logger.GetDisposable().AddTo(Disposables);
-
-            // 
-            InitGui();
-            // 設定ファイル読み込み
-            await Setting.InitAsync(Settings);
-            // protocolは未作成なので初期化不要
-            // await StopProtocol();
-
-            // 有効な設定ファイルを読み込んでいたら
-            if (Settings.Count > 0)
+                // グローバルインスタンスはMainWindowのViewModelで管理する
+                // Scriptの初期化が終わってから登録するのでここでDisposable登録
+                Script.Interpreter.GetDisposable().AddTo(Disposables);
+                Logger.GetDisposable().AddTo(Disposables);
+            }
+            catch (Exception ex)
             {
-                // 最初に取得したファイルを読み込む
-                SettingsSelectIndex.Value = 0;
-                var result = await LoadSettingAsync(false);
-                if (result)
+                LoadingText.Value = $"致命的なエラーが起きてます : {ex.Message}";
+                LoadingIsFrozen.Value = true;
+                LoadingVisibility.Value = Visibility.Visible;
+                return;
+            }
+
+            // 通信定義GUI作成
+            var loadSettingResult = LoadSettingResult.Success;
+            Exception tempex = null;
+            try
+            {
+                // 
+                BeginLoadSetting();
+                // 設定ファイル読み込み
+                await Setting.InitAsync(Settings);
+                // protocolは未作成なので初期化不要
+                // await StopProtocol();
+
+                // 有効な設定ファイルを読み込んでいたら
+                if (Settings.Count > 0)
                 {
-                    // AutoTxを常時実行するためにProtocolタスクを起動する
-                    // 設定読み込み成功していたらprotocolを作成
-                    result = MakeProtocol();
-                    // Protocolタスク開始
-                    protocolTask = protocol.Run();
+                    // 最初に取得したファイルを読み込む
+                    SettingsSelectIndex.Value = 0;
+                    var result = await LoadSettingAsync(false);
+                    if (result)
+                    {
+                        // AutoTxを常時実行するためにProtocolタスクを起動する
+                        // 設定読み込み成功していたらprotocolを作成
+                        result = MakeProtocol();
+                        // Protocolタスク開始
+                        protocolTask = protocol.Run();
+
+                        // 正常終了
+                        // loadSettingResult = LoadSettingResult.Success;
+                    }
+                    else
+                    {
+                        // 読み込んだ設定ファイルが不正
+                        loadSettingResult = LoadSettingResult.InvalidSettingFile;
+                    }
                 }
                 else
                 {
-                    SetMsgNoSettings();
+                    // 設定ファイルが見つからない
+                    loadSettingResult = LoadSettingResult.NotFoundSettingFile;
+                    Logger.Add("有効な設定ファイルが存在しません。");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                BaseSerialTxMsg.Value = "有効な設定ファイルが存在しません。";
-                BaseSerialRxMsg.Value = "有効な設定ファイルが存在しません。";
-                BaseSerialAutoTxMsg.Value = "有効な設定ファイルが存在しません。";
-                Logger.Add("有効な設定ファイルが存在しません。");
+                // 例外エラー
+                loadSettingResult = LoadSettingResult.UnexpectedError;
+                tempex = ex;
             }
+
+            //
+            EndLoadSetting(loadSettingResult, tempex);
         }
 
         private Point GetInputStringPos(UIElement ui)
@@ -587,12 +618,15 @@ namespace SerialDebugger
 
         public async Task UpdateSettingAsync(bool force_load)
         {
+            // 通信定義GUI作成
+            var loadSettingResult = LoadSettingResult.Success;
+            Exception tempex = null;
             try
             {
                 // 設定ファイルを切り替えたときにログクリア
                 Logger.Clear();
                 // 現在表示中のGUIを破棄
-                InitGui();
+                BeginLoadSetting();
                 // protocol起動中なら終了する
                 await StopProtocol();
 
@@ -609,24 +643,38 @@ namespace SerialDebugger
                     result = MakeProtocol();
                     // Protocolタスク開始
                     protocolTask = protocol.Run();
+
+                    // 正常終了
+                    // loadSettingResult = LoadSettingResult.Success;
                 }
                 else
                 {
-                    SetMsgNoSettings();
+                    // 読み込んだ設定ファイルが不正
+                    loadSettingResult = LoadSettingResult.InvalidSettingFile;
                 }
             }
             catch (Exception ex)
             {
-                WindowTitle.Value = $"{ToolTitle}";
-                SetMsgNoSettings();
-                Logger.AddException(ex, "設定ファイル読み込みエラー:");
+                // 例外エラー
+                loadSettingResult = LoadSettingResult.UnexpectedError;
+                tempex = ex;
             }
+            //
+            EndLoadSetting(loadSettingResult, tempex);
+        }
+
+        enum LoadSettingResult
+        {
+            Success,
+            InvalidSettingFile,
+            NotFoundSettingFile,
+            UnexpectedError,
         }
 
         /// <summary>
         /// GUI表示初期設定
         /// </summary>
-        public void InitGui()
+        void BeginLoadSetting()
         {
             WindowTitle.Value = $"{ToolTitle}";
             Window.BaseSerialTx.Children.Clear();
@@ -640,21 +688,66 @@ namespace SerialDebugger
             Window.BaseSerialAutoTx.Children.Add(BaseSerialAutoTxOrig);
             TxShortcut.Clear();
             RxShortcut.Clear();
+            //
+            LoadingText.Value = "設定ファイル読み込み中";
+            LoadingIsFrozen.Value = false;
+            LoadingVisibility.Value = Visibility.Visible;
         }
 
-        public void SetMsgNoSettings()
+        void EndLoadSetting(LoadSettingResult result, Exception ex)
         {
-            BaseSerialTxMsg.Value = "有効な設定が存在しません。";
-            BaseSerialRxMsg.Value = "有効な設定が存在しません。";
-            BaseSerialAutoTxMsg.Value = "有効な設定が存在しません。";
+            bool is_error = false;
+            bool is_exception = false;
+
+            var msg = string.Empty;
+            switch (result)
+            {
+                case LoadSettingResult.Success:
+                    break;
+
+                case LoadSettingResult.InvalidSettingFile:
+                    is_error = true;
+                    msg = "有効な設定が存在しません";
+                    break;
+
+                case LoadSettingResult.NotFoundSettingFile:
+                    is_error = true;
+                    msg = "設定ファイルが見つかりません";
+                    break;
+
+                case LoadSettingResult.UnexpectedError:
+                    is_error = true;
+                    is_exception = true;
+                    msg = ex.Message;
+                    break;
+
+                default:
+                    is_error = true;
+                    msg = "予期しないエラーです";
+                    break;
+            }
+
+            if (is_error)
+            {
+                // 有効な設定ファイルが無い場合はウインドウ表示を初期化
+                WindowTitle.Value = $"{ToolTitle}";
+                // エラー内容表示
+                BaseSerialTxMsg.Value = msg;
+                BaseSerialRxMsg.Value = msg;
+                BaseSerialAutoTxMsg.Value = msg;
+
+                if (is_exception)
+                {
+                    Logger.AddException(ex, "設定ファイル読み込みエラー:");
+                }
+            }
+
+            LoadingVisibility.Value = Visibility.Hidden;
+            LoadingIsFrozen.Value = true;
         }
 
         public async Task<bool> LoadSettingAsync(bool force_load)
         {
-            LoadingText.Value = "設定ファイル読み込み中";
-            LoadingIsFrozen.Value = false;
-            LoadingVisibility.Value = Visibility.Visible;
-
             var data = Settings[SettingsSelectIndex.Value];
             // WebView2を初期化してスクリプト類をリセットする
             await Script.Interpreter.Engine.Reset();
@@ -803,8 +896,6 @@ namespace SerialDebugger
                 await Script.Interpreter.Engine.ExecOnLoadAsync(data.Script.OnLoad);
             }
 
-            LoadingVisibility.Value = Visibility.Hidden;
-            LoadingIsFrozen.Value = true;
             return true;
         }
 

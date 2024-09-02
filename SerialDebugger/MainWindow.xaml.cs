@@ -45,10 +45,6 @@ namespace SerialDebugger
         {
             try
             {
-                // Scripter設定
-                // 通信定義GUI作成に使用するので先に初期化すること
-                await Script.Interpreter.Init(vm);
-                // 通信定義GUI作成
                 await vm.InitAsync();
             }
             catch (Exception ex)

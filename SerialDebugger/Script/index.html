@@ -2,6 +2,8 @@
 <html lang="ja">
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+	<link href="./index.css" rel="stylesheet" />
+
 	<!-- Utilityスクリプト定義ファイル -->
 	<script type="text/javascript" src="./Utility.js"></script>
 	<!-- IO スクリプト定義ファイル -->
@@ -10,106 +12,7 @@
 	<script type="text/javascript" src="./Settings.js"></script>
 	<!-- AutoTx/Rx Scriptノードからの通信データ操作用スクリプト定義ファイル -->
 	<script type="text/javascript" src="./Comm.js"></script>
-	<style type="text/css">
 
-		/* グラフエリア */
-		#graph_block {
-			width: 100%;
-			border: 1px dotted #ccc;
-			display: grid;
-			grid-template-columns: 100px 500px 100px;
-			grid-auto-rows: auto;
-		}
-
-		#graph_block .header {
-			grid-column-start: 1;
-			grid-column-end: 4;
-			grid-row-start: 1;
-			grid-row-end: 2;
-			border: 1px solid #000;
-		}
-		#graph_block .caption_left {
-			grid-column-start: 1;
-			grid-column-end: 2;
-			grid-row-start: 2;
-			grid-row-end: 3;
-			border: 1px solid #000;
-		}
-		#graph_block .caption {
-			grid-column-start: 2;
-			grid-column-end: 3;
-			grid-row-start: 2;
-			grid-row-end: 3;
-			border: 1px solid #000;
-		}
-		#graph_block .caption_right {
-			grid-column-start: 3;
-			grid-column-end: 4;
-			grid-row-start: 2;
-			grid-row-end: 3;
-			border: 1px solid #000;
-		}
-		#graph_block .v_axis_left {
-			grid-column-start: 1;
-			grid-column-end: 2;
-			grid-row-start: 3;
-			grid-row-end: 4;
-			border: 1px solid #000;
-		}
-		#graph_block .graph {
-			grid-column-start: 2;
-			grid-column-end: 3;
-			grid-row-start: 3;
-			grid-row-end: 4;
-			border: 1px solid #000;
-			width: auto;
-			height: 300px;
-			position: relative;
-		}
-		#graph_block .graph .graph_canvas_1 {
-			z-index: 1;
-			position: absolute;
-		}
-		#graph_block .graph .graph_canvas_2 {
-			z-index: 2;
-			position: absolute;
-		}
-		#graph_block .v_axis_right {
-			grid-column-start: 3;
-			grid-column-end: 4;
-			grid-row-start: 3;
-			grid-row-end: 4;
-			border: 1px solid #000;
-		}
-		#graph_block .h_axis_left {
-			grid-column-start: 1;
-			grid-column-end: 2;
-			grid-row-start: 4;
-			grid-row-end: 5;
-			border: 1px solid #000;
-		}
-		#graph_block .h_axis {
-			grid-column-start: 2;
-			grid-column-end: 3;
-			grid-row-start: 4;
-			grid-row-end: 5;
-			border: 1px solid #000;
-		}
-		#graph_block .h_axis_right {
-			grid-column-start: 3;
-			grid-column-end: 4;
-			grid-row-start: 4;
-			grid-row-end: 5;
-			border: 1px solid #000;
-		}
-		#graph_block .footer {
-			grid-column-start: 1;
-			grid-column-end: 4;
-			grid-row-start: 5;
-			grid-row-end: 6;
-			border: 1px solid #000;
-		}
-	</style>
     <script language="javascript" type="text/javascript">
 		// C# -> WebView2 Event Handler
 		// C#側からWebView2の初期化が完了したらJavaScriptの初期化としてコールされる

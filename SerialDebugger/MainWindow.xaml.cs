@@ -77,6 +77,10 @@ namespace SerialDebugger
             {
                 // 設定値の変更等がすべてリセットされるため、
                 // 設定ファイルリロード前にダイアログで確認する
+                var pos = Utility.Screen.GetElemPosOnWindow(this, (UIElement)sender);
+                ReloadDialog.Top = pos.Y;
+                ReloadDialog.Left = pos.X;
+
                 ReloadDialog.ShowDialog();
                 if (ReloadDialog.IsAccepted)
                 {

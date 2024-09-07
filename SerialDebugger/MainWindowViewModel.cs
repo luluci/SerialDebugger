@@ -518,13 +518,13 @@ namespace SerialDebugger
 
         private Point GetInputStringPos(UIElement ui)
         {
-            var wnd_pt = GetUIPos(Window);
+            var wnd_pt = Utility.Screen.GetElemPosOnWindow(Window, Window);
             var wnd_w = Window.RenderSize.Width;
             var wnd_h = Window.RenderSize.Height;
             double titleBarHeight = SystemParameters.CaptionHeight;
             var wnd_right = wnd_pt.X + wnd_w;
             var wnd_bottom = wnd_pt.Y + wnd_h - titleBarHeight * 1.5;
-            var ui_pt = GetUIPos(ui);
+            var ui_pt = Utility.Screen.GetElemPosOnWindow(Window, ui);
             var ui_w = ui.RenderSize.Width;
             var ui_h = ui.RenderSize.Height;
             var ui_right = ui_pt.X + ui_w;

@@ -92,9 +92,15 @@ namespace SerialDebugger.Comm
                 for (int i = 0; i < Buffer.Count; i++)
                 {
                     var data = Buffer[i];
+                    // ビット反転
                     if (Setting.Data.Comm.TxInvertBit)
                     {
                         data = (byte)~data;
+                    }
+                    // BitOrder反転
+                    if (Setting.Data.Comm.TxReverseBitOrder)
+                    {
+                        data = Utility.BitOrder.ReverseWithLookupTable(data);
                     }
                     // HEXをASCII化
                     var ch = Utility.HexAscii.AsciiTbl[Buffer[i]];
@@ -105,11 +111,23 @@ namespace SerialDebugger.Comm
             }
             else
             {
-                if (Setting.Data.Comm.TxInvertBit)
+                if (Setting.Data.Comm.TxInvertBit || Setting.Data.Comm.TxReverseBitOrder)
                 {
                     for (int i = 0; i < Buffer.Count; i++)
                     {
-                        var data = (byte)~Buffer[i];
+                        var data = Buffer[i];
+
+                        // ビット反転
+                        if (Setting.Data.Comm.TxInvertBit)
+                        {
+                            data = (byte)~data;
+                        }
+                        // BitOrder反転
+                        if (Setting.Data.Comm.TxReverseBitOrder)
+                        {
+                            data = Utility.BitOrder.ReverseWithLookupTable(data);
+                        }
+
                         Data[i] = data;
                     }
                 }

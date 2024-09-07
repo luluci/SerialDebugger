@@ -120,6 +120,9 @@ namespace SerialDebugger.Settings
             [JsonPropertyName("invert_bit")]
             public bool InvertBit { get; set; } = false;
 
+            [JsonPropertyName("bit_order")]
+            public string BitOrder { get; set; } = string.Empty;
+
             [JsonPropertyName("enable_multi_match")]
             public bool MultiMatch { get; set; } = false;
 
@@ -193,6 +196,9 @@ namespace SerialDebugger.Settings
         {
             [JsonPropertyName("invert_bit")]
             public bool InvertBit { get; set; } = false;
+
+            [JsonPropertyName("bit_order")]
+            public string BitOrder { get; set; } = string.Empty;
 
             [JsonPropertyName("frames")]
             public IList<CommTxFrame> Frames { get; set; }

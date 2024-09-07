@@ -85,6 +85,7 @@ namespace SerialDebugger.Serial
         // 受信管理
         bool MultiMatch;
         bool InvertBit;
+        bool ReverseBitOrder;
         bool HasScriptMatch;
         // 自動操作管理
         bool IsAutoTxRunning;
@@ -118,6 +119,7 @@ namespace SerialDebugger.Serial
             //
             MultiMatch = Setting.Data.Comm.RxMultiMatch;
             InvertBit = Setting.Data.Comm.RxInvertBit;
+            ReverseBitOrder = Setting.Data.Comm.RxReverseBitOrder;
             HasScriptMatch = Setting.Data.Comm.RxHasScriptMatch;
 
             // 受信解析結果
@@ -391,6 +393,10 @@ namespace SerialDebugger.Serial
                 if (InvertBit)
                 {
                     Result.RxBuff[Result.RxBuffTgtPos] = (byte)~Result.RxBuff[Result.RxBuffTgtPos];
+                }
+                if (ReverseBitOrder)
+                {
+                    Result.RxBuff[Result.RxBuffTgtPos] = Utility.BitOrder.ReverseWithLookupTable(Result.RxBuff[Result.RxBuffTgtPos]);
                 }
                 var ch = Result.RxBuff[Result.RxBuffTgtPos];
                 // マッチ文字を登録

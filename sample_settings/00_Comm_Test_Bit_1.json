@@ -1,0 +1,213 @@
+{
+	"name": "Test_通信_ビット設定_1_ビット反転あり_LSBファースト",
+	"comment": "(ビット反転=なし, ビットオーダー=LSB)は他テストで確認済み",
+
+	"serial": {
+		"baudrate": 115200,
+		"data_bits": 8,
+		"parity": "even",
+		"stop_bits": 1,
+		"rts_cts": false,
+		"xon_xoff": false,
+		"dtr_str": false,
+		"tx_timeout": 500,
+		"polling_cycle": 100
+	},
+
+	"comm": {
+		"tx": {
+			"invert_bit": true,
+			"bit_order": "LSB",
+
+			"frames": [
+				{
+					"name": "ビット反転あり、LSBファースト",
+					"groups": [
+						{
+							"name": "ビット反転の結果とBitOrder反転の結果が一致",
+							"color": "#FFFFFF",
+							"bgcolor": "#FF8080",
+							"begin": 0,
+							"end": 7,
+							"id_begin": 0
+						},
+						{
+							"name": "ビット反転の結果とBitOrder反転の結果が不一致",
+							"color": "#FFFFFF",
+							"bgcolor": "#8080FF",
+							"begin": 8,
+							"end": 8,
+							"id_begin": 0
+						}
+					],
+					"fields": [
+						{
+							"name": "bit0",
+							"bit_size": 1,
+							"value": 1
+						},
+						{
+							"name": "bit1_2",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "bit3_5",
+							"bit_size": 3,
+							"value": 2
+						},
+						{
+							"name": "bit6_9",
+							"bit_size": 4,
+							"value": 5
+						},
+						{
+							"name": "bit10_15",
+							"bit_size": 6,
+							"value": 21
+						},
+						{
+							"name": "byte2",
+							"bit_size": 8,
+							"value": 0
+						},
+						{
+							"name": "byte3_4",
+							"bit_size": 16,
+							"value": 43690
+						},
+						{
+							"name": "byte5",
+							"bit_size": 8,
+							"value": 255
+						},
+						{
+							"name": "byte6",
+							"bit_size": 16,
+							"value": 4660
+						}
+					]
+				}
+			]
+		},
+
+		"rx": {
+
+			"invert_bit": true,
+			"bit_order": "LSB",
+
+			"frames": [
+				{
+					"name": "ビット反転あり、LSBファースト",
+					"groups": [
+						{
+							"name": "ビット反転の結果とBitOrder反転の結果が一致",
+							"color": "#FFFFFF",
+							"bgcolor": "#FF8080",
+							"begin": 0,
+							"end": 7,
+							"id_begin": 0
+						},
+						{
+							"name": "ビット反転の結果とBitOrder反転の結果が不一致",
+							"color": "#FFFFFF",
+							"bgcolor": "#8080FF",
+							"begin": 8,
+							"end": 8,
+							"id_begin": 0
+						}
+					],
+					"fields": [
+						{
+							"name": "bit0",
+							"bit_size": 1,
+							"value": 1
+						},
+						{
+							"name": "bit1_2",
+							"bit_size": 2,
+							"value": 2
+						},
+						{
+							"name": "bit3_5",
+							"bit_size": 3,
+							"value": 2
+						},
+						{
+							"name": "bit6_9",
+							"bit_size": 4,
+							"value": 5
+						},
+						{
+							"name": "bit10_15",
+							"bit_size": 6,
+							"value": 21
+						},
+						{
+							"name": "byte2",
+							"bit_size": 8,
+							"value": 0
+						},
+						{
+							"name": "byte3_4",
+							"bit_size": 16,
+							"value": 43690
+						},
+						{
+							"name": "byte5",
+							"bit_size": 8,
+							"value": 255
+						},
+						{
+							"name": "byte6",
+							"bit_size": 16,
+							"value": 4660
+						}
+					],
+					"patterns": [
+						{
+							"name": "Rx_Pattern",
+							"active": true,
+							"matches": [
+								{	"value": 1	},
+								{	"value": 2	},
+								{	"value": 2	},
+								{	"value": 5	},
+								{	"value": 21	},
+								{	"value": 0	},
+								{	"value": 43690	},
+								{	"value": 255	},
+								{	"value": 4660	}
+							]
+						}
+					]
+				}
+			]
+		}
+	},
+
+	"gui": {
+		"column_order": {
+			"byte_index": 10,
+			"bit_index": 5,
+			"group": 20,
+			"field_value": 30,
+			"field_name": 25,
+			"field_input": 26,
+			"tx_bytes": 60,
+			"spacer": 70,
+			"tx_buffer": 80
+		},
+		"column_width": {
+			"byte_index": 25,
+			"bit_index": 25,
+			"group": 40,
+			"field_value": 40,
+			"field_name": 100,
+			"field_input": 80,
+			"tx_bytes": 50,
+			"spacer": 10,
+			"tx_buffer": 80
+		}
+	}
+}

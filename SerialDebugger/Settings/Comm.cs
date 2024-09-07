@@ -24,6 +24,7 @@ namespace SerialDebugger.Settings
         public ReactiveCollection<TxFrame> Tx { get; set; }
         public Dictionary<string, int> TxNameDict { get; set; }
         public bool TxInvertBit { get; set; }
+        public bool TxReverseBitOrder { get; set; }
         // 受信解析
         public ReactiveCollection<RxFrame> Rx { get; set; }
         public Dictionary<string, int> RxNameDict { get; set; }
@@ -34,6 +35,7 @@ namespace SerialDebugger.Settings
         }
         public Dictionary<string, RxPatternInfo> RxPatternDict { get; set; }
         public bool RxInvertBit { get; set; }
+        public bool RxReverseBitOrder { get; set; }
         public bool RxMultiMatch { get; set; }
         public bool RxHasScriptMatch { get; set; } = false;
         // 自動送信
@@ -83,6 +85,7 @@ namespace SerialDebugger.Settings
                 {
                     //
                     TxInvertBit = json.Tx.InvertBit;
+                    TxReverseBitOrder = MakeReverseBitOrder(json.Tx.BitOrder);
                     // TxFrameコレクション作成
                     int i = 0;
                     foreach (var frame in json.Tx.Frames)
@@ -109,6 +112,8 @@ namespace SerialDebugger.Settings
                 // 
                 RxInvertBit = json.Rx.InvertBit;
                 RxMultiMatch = json.Rx.MultiMatch;
+                RxReverseBitOrder = MakeReverseBitOrder(json.Rx.BitOrder);
+
                 // Frames解析
                 if (!(json.Rx.Frames is null))
                 {
@@ -170,6 +175,21 @@ namespace SerialDebugger.Settings
             ValidateRx();
         }
 
+        private bool MakeReverseBitOrder(string order)
+        {
+            // BitOrder設定
+            switch (order)
+            {
+                case "MSB":
+                case "MSBFirst":
+                case "msb":
+                case "msb_first":
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
 
         private async Task<RxFrame> MakeRxFrameAsync(int id, Json.CommRxFrame frame)
         {

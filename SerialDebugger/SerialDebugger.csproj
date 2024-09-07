@@ -131,6 +131,7 @@
     <Compile Include="Utility\LoadingDot.xaml.cs">
       <DependentUpon>LoadingDot.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utility\BitOrder.cs" />
     <Page Include="Comm\InputString.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

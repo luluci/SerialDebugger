@@ -136,20 +136,32 @@ namespace SerialDebugger.Log
                 {
                     System.IO.Directory.CreateDirectory(Directory);
                 }
-                // ログファイル作成
+                // ログファイルは存在しない前提とする
+                // たまたま同名ファイルが存在する場合は上書きしたくない
+                // あるいは自分の多重起動などでロックされている場合も開くことはしない
+                // ログファイルパス作成
                 var dt = DateTime.Now;
                 FileBaseName = $"log_{dt.ToString("yyyyMMddHHmm")}";
                 FileName = $"{FileBaseName}.txt";
                 FilePath = $"{Directory}/{FileName}";
-                return FilePath;
+                // ログファイルが存在しないときだけファイルを開く
+                if (!System.IO.File.Exists(FilePath))
+                {
+                    return FilePath;
+                }
+                else
+                {
+                    // 警告だけ表示する
+                    OutputFile = false;
+                    Add($"[System] ツールログ機能によるログ出力先ファイルがすでに存在するため、ログのファイル出力を停止しました。(already exists '{FilePath}')");
+                }
             }
-            else
-            {
-                FileName = string.Empty;
-                FilePath = string.Empty;
-                FileBaseName = string.Empty;
-                return string.Empty;
-            }
+
+            OutputFile = false;
+            FileName = string.Empty;
+            FilePath = string.Empty;
+            FileBaseName = string.Empty;
+            return string.Empty;
         }
 
         static public string MakeAutoNamePath(string dir, string filepre, string ext = ".txt")

@@ -100,3 +100,11 @@ const Job_ScriptTest_2 = () => {
 	fp.Write("UTF8, .txt出力テスト");
 	fp.Dispose();
 }
+
+const Job_ScriptTest_3 = () => {
+	// ログファイル情報dump
+	Utility.Log(`[Script] Log Directory    : ${Settings.LogDirectory}`);
+	Utility.Log(`[Script] Log FileBaseName : ${Settings.LogFileBaseName}`);
+	Utility.Log(`[Script] Log FileName     : ${Settings.LogFileName}`);
+	Utility.Log(`[Script] Log FilePath     : ${Settings.LogFilePath}`);
+}

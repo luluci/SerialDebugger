@@ -144,6 +144,7 @@ namespace SerialDebugger.Script
         public void ChangeSettingFile(Settings.SettingInfo data)
         {
             WebView2If.IO.Reset();
+            WebView2If.Settings.Init();
             WebView2If.Comm.Init(data.Comm.Tx, data.Comm.Rx, data.Comm.AutoTx);
         }
 

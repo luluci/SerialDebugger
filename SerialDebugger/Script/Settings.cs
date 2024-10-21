@@ -15,12 +15,31 @@ namespace SerialDebugger.Script
     {
         public bool ScriptLoaded { get; set; } = false;
 
+        // Field作成用
         public FieldIf Field { get; set; } = new FieldIf();
+
+        // Script参照用
+        public string LogDirectory { get; set; } = string.Empty;
+        public string LogFileBaseName { get; set; } = string.Empty;
+        public string LogFileName { get; set; } = string.Empty;
+        public string LogFilePath { get; set; } = string.Empty;
 
         public void Init(Comm.Field field)
         {
+            // JavaScriptからFieldを作成するためのクラスを登録する
+            // Settingファイルを読み込んでGUIを作成するときに使用する
             Field.Field(field);
         }
+
+        public void Init()
+        {
+            // Settingファイルの内容を公開するI/Fを更新する
+            LogDirectory = Log.Log.Directory;
+            LogFileBaseName = Log.Log.FileBaseName;
+            LogFileName = Log.Log.FileName;
+            LogFilePath = Log.Log.FilePath;
+        }
+
     }
 
     [ClassInterface(ClassInterfaceType.AutoDual)]

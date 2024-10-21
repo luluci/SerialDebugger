@@ -22,6 +22,11 @@ namespace SerialDebugger.Log
         static public int LogMax { get; set; } = 100;
         static public bool OutputFile { get; set; } = false;
 
+        // 参照用
+        static public string FileName { get; set; }
+        static public string FilePath { get; set; }
+        static public string FileBaseName { get; set; }
+
         static public ReactiveCollection<string> GetLogData()
         {
             return Impl.Log;
@@ -133,11 +138,16 @@ namespace SerialDebugger.Log
                 }
                 // ログファイル作成
                 var dt = DateTime.Now;
-                var filepath = $"{Directory}/log_{dt.ToString("yyyyMMddHHmm")}.txt";
-                return filepath;
+                FileBaseName = $"log_{dt.ToString("yyyyMMddHHmm")}";
+                FileName = $"{FileBaseName}.txt";
+                FilePath = $"{Directory}/{FileName}";
+                return FilePath;
             }
             else
             {
+                FileName = string.Empty;
+                FilePath = string.Empty;
+                FileBaseName = string.Empty;
                 return string.Empty;
             }
         }

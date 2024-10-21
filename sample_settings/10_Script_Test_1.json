@@ -26,7 +26,12 @@
 			"10_Script_Test_1.js"
 		]
 	},
-	
+
+	"log": {
+		"directory": "./log_Script_Test_1/",
+		"max_size": 100
+	},
+
 	"comm": {
 		"rx": {
 			"enable_multi_match": true,
@@ -131,6 +136,17 @@
 						{
 							"type": "Script",
 							"auto_tx_handler": "Job_ScriptTest_2()"
+						}
+					]
+				},
+				{
+					"name": "Job_ScriptTest_3",
+					"alias": "JavaScript単発実行テスト_3",
+					"active": false,
+					"actions": [
+						{
+							"type": "Script",
+							"auto_tx_handler": "Job_ScriptTest_3()"
 						}
 					]
 				}

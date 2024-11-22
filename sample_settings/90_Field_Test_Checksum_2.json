@@ -1,6 +1,12 @@
 {
 	"name": "Test_field定義_Checksum_2",
-	
+
+	"script": {
+		"import": [
+			"90_Field_Test_Checksum.js"
+		]
+	},
+
 	"comm": {
 		"tx": {
 			"frames": [
@@ -286,6 +292,36 @@
 					]
 				}
 			]
+		},
+
+		"auto_tx": {
+			"jobs": [
+				{
+					"name": "Job_UpdateField_1-1",
+					"alias": "Field更新1-1",
+					"active": true,
+					"actions": [
+						{ "type": "Script", "auto_tx_handler": "Job_UpdateField_1(1,0,0)" }
+					]
+				},
+				{
+					"name": "Job_UpdateField_1-2",
+					"alias": "Field更新1-2",
+					"active": true,
+					"actions": [
+						{ "type": "Script", "auto_tx_handler": "Job_UpdateField_1(1,0,1)" }
+					]
+				},
+				{
+					"name": "Job_UpdateField_2",
+					"alias": "Field更新2",
+					"active": true,
+					"actions": [
+						{ "type": "Script", "auto_tx_handler": "Job_UpdateField_2()" }
+					]
+				}
+			]
 		}
+	
 	}
 }

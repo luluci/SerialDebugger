@@ -16,17 +16,89 @@
 						{
 							"name": "bit2-3",
 							"bit_size": 2,
-							"value": 3,
+							"value": 0,
 							"type": "Edit"
 						},
 						{
 							"name": "bit4-7",
 							"bit_size": 5,
-							"value": 5,
+							"value": 0,
 							"type": "Edit"
 						},
 						{
 							"name": "field1",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"memo": "送信バッファのバイト[0]~[1]で計算",
+							"name": "Checksum(0-1)",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 1,
+								"method": "Sum"
+							}
+						},
+						{
+							"memo": "送信バッファのバイト[0]~[2]で計算, [2]はchecksum fieldなので除外される",
+							"name": "Checksum(0-2)",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 2,
+								"method": "Sum"
+							}
+						},
+						{
+							"name": "field4",
+							"bit_size": 8,
+							"value": 2,
+							"type": "Edit"
+						},
+						{
+							"name": "field5",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit"
+						},
+						{
+							"memo": "送信バッファのバイト[0]~[5]で計算, 途中のchecksum fieldは除外される",
+							"name": "Checksum(0-5)",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 5,
+								"method": "Sum"
+							}
+						},
+						{
+							"memo": "送信バッファのバイト[0]~[9]で計算, 自分より後ろのfieldまで参照, 途中のchecksum fieldは除外される",
+							"name": "Checksum(0-9)",
+							"bit_size": 8,
+							"value": 15,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 9,
+								"method": "Sum"
+							}
+						},
+						{
+							"name": "field8",
+							"bit_size": 8,
+							"value": 0,
+							"type": "Edit"
+						},
+						{
+							"name": "field9",
 							"bit_size": 8,
 							"value": 1,
 							"type": "Edit"
@@ -38,47 +110,177 @@
 							"type": "Checksum",
 							"checksum": {
 								"begin": 0,
-								"end": 1,
-								"method": "Sum"
+								"end": 4,
+								"method": "2compl"
 							}
-						},
+						}
+					]
+				},
+				{
+					"memo": "WordSize=2でのチェックサム計算チェック",
+					"name": "checksum_WordSize=2",
+					"fields": [
 						{
-							"name": "Checksum",
-							"bit_size": 8,
-							"value": 15,
-							"type": "Checksum",
-							"checksum": {
-								"begin": 0,
-								"end": 1,
-								"method": "Sum"
-							}
+							"name": "field_0-1",
+							"bit_size": 16,
+							"value": 1,
+							"type": "Edit"
 						},
 						{
 							"name": "field2",
 							"bit_size": 8,
-							"value": 2,
+							"value": 1,
 							"type": "Edit"
 						},
 						{
-							"name": "Checksum",
+							"name": "field3",
 							"bit_size": 8,
-							"value": 15,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"memo": "WordSize=2, WordEndial=little",
+							"name": "Checksum(0-3)",
+							"bit_size": 16,
+							"value": 0,
 							"type": "Checksum",
 							"checksum": {
 								"begin": 0,
-								"end": 4,
-								"method": "Sum"
+								"end": 3,
+								"method": "Sum",
+								"word_size": 2,
+								"word_endian": "little"
 							}
 						},
 						{
-							"name": "Checksum",
+							"memo": "WordSize=2, WordEndial=little",
+							"name": "Checksum(0-3)",
 							"bit_size": 8,
-							"value": 15,
+							"value": 0,
 							"type": "Checksum",
 							"checksum": {
 								"begin": 0,
-								"end": 4,
-								"method": "2compl"
+								"end": 3,
+								"method": "Sum",
+								"word_size": 2,
+								"word_endian": "little"
+							}
+						},
+						{
+							"memo": "WordSize=2, WordEndial=little, 2compl",
+							"name": "Checksum(0-3)(2compl)",
+							"bit_size": 16,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 3,
+								"method": "2compl",
+								"word_size": 2,
+								"word_endian": "little"
+							}
+						},
+						{
+							"memo": "WordSize=2, WordEndial=big",
+							"name": "Checksum(0-3)",
+							"bit_size": 16,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 3,
+								"method": "Sum",
+								"word_size": 2,
+								"word_endian": "big"
+							}
+						},
+						{
+							"memo": "WordSize=2に対して計算範囲が奇数のチェックサム計算チェック",
+							"name": "Checksum(0-2)",
+							"bit_size": 16,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 2,
+								"method": "Sum",
+								"word_size": 2,
+								"word_endian": "little"
+							}
+						},
+						{
+							"memo": "WordSize=2, WordEndial=littleで自分より後ろのfieldの参照を確認",
+							"name": "Checksum(0-3)",
+							"bit_size": 16,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 18,
+								"method": "Sum",
+								"word_size": 2,
+								"word_endian": "little"
+							}
+						},
+						{
+							"name": "field15",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "field16-17",
+							"bit_size": 16,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "field18",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "field19",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit"
+						}
+					]
+				},
+				{
+					"name": "checksum_WordSize=3",
+					"fields": [
+						{
+							"name": "field_0-1",
+							"bit_size": 16,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "field2",
+							"bit_size": 8,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"name": "field_3-5",
+							"bit_size": 24,
+							"value": 1,
+							"type": "Edit"
+						},
+						{
+							"memo": "WordSize=3, WordEndial=little",
+							"name": "Checksum(0-5)",
+							"bit_size": 24,
+							"value": 0,
+							"type": "Checksum",
+							"checksum": {
+								"begin": 0,
+								"end": 5,
+								"method": "Sum",
+								"word_size": 3,
+								"word_endian": "little"
 							}
 						}
 					]

@@ -508,6 +508,8 @@ Charのシンタックスシュガー。stringで指定した分だけCharとし
 | checksum.begin | number | チェックサム計算範囲。バイト単位で指定。begin以上end以下の範囲でサムを取る。<br>省略時は0
 | checksum.end | number | 省略時は本fieldの手前までを計算範囲とする。checksumフィールドをまたいだ指定は不可。
 | checksum.method | string | "2compl" or "1compl" or "Sum" or 省略<br>2compl: 2の補数<br>1compl: 1の補数<br>Sum or 省略時: サムのみ
+| checksum.word_size | number | チェックサム計算時にバッファを`word_size`バイト単位でアクセスする<br>省略時は1
+| checksum.word_endian | number | "little" or "big"<br>`word_size`が2以上のときに、アクセスするときのエンディアンを指定する。<br>省略時はlittle
 
 ```json
 {
@@ -518,7 +520,9 @@ Charのシンタックスシュガー。stringで指定した分だけCharとし
 	"checksum": {
 		"begin": 1,
 		"begin": 4,
-		"method": "2compl"
+		"method": "2compl",
+		"word_size": 2,
+		"word_endian": "little"
 	}
 }
 ```

@@ -362,6 +362,13 @@ namespace SerialDebugger.Settings
 
             [JsonPropertyName("method")]
             public string Method { get; set; } = string.Empty;
+
+            [JsonPropertyName("word_size")]
+            public int WordSize { get; set; } = 1;
+
+            [JsonPropertyName("word_endian")]
+            public string WordEndian { get; set; } = string.Empty;
+
         }
 
         public class CommTxBackupBuffer

@@ -1097,6 +1097,10 @@ namespace SerialDebugger.Settings
                     method = Field.ChecksumMethod.None;
                     break;
             }
+            // WordSize : Nバイトを1wordとしてcheksum計算する
+            var word_size = field.Checksum.WordSize;
+            // WordEndian
+            var word_endian = MakeFieldPropertyEndian(field.Checksum.WordEndian);
             // DragDropInfo
             Output.DragDropInfo dd = null;
             if (!(field.DragDrop is null))
@@ -1111,6 +1115,8 @@ namespace SerialDebugger.Settings
                 Begin = field.Checksum.Begin,
                 End = field.Checksum.End,
                 Method = method,
+                WordSize = word_size,
+                WordEndian = word_endian,
             });
             await result.InitAsync();
             return result;
@@ -1285,6 +1291,33 @@ namespace SerialDebugger.Settings
             else
             {
                 switch (field.Endian)
+                {
+                    case "big":
+                    case "Big":
+                        // big指定時のみbig-endian
+                        result = true;
+                        break;
+
+                    default:
+                        // その他はlittle-endian
+                        // result = false;
+                        break;
+                }
+            }
+
+            return result;
+        }
+        private bool MakeFieldPropertyEndian(string endian)
+        {
+            bool result = false;
+            if (Object.ReferenceEquals(endian, string.Empty))
+            {
+                // 省略時はlittle-endian
+                // result = false;
+            }
+            else
+            {
+                switch (endian)
                 {
                     case "big":
                     case "Big":

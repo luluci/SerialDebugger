@@ -55,6 +55,8 @@ namespace SerialDebugger.Comm
         // checksum
         public bool HasChecksum { get; set; }
         public List<Field> ChecksumRefList { get; set; }
+        // Byte配列に対するチェックサムかどうかフラグ
+        public bool[] IsChecksumNode { get; set; }
 
         public TxFrame(int id, string name, int buffer_size, bool ascii, bool log_visualize)
         {
@@ -222,6 +224,9 @@ namespace SerialDebugger.Comm
             // チェックサム整合性チェック
             if (HasChecksum)
             {
+                // チェックサム計算対象設定
+                IsChecksumNode = new bool[Length];
+                //
                 foreach (var cs in ChecksumRefList)
                 {
                     // チェックサム計算範囲末尾省略時はチェックサムノード手前を指定
@@ -229,13 +234,21 @@ namespace SerialDebugger.Comm
                     {
                         cs.Checksum.End = cs.BytePos - 1;
                     }
-                    // チェックサム計算範囲がChecksumノードをまたがる、または、要素数を上回るときNG
-                    if ((cs.Checksum.End >= cs.BytePos) || (cs.Checksum.End >= Length))
+                    // チェックサム計算範囲が要素数を上回るときNG
+                    if (cs.Checksum.End >= Length)
                     {
-                        cs.Checksum.End = cs.BytePos > Length ? Length : cs.BytePos;
-                        cs.Checksum.End--;
+                        cs.Checksum.End = Length - 1;
                         Logger.Add($"Checksum Range is invalid: Fix to {cs.Checksum.Begin}-{cs.Checksum.End}");
                     }
+                    // チェックサムノードが対応するバッファをChecksumとしてマーク
+                    for (var idx = 0; idx < cs.ByteSize; idx++)
+                    {
+                        IsChecksumNode[cs.BytePos + idx] = true;
+                    }
+                }
+                // チェックサム情報設定後にチェックサム初期値を計算して更新
+                foreach (var cs in ChecksumRefList)
+                {
                     // チェックサム計算して初期化
                     var sum = CalcChecksum(Buffers[0].Buffer, cs);
                     foreach (var buff in Buffers)
@@ -243,7 +256,6 @@ namespace SerialDebugger.Comm
                         buff.FieldValues[cs.Id].Value.Value = sum;
                     }
                 }
-                
             }
             // 送信データ作成
             if (AsAscii)
@@ -350,11 +362,7 @@ namespace SerialDebugger.Comm
         public Int64 CalcChecksum(IList<byte> buffer, Field cs)
         {
             // 合計算出
-            Int64 sum = 0;
-            for (int i = cs.Checksum.Begin; i <= cs.Checksum.End; i++)
-            {
-                sum += buffer[i];
-            }
+            Int64 sum = CalcSum(buffer, cs);
             // method
             switch (cs.Checksum.Method)
             {
@@ -373,6 +381,69 @@ namespace SerialDebugger.Comm
                     // 総和
                     sum &= cs.Mask;
                     break;
+            }
+
+            return sum;
+        }
+        public Int64 CalcSum(IList<byte> buffer, Field cs)
+        {
+            // Sum算出
+            Int64 sum = 0;
+            if (cs.Checksum.WordSize == 1)
+            {
+                // WordSize=1用処理
+                // バッファから単純に総和を取るだけなので専用処理で定義する
+                for (int i = cs.Checksum.Begin; i <= cs.Checksum.End; i++)
+                {
+                    if (!IsChecksumNode[i])
+                    {
+                        sum += buffer[i];
+                    }
+                }
+            }
+            else
+            {
+                // WordSize>1用処理
+                if (!cs.Checksum.WordEndian)
+                {
+                    // WordEndial=little-endian
+                    // Little-Endianで計算
+                    var word_pos = 0;
+                    for (int i = cs.Checksum.Begin; i <= cs.Checksum.End; i++)
+                    {
+                        if (!IsChecksumNode[i])
+                        {
+                            sum += buffer[i] << (word_pos * 8);
+                        }
+                        // Wordはバッファ全体の並びで判定するので
+                        // ChecksumFieldでも考慮する
+                        word_pos++;
+                        if (word_pos >= cs.Checksum.WordSize)
+                        {
+                            word_pos = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    // WordEndial=big-endian
+                    // Big-Endianで計算
+                    var word_pos = cs.Checksum.WordSize - 1;
+                    for (int i = cs.Checksum.Begin; i <= cs.Checksum.End; i++)
+                    {
+                        if (!IsChecksumNode[i])
+                        {
+                            sum += buffer[i] << (word_pos * 8);
+                        }
+                        // Wordはバッファ全体の並びで判定するので
+                        // ChecksumFieldでも考慮する
+                        word_pos--;
+                        if (word_pos < 0)
+                        {
+                            word_pos = cs.Checksum.WordSize - 1;
+                        }
+                    }
+                }
             }
 
             return sum;

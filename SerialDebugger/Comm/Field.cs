@@ -69,6 +69,9 @@ namespace SerialDebugger.Comm
             public int Begin { get; set; }
             public int End { get; set; }
             public ChecksumMethod Method { get; set; }
+            // Word定義
+            public int WordSize { get; set; }
+            public bool WordEndian { get; set; }
         }
         public ChecksumNode Checksum { get; set; }
         public bool IsChecksum { get; set; } = false;
